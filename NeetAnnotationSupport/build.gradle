@@ -1,0 +1,46 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion "26.0.2"
+
+
+    defaultConfig {
+        minSdkVersion 18
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+}
+
+dependencies {
+    implementation 'com.android.support:appcompat-v7:26.1.0'
+    implementation project(':NeetAnnotation')
+}
+
+def libname = 'NeetAnnotationSupprt_110.jar'
+def name = 'NeetAnnotationSupprt'
+def toPath = '../librarys/'+name+'/'
+def fromPath = 'build/intermediates/bundles/release/'
+task clearAar(type: Delete) {
+    delete toPath
+}
+task makeAar(type: Copy) {
+    from(fromPath)
+    into(toPath)
+    include('classes.jar')
+    include('jni/**')
+    rename('classes.jar', libname)
+}
+makeAar.dependsOn(clearAar, "build")

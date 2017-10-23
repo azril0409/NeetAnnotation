@@ -1,0 +1,34 @@
+apply plugin: 'com.android.library'
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion "26.0.2"
+
+    defaultConfig {
+        minSdkVersion 11
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+    }
+}
+
+dependencies {
+    /** http://projects.spring.io/spring-android/ */
+    compile 'org.springframework.android:spring-android-rest-template:2.0.0.M3'
+}
+
+def libname = 'NeetRestApi_110.jar'
+def name = 'NeetRestApi'
+def toPath = '../librarys/'+name+'/'
+def fromPath = 'build/intermediates/bundles/release/'
+task clearAar(type: Delete) {
+    delete toPath
+}
+task makeAar(type: Copy) {
+    from(fromPath)
+    into(toPath)
+    include('classes.jar')
+    include('jni/**')
+    rename('classes.jar', libname)
+}
+makeAar.dependsOn(clearAar, "build")

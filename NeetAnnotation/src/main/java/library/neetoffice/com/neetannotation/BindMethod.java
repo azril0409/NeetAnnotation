@@ -432,11 +432,14 @@ abstract class BindMethod {
             return false;
         }
         final Class<?>[] c = a.getParameterTypes();
-        if (c.length <= 1) {
+        if (c.length == 0) {
+            return true;
+        } else if (c.length == 1 && c[0].isAssignableFrom(Bundle.class)) {
+            return true;
+        } else {
             final Exception exception = new AnnotationException(a.getName() + " neet  () or (Bundle)");
             exception.printStackTrace();
             return false;
         }
-        return true;
     }
 }

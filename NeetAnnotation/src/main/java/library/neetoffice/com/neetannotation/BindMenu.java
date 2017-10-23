@@ -34,8 +34,12 @@ abstract class BindMenu {
                 final Class aca = Class.forName("android.support.v7.app.AppCompatActivity");
                 final Class tb = Class.forName("android.support.v7.widget.Toolbar");
                 if (aca.isAssignableFrom(a.getClass()) && c != null && tb.isAssignableFrom(c.getClass())) {
-                    final Method m = aca.getMethod("setSupportActionBar", new Class[]{tb});
-                    m.invoke(null, c);
+                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupport");
+                    if (bsf == null) {
+                        throw new AnnotationException("No compile NeetAnnotationSupport");
+                    }
+                    final Method m = bsf.getDeclaredMethod("setSupportActionBar", new Class[]{aca, tb});
+                    m.invoke(null, a, c);
                 }
             } catch (Exception e) {
                 throw new AnnotationException(e);

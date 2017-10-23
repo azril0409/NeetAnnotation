@@ -4,12 +4,13 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
@@ -17,7 +18,7 @@ import java.util.ArrayList;
  * Created by Deo on 2016/3/18.
  */
 @NotProguard
-public class BindSupportFragment {
+public class BindSupport {
 
     @NotProguard
     static void onCreate(Fragment a, Bundle b) {
@@ -90,6 +91,11 @@ public class BindSupportFragment {
             BindBase.callAfterAnnotationMethod(a, j.get(i), w);
         }
         return v;
+    }
+
+    @NotProguard
+    static void setSupportActionBar(AppCompatActivity a, Toolbar b) {
+        a.setSupportActionBar(b);
     }
 
     @NotProguard

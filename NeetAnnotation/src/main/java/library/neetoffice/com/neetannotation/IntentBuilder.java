@@ -352,14 +352,14 @@ public abstract class IntentBuilder {
             try {
                 final Class<?> sf = Class.forName("android.support.v4.app.Fragment");
                 if (sf.isAssignableFrom(context.getClass())) {
-                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupportFragment");
+                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupport");
                     if (bsf == null) {
                         throw new AnnotationException("No compile NeetAnnotationSupport");
                     }
-                    final Method m = bsf.getMethod("getActivity", new Class[]{sf});
+                    final Method m = bsf.getDeclaredMethod("getActivity", new Class[]{sf});
                     final Context c = (Context) m.invoke(null, context);
                     intent.setClass(c, cls);
-                    final Method n = bsf.getMethod("startActivity", new Class[]{sf, Intent.class});
+                    final Method n = bsf.getDeclaredMethod("startActivity", new Class[]{sf, Intent.class});
                     n.invoke(null, context, intent);
                 }
             } catch (Exception e) {
@@ -380,11 +380,11 @@ public abstract class IntentBuilder {
             try {
                 final Class<?> sf = Class.forName("android.support.v4.app.Fragment");
                 if (sf.isAssignableFrom(context.getClass())) {
-                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupportFragment");
+                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupport");
                     if (bsf == null) {
                         throw new AnnotationException("No compile NeetAnnotationSupport");
                     }
-                    final Method n = bsf.getMethod("startActivityForResult", new Class[]{sf, Intent.class});
+                    final Method n = bsf.getDeclaredMethod("startActivityForResult", new Class[]{sf, Intent.class});
                     n.invoke(null, context, intent);
                 }
             } catch (Exception e) {
@@ -407,14 +407,14 @@ public abstract class IntentBuilder {
             try {
                 final Class<?> sf = Class.forName("android.support.v4.app.Fragment");
                 if (sf.isAssignableFrom(context.getClass())) {
-                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupportFragment");
+                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupport");
                     if (bsf == null) {
                         throw new AnnotationException("No compile NeetAnnotationSupport");
                     }
-                    final Method m = bsf.getMethod("getActivity", new Class[]{sf});
+                    final Method m = bsf.getDeclaredMethod("getActivity", new Class[]{sf});
                     final Context c = (Context) m.invoke(null, context);
                     intent.setClass(c, cls);
-                    final Method n = bsf.getMethod("startActivityForResult", new Class[]{sf, Intent.class, int.class});
+                    final Method n = bsf.getDeclaredMethod("startActivityForResult", new Class[]{sf, Intent.class, int.class});
                     n.invoke(null, context, intent, requestCode);
                 }
             } catch (Exception e) {
@@ -435,11 +435,11 @@ public abstract class IntentBuilder {
             try {
                 final Class<?> sf = Class.forName("android.support.v4.app.Fragment");
                 if (sf.isAssignableFrom(context.getClass())) {
-                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupportFragment");
+                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupport");
                     if (bsf == null) {
                         throw new AnnotationException("No compile NeetAnnotationSupport");
                     }
-                    final Method n = bsf.getMethod("startActivityForResult", new Class[]{sf, Intent.class, int.class});
+                    final Method n = bsf.getDeclaredMethod("startActivityForResult", new Class[]{sf, Intent.class, int.class});
                     n.invoke(null, context, intent, requestCode);
                 }
             } catch (Exception e) {

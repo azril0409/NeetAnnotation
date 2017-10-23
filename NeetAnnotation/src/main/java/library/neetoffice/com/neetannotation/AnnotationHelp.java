@@ -42,11 +42,11 @@ public class AnnotationHelp {
             try {
                 final Class<?> sf = Class.forName("android.support.v4.app.Fragment");
                 if (sf.isAssignableFrom(object.getClass())) {
-                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupportFragment");
+                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupport");
                     if (bsf == null) {
                         throw new AnnotationException("No compile NeetAnnotationSupport");
                     }
-                    final Method m = bsf.getMethod("onCreate", new Class[]{sf, Bundle.class});
+                    final Method m = bsf.getDeclaredMethod("onCreate", new Class[]{sf, Bundle.class});
                     m.invoke(null, object, savedInstanceState);
                 }
             } catch (Exception e) {
@@ -64,11 +64,11 @@ public class AnnotationHelp {
             try {
                 final Class<?> sf = Class.forName("android.support.v4.app.Fragment");
                 if (sf.isAssignableFrom(object.getClass())) {
-                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupportFragment");
+                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupport");
                     if (bsf == null) {
                         throw new AnnotationException("No compile NeetAnnotationSupport");
                     }
-                    final Method m = bsf.getMethod("onSaveInstanceState", new Class[]{sf, Bundle.class});
+                    final Method m = bsf.getDeclaredMethod("onSaveInstanceState", new Class[]{sf, Bundle.class});
                     m.invoke(null, object, outState);
                 }
             } catch (Exception e) {
@@ -96,11 +96,11 @@ public class AnnotationHelp {
             try {
                 final Class<?> sf = Class.forName("android.support.v4.app.Fragment");
                 if (sf.isAssignableFrom(fragment.getClass())) {
-                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupportFragment");
+                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupport");
                     if (bsf == null) {
                         throw new AnnotationException("No compile NeetAnnotationSupport");
                     }
-                    final Method m = bsf.getMethod("onCreateView", new Class[]{sf, ViewGroup.class, Bundle.class});
+                    final Method m = bsf.getDeclaredMethod("onCreateView", new Class[]{sf, ViewGroup.class, Bundle.class});
                     return (View) m.invoke(null, fragment, container, savedInstanceState);
                 } else {
                     return new View(((Fragment) fragment).getActivity());

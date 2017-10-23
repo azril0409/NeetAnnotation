@@ -19,16 +19,15 @@ dependencies {
 
 def libname = 'NeetRestApi_110.jar'
 def name = 'NeetRestApi'
-def toPath = '../librarys/'+name+'/'
+def toPath = '../librarys/'
 def fromPath = 'build/intermediates/bundles/release/'
 task clearAar(type: Delete) {
-    delete toPath
+    delete toPath+libname
 }
 task makeAar(type: Copy) {
     from(fromPath)
     into(toPath)
     include('classes.jar')
-    include('jni/**')
     rename('classes.jar', libname)
 }
 makeAar.dependsOn(clearAar, "build")

@@ -15,9 +15,9 @@ import java.lang.reflect.Method;
 
 abstract class BindBase {
     static void baseFieldBind(Object a, Field b, Context c) {
-        BindField.bindBean(a, b, c);
         BindField.bindRootContext(a, b, c);
         BindField.bindApp(a, b, c);
+        BindField.bindBean(a, b, c);
         BindField.bindResString(a, b, c);
         BindField.bindResStringArray(a, b, c);
         BindField.bindResBoolean(a, b, c);
@@ -50,7 +50,7 @@ abstract class BindBase {
     static void callAfterAnnotationMethod(Object a, Method b, Bundle c) {
         try {
             final Class<?>[] l = b.getParameterTypes();
-            if (l.length == 1 && c.getClass().isAssignableFrom(l[0])) {
+            if (l.length == 1 && Bundle.class.isAssignableFrom(l[0])) {
                 AnnotationUtil.invoke(b, a, c);
             } else if (l.length == 0) {
                 AnnotationUtil.invoke(b, a);

@@ -99,7 +99,7 @@ abstract class BindField {
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-        BindBeen.onCreate(c,h);
+        BindBeen.onCreate(c, h);
     }
 
     static void bindRootContext(Object a, Field b, Context c) {
@@ -166,15 +166,18 @@ abstract class BindField {
         if (d == null) {
             return;
         }
-        try {
-            final String f = c.getString(FindResources.string(c, d, b));
-            AnnotationUtil.set(b, a, f);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+        final Class<?> g = b.getType();
+        if (String.class.isAssignableFrom(g)) {
+            try {
+                final String f = c.getString(FindResources.string(c, d, b));
+                AnnotationUtil.set(b, a, f);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -183,15 +186,18 @@ abstract class BindField {
         if (d == null) {
             return;
         }
-        try {
-            final boolean f = c.getResources().getBoolean(FindResources.bool(c, d, b));
-            AnnotationUtil.set(b, a, f);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
+        final Class<?> g = b.getType();
+        if (boolean.class.isAssignableFrom(g) || Boolean.class.isAssignableFrom(g)) {
+            try {
+                final boolean f = c.getResources().getBoolean(FindResources.bool(c, d, b));
+                AnnotationUtil.set(b, a, f);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -200,15 +206,21 @@ abstract class BindField {
         if (d == null) {
             return;
         }
-        try {
-            final float f = c.getResources().getDimensionPixelSize(FindResources.dimen(c, d, b));
-            AnnotationUtil.set(b, a, f);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
+        final Class<?> g = b.getType();
+        if (int.class.isAssignableFrom(g) || Integer.class.isAssignableFrom(g) ||
+                float.class.isAssignableFrom(g) || Float.class.isAssignableFrom(g) ||
+                double.class.isAssignableFrom(g) || Double.class.isAssignableFrom(g) ||
+                long.class.isAssignableFrom(g) || Long.class.isAssignableFrom(g)) {
+            try {
+                final int f = c.getResources().getDimensionPixelSize(FindResources.dimen(c, d, b));
+                AnnotationUtil.set(b, a, f);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -217,15 +229,18 @@ abstract class BindField {
         if (d == null) {
             return;
         }
-        try {
-            final float f = c.getResources().getInteger(FindResources.integer(c, d, b));
-            AnnotationUtil.set(b, a, f);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
+        final Class<?> g = b.getType();
+        if (int.class.isAssignableFrom(g) || Integer.class.isAssignableFrom(g)) {
+            try {
+                final float f = c.getResources().getInteger(FindResources.integer(c, d, b));
+                AnnotationUtil.set(b, a, f);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -234,15 +249,18 @@ abstract class BindField {
         if (d == null) {
             return;
         }
-        try {
-            final String[] f = c.getResources().getStringArray(FindResources.array(c, d, b));
-            AnnotationUtil.set(b, a, f);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
+        final Class<?> g = b.getType();
+        if (String[].class.isAssignableFrom(g)) {
+            try {
+                final String[] f = c.getResources().getStringArray(FindResources.array(c, d, b));
+                AnnotationUtil.set(b, a, f);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -251,15 +269,18 @@ abstract class BindField {
         if (d == null) {
             return;
         }
-        try {
-            final Animation f = AnimationUtils.loadAnimation(c, FindResources.anim(c, d, b));
-            AnnotationUtil.set(b, a, f);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
+        final Class<?> g = b.getType();
+        if (Animation.class.isAssignableFrom(g)) {
+            try {
+                final Animation f = AnimationUtils.loadAnimation(c, FindResources.anim(c, d, b));
+                AnnotationUtil.set(b, a, f);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -269,59 +290,68 @@ abstract class BindField {
         if (d == null) {
             return;
         }
-        try {
-            final LayoutAnimationController f = AnimationUtils.loadLayoutAnimation(c, FindResources.anim(c, d, b));
-            AnnotationUtil.set(b, a, f);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
+        final Class<?> g = b.getType();
+        if (LayoutAnimationController.class.isAssignableFrom(g)) {
+            try {
+                final LayoutAnimationController f = AnimationUtils.loadLayoutAnimation(c, FindResources.anim(c, d, b));
+                AnnotationUtil.set(b, a, f);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
         }
     }
 
-    static void bindResColor(Object a, Field b, Context c, Resources.Theme g) {
+    static void bindResColor(Object a, Field b, Context c, Resources.Theme t) {
         final ResColor d = b.getAnnotation(ResColor.class);
         if (d == null) {
             return;
         }
-        try {
-            final int f;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                f = c.getResources().getColor(FindResources.color(c, d, b), g);
-            } else {
-                f = c.getResources().getColor(FindResources.color(c, d, b));
+        final Class<?> g = b.getType();
+        if (int.class.isAssignableFrom(g) || Integer.class.isAssignableFrom(g)) {
+            try {
+                final int f;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                    f = c.getResources().getColor(FindResources.color(c, d, b), t);
+                } else {
+                    f = c.getResources().getColor(FindResources.color(c, d, b));
+                }
+                AnnotationUtil.set(b, a, f);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
             }
-            AnnotationUtil.set(b, a, f);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
         }
     }
 
-    static void bindResDrawable(Object a, Field b, Context c, Resources.Theme g) {
+    static void bindResDrawable(Object a, Field b, Context c, Resources.Theme t) {
         final ResDrawable d = b.getAnnotation(ResDrawable.class);
         if (d == null) {
             return;
         }
-        try {
-            final Drawable f;
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                f = c.getResources().getDrawable(FindResources.drwable(c, d, b), g);
-            } else {
-                f = c.getResources().getDrawable(FindResources.drwable(c, d, b));
+        final Class<?> g = b.getType();
+        if (Drawable.class.isAssignableFrom(g)) {
+            try {
+                final Drawable f;
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+                    f = c.getResources().getDrawable(FindResources.drwable(c, d, b), t);
+                } else {
+                    f = c.getResources().getDrawable(FindResources.drwable(c, d, b));
+                }
+                AnnotationUtil.set(b, a, f);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
             }
-            AnnotationUtil.set(b, a, f);
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
         }
     }
 

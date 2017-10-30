@@ -1,19 +1,14 @@
 package library.neetoffice.com.neetannotation;
 
 import android.app.Activity;
-import android.content.Intent;
+import android.app.Fragment;
 import android.os.Bundle;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 /**
  * Created by Deo on 2016/3/18.
@@ -33,6 +28,8 @@ abstract class BindActivity {
                 final Field[] f = c.getDeclaredFields();
                 for (Field g : f) {
                     bindViewById(a, g);
+                    bindFragmendById(a, g);
+                    bindFragmentByTag(a, g);
                     BindBase.baseFieldBind(a, g, a);
                     BindExtra.bindExtra(a, g);
                     BindField.bindSaveInstance(a, g, b);
@@ -69,6 +66,76 @@ abstract class BindActivity {
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void bindFragmendById(Activity a, Field b) {
+        final FragmentById c = b.getAnnotation(FragmentById.class);
+        if (c == null) {
+            return;
+        }
+        final Class<?> f = b.getType();
+        try {
+            if (Fragment.class.isAssignableFrom(f)) {
+                Fragment i = a.getFragmentManager().findFragmentById(FindResources.id(a, c.value(), b));
+                AnnotationUtil.set(b, a, i);
+            } else {
+                final Class<?> sf = Class.forName("android.support.v4.app.Fragment");
+                if (sf.isAssignableFrom(f)) {
+                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupport");
+                    if (bsf == null) {
+                        throw new AnnotationException("No compile NeetAnnotationSupport");
+                    }
+                    final Method m = bsf.getDeclaredMethod("bindFragmendById", new Class[]{Activity.class, Field.class});
+                    m.invoke(null, a, b);
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static void bindFragmentByTag(Activity a, Field b) {
+        final FragmentByTag c = b.getAnnotation(FragmentByTag.class);
+        if (c == null) {
+            return;
+        }
+        final Class<?> f = b.getType();
+        try {
+            if (Fragment.class.isAssignableFrom(f)) {
+                String t = c.value();
+                if (t == null || t.isEmpty()) {
+                    t = b.getName();
+                }
+                Fragment i = a.getFragmentManager().findFragmentByTag(t);
+                AnnotationUtil.set(b, a, i);
+            } else {
+                final Class<?> sf = Class.forName("android.support.v4.app.Fragment");
+                if (sf.isAssignableFrom(f)) {
+                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupport");
+                    if (bsf == null) {
+                        throw new AnnotationException("No compile NeetAnnotationSupport");
+                    }
+                    final Method m = bsf.getDeclaredMethod("bindFragmentByTag", new Class[]{Activity.class, Field.class});
+                    m.invoke(null, a, b);
+                }
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (NoSuchMethodException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
     }

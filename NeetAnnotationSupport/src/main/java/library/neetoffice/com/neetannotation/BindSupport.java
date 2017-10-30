@@ -1,9 +1,12 @@
 package library.neetoffice.com.neetannotation;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
@@ -113,6 +116,46 @@ public class BindSupport {
             e.printStackTrace();
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @NotProguard
+    static void bindFragmendById(Activity a, Field b) {
+        final FragmentById c = b.getAnnotation(FragmentById.class);
+        if (c == null) {
+            return;
+        }
+        try {
+            if (a instanceof FragmentActivity) {
+                final Fragment i = ((FragmentActivity) a).getSupportFragmentManager().findFragmentById(FindResources.id(a, c.value(), b));
+                AnnotationUtil.set(b, a, i);
+            }
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @NotProguard
+    static void bindFragmentByTag(Activity a, Field b) {
+        final FragmentByTag c = b.getAnnotation(FragmentByTag.class);
+        if (c == null) {
+            return;
+        }
+        try {
+            if (a instanceof FragmentActivity) {
+                String t = c.value();
+                if (t == null || t.isEmpty()) {
+                    t = b.getName();
+                }
+                final Fragment i = ((FragmentActivity) a).getSupportFragmentManager().findFragmentByTag(t);
+                AnnotationUtil.set(b, a, i);
+            }
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }

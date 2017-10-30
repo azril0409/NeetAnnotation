@@ -26,6 +26,9 @@ public class AnnotationHelp {
     public static void onCreate(Application application) {
         BindApplication.onCreate(application);
     }
+    public static void onCreate(Service service) {
+        BindService.onCreate(service);
+    }
 
     public static void init(ViewGroup view) {
         BindView.onCreate(view);
@@ -34,8 +37,6 @@ public class AnnotationHelp {
     public static void onCreate(Object object, Bundle savedInstanceState) {
         if (object instanceof Activity) {
             BindActivity.onCreate((Activity) object, savedInstanceState);
-        } else if (object instanceof Service) {
-            BindService.onCreate((Service) object);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && object instanceof android.app.Fragment) {
             BindFragment.onCreate((Fragment) object, savedInstanceState);
         } else {

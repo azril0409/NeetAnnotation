@@ -27,7 +27,7 @@ public class HandlerInvocationHandler implements InvocationHandler {
         final Background b = m.getAnnotation(Background.class);
         final UIThread u = m.getAnnotation(UIThread.class);
         if (b != null) {
-            new Thread(new DoRunnable(o, m, args)).start();
+            new Thread(new DelayDoRunnable(o, m, args, b.delayMillis())).start();
             return null;
         } else if (u != null) {
             h.postDelayed(new DoRunnable(o, m, args), u.delayMillis());
@@ -55,6 +55,24 @@ public class HandlerInvocationHandler implements InvocationHandler {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private static class DelayDoRunnable extends DoRunnable {
+        private final long delayMillis;
+
+        private DelayDoRunnable(Object object, Method method, Object[] args, long delayMillis) {
+            super(object, method, args);
+            this.delayMillis = delayMillis;
+        }
+
+        @Override
+        public void run() {
+            try {
+                Thread.sleep(delayMillis);
+            } catch (InterruptedException e) {
+            }
+            super.run();
         }
     }
 };

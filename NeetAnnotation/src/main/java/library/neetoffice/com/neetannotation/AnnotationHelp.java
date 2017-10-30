@@ -26,6 +26,7 @@ public class AnnotationHelp {
     public static void onCreate(Application application) {
         BindApplication.onCreate(application);
     }
+
     public static void onCreate(Service service) {
         BindService.onCreate(service);
     }

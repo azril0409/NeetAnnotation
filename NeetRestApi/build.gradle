@@ -22,7 +22,7 @@ def name = 'NeetRestApi'
 def toPath = '../librarys/'
 def fromPath = 'build/intermediates/bundles/release/'
 task clearAar(type: Delete) {
-    delete toPath+libname
+    delete toPath + '/' + libname
 }
 task makeAar(type: Copy) {
     from(fromPath)

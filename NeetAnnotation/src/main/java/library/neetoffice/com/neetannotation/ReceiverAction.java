@@ -9,13 +9,13 @@ import java.lang.annotation.Target;
  * Created by Deo on 2016/4/6.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
+@Target(ElementType.METHOD)
 public @interface ReceiverAction {
     String value();
 
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.PARAMETER})
-    public @interface Extra {
+    @interface Extra {
         String value();
     }
 }

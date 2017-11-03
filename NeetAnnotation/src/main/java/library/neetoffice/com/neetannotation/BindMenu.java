@@ -52,7 +52,7 @@ abstract class BindMenu {
         final OptionsMenu d = a.getClass().getAnnotation(OptionsMenu.class);
         final int e;
         if (c != null) {
-            e = c.value();
+            e = c.menuId();
         } else if (d != null) {
             e = d.value();
         } else {

@@ -15,7 +15,7 @@ android {
     }
 }
 
-def libname = 'NeetAnnotation_110.jar'
+def libname = 'NeetAnnotation_111.jar'
 def name = 'NeetAnnotation'
 def toPath = '../librarys/'
 def fromPath = 'build/intermediates/bundles/release/'

@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
 public @interface NToolBar {
-    int value() default -1;
+    int menuId() default -1;
 
     int resId() default -1;
 }

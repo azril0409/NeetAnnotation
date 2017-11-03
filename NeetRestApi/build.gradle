@@ -17,7 +17,7 @@ dependencies {
     compile 'org.springframework.android:spring-android-rest-template:2.0.0.M3'
 }
 
-def libname = 'NeetRestApi_110.jar'
+def libname = 'NeetRestApi_111.jar'
 def name = 'NeetRestApi'
 def toPath = '../librarys/'
 def fromPath = 'build/intermediates/bundles/release/'

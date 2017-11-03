@@ -29,7 +29,7 @@ dependencies {
     implementation project(':NeetAnnotation')
 }
 
-def libname = 'NeetAnnotationSupprt_110.jar'
+def libname = 'NeetAnnotationSupprt_111.jar'
 def name = 'NeetAnnotationSupprt'
 def toPath = '../librarys/'
 def fromPath = 'build/intermediates/bundles/release/'

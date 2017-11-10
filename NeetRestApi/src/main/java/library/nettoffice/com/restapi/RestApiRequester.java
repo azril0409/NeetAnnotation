@@ -1,6 +1,7 @@
 package library.nettoffice.com.restapi;
 
 import org.springframework.http.*;
+import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.client.ResponseErrorHandler;
@@ -20,7 +21,6 @@ class RestApiRequester implements RestApiSupport {
         final Class<?> responseErrorHandler = restApi.responseErrorHandler();
         rootUrl = restApi.rootUrl();
         restTemplate.getMessageConverters().clear();
-        restTemplate.getMessageConverters().add(new StringHttpMessageConverter());
         for (Class<? extends HttpMessageConverter> converter : converters) {
             try {
                 restTemplate.getMessageConverters().add(converter.newInstance());

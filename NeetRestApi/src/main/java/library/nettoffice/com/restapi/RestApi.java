@@ -1,5 +1,6 @@
 package library.nettoffice.com.restapi;
 
+import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 
 import java.lang.annotation.ElementType;
@@ -15,7 +16,7 @@ import java.lang.annotation.Target;
 public @interface RestApi {
     String rootUrl() default "";
 
-    Class<? extends HttpMessageConverter>[] converters() default {};
+    Class<? extends HttpMessageConverter>[] converters() default {FormHttpMessageConverter.class};
 
     Class<?> responseErrorHandler() default DefaultResponseErrorHandler.class;
 }

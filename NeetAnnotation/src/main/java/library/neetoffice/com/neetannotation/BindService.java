@@ -46,10 +46,14 @@ public class BindService {
         }
     }
 
-    static void onStartCommand(Service a, Intent b) {
+    static int onStartCommand(Service a, Intent b) {
         Class<?> d = a.getClass();
+        Integer value = null;
         do {
             final NService f = d.getAnnotation(NService.class);
+            if (value == null) {
+                value = f.value();
+            }
             if (f != null) {
                 if (b != null) {
                     final Method[] i = d.getDeclaredMethods();
@@ -60,6 +64,7 @@ public class BindService {
             }
             d = d.getSuperclass();
         } while (d != null);
+        return value == null ? Service.START_STICKY : value;
     }
 
     private static void bindStartAction(Service a, Method j, Intent c) {

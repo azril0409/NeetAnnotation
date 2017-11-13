@@ -117,7 +117,7 @@ public class AnnotationHelp {
         BindBroadcastReceiver.onReceive(broadcastReceiver, context, intent);
     }
 
-    public static void onStartCommand(Service service, Intent intent) {
-        BindService.onStartCommand(service, intent);
+    public static int onStartCommand(Service service, Intent intent) {
+        return BindService.onStartCommand(service, intent);
     }
 }

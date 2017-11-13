@@ -7,7 +7,7 @@ import android.content.Intent;
 /**
  * Created by Deo-chainmeans on 2017/4/29.
  */
-
+@NReceiver
 public abstract class AnnotationBroadcastReceiver extends BroadcastReceiver {
 
     @Override

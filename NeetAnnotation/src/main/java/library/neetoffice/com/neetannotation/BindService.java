@@ -69,8 +69,8 @@ public class BindService {
         }
         final String action = c.getAction();
         final String methodAction = b.value();
-        if (action.length() > 0 && action.equals(methodAction)) {
-        } else if (action.length() == 0 && methodAction.length() == 0) {
+        if ((action == null || action.isEmpty()) && methodAction.isEmpty()) {
+        } else if (!action.isEmpty() && action.equals(methodAction)) {
         } else {
             return;
         }

@@ -10,7 +10,6 @@ import android.app.UiModeManager;
 import android.app.job.JobScheduler;
 import android.app.usage.NetworkStatsManager;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.hardware.SensorManager;
@@ -38,9 +37,7 @@ import android.view.inputmethod.InputMethodManager;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
 import java.util.HashMap;
 
 /**
@@ -87,19 +84,12 @@ abstract class BindField {
             return;
         }
         Class<?> f = b.getType();
-        Object h;
-        final NBean k = f.getAnnotation(NBean.class);
-        if (k != null && k.value() == NBean.Scope.Singleton) {
-            h = newStaticInstance(f, c);
-        } else {
-            h = newInstance(f, c);
-        }
+        Object h = BeanHelp.newInstance(c, f);
         try {
             AnnotationUtil.set(b, a, h);
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
-        BindBeen.onCreate(c, h);
     }
 
     static void bindRootContext(Object a, Field b, Context c) {
@@ -370,7 +360,7 @@ abstract class BindField {
     }
 
     static void bindHandler(Object a, Field b, Context c) {
-        final Handler d = b.getAnnotation(Handler.class);
+        final HandlerService d = b.getAnnotation(HandlerService.class);
         if (d == null) {
             return;
         }

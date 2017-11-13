@@ -40,8 +40,14 @@ abstract class BindBroadcastReceiver {
             return;
         }
         final String action = c.getAction();
-        if (!action.equals(b.value())) {
-            return;
+        if (action == null) {
+            if (b.value() != null && !b.value().isEmpty()) {
+                return;
+            }
+        } else {
+            if (!action.equals(b.value())) {
+                return;
+            }
         }
         final Annotation[][] v = j.getParameterAnnotations();
         final Class<?>[] d = j.getParameterTypes();

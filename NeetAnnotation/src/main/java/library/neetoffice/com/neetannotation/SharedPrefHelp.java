@@ -12,7 +12,7 @@ import java.lang.reflect.Proxy;
 
 public class SharedPrefHelp {
 
-    public static <T> T onCreate(Context context, Class<T> SharedPrefInterface) {
+    public static <T> T newInstance(Context context, Class<T> SharedPrefInterface) {
         final SharedPref g = SharedPrefInterface.getAnnotation(SharedPref.class);
         if (g == null) {
             return null;

@@ -23,6 +23,7 @@ abstract class BindBase {
         BindField.bindResBoolean(a, b, c);
         BindField.bindResDimen(a, b, c);
         BindField.bindResInteger(a, b, c);
+        BindField.bindResIntArray(a, b, c);
         BindField.bindResColor(a, b, c, c.getTheme());
         BindField.bindResDrawable(a, b, c, c.getTheme());
         BindField.bindResAnimation(a, b, c);

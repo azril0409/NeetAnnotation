@@ -83,7 +83,12 @@ abstract class BindField {
         if (d == null) {
             return;
         }
-        Class<?> f = b.getType();
+        Class<?> f;
+        if (Void.class.equals(d.value())) {
+            f = b.getType();
+        } else {
+            f = d.value();
+        }
         Object h = BeanHelp.newInstance(c, f);
         try {
             AnnotationUtil.set(b, a, h);
@@ -254,6 +259,26 @@ abstract class BindField {
         }
     }
 
+    static void bindResIntArray(Object a, Field b, Context c) {
+        final ResIntArray d = b.getAnnotation(ResIntArray.class);
+        if (d == null) {
+            return;
+        }
+        final Class<?> g = b.getType();
+        if (int[].class.isAssignableFrom(g)) {
+            try {
+                final int[] f = c.getResources().getIntArray(FindResources.array(c, d, b));
+                AnnotationUtil.set(b, a, f);
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     static void bindResAnimation(Object a, Field b, Context c) {
         final ResAnimation d = b.getAnnotation(ResAnimation.class);
         if (d == null) {
@@ -273,7 +298,6 @@ abstract class BindField {
             }
         }
     }
-
 
     static void bindResLayoutAnimation(Object a, Field b, Context c) {
         final ResLayoutAnimation d = b.getAnnotation(ResLayoutAnimation.class);
@@ -351,7 +375,7 @@ abstract class BindField {
             return;
         }
         final Class<?> f = b.getType();
-        final Object i = SharedPrefHelp.onCreate(c, f);
+        final Object i = SharedPrefHelp.newInstance(c, f);
         try {
             AnnotationUtil.set(b, a, i);
         } catch (IllegalAccessException e) {
@@ -434,8 +458,6 @@ abstract class BindField {
             i = c.getSystemService(Context.JOB_SCHEDULER_SERVICE);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && NetworkStatsManager.class.isAssignableFrom(f)) {
             i = c.getSystemService(Context.NETWORK_STATS_SERVICE);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && JobScheduler.class.isAssignableFrom(f)) {
-            i = c.getSystemService(Context.JOB_SCHEDULER_SERVICE);
         }
         try {
             AnnotationUtil.set(b, a, i);

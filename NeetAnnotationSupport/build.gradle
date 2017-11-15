@@ -29,8 +29,8 @@ dependencies {
     implementation project(':NeetAnnotation')
 }
 
-def libname = 'NeetAnnotationSupprt_111.jar'
 def name = 'NeetAnnotationSupprt'
+def libname = name + "_" + lib_version + ".jar"
 def toPath = '../librarys/'
 def fromPath = 'build/intermediates/bundles/release/'
 task clearAar(type: Delete) {

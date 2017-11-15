@@ -75,14 +75,14 @@ public class BindSupport {
                 final Field[] f = c.getDeclaredFields();
                 for (Field g : f) {
                     bindViewById(a, v, g);
-                    BindBase.baseFieldBind(a, g, a.getContext());
+                    BindBase.baseFieldBind(a, g, a.getActivity());
                     bindArgument(a, g);
                     BindField.bindSaveInstance(a, g, w);
                 }
                 final Method[] h = c.getDeclaredMethods();
                 final TouchListener l = new TouchListener(a);
                 for (Method i : h) {
-                    BindBase.baseViewListenerBind(a, v, i, l);
+                    BindBase.baseViewListenerBind(a, v, i, l, a.getActivity());
                     if (BindMethod.isAfterAnnotationMethod(i)) {
                         j.add(i);
                     }
@@ -108,7 +108,12 @@ public class BindSupport {
             return;
         }
         try {
-            final View f = b.findViewById(FindResources.id(a.getActivity(), d.value(), c));
+            final View f;
+            if (d.value() > 0) {
+                f = b.findViewById(d.value());
+            } else {
+                f = b.findViewById(FindResources.id(a.getContext(), c.getName()));
+            }
             if (f != null) {
                 AnnotationUtil.set(c, a, f);
             }
@@ -129,7 +134,12 @@ public class BindSupport {
         }
         try {
             if (a instanceof FragmentActivity) {
-                final Fragment i = ((FragmentActivity) a).getSupportFragmentManager().findFragmentById(FindResources.id(a, c.value(), b));
+                final Fragment i;
+                if (c.value() > 0) {
+                    i = ((FragmentActivity) a).getSupportFragmentManager().findFragmentById(c.value());
+                } else {
+                    i = ((FragmentActivity) a).getSupportFragmentManager().findFragmentById(FindResources.id(a, b.getName()));
+                }
                 AnnotationUtil.set(b, a, i);
             }
         } catch (ClassNotFoundException e) {

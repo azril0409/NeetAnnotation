@@ -38,7 +38,7 @@ abstract class BindActivity {
                 final Method[] h = c.getDeclaredMethods();
                 final TouchListener l = new TouchListener(a);
                 for (Method i : h) {
-                    BindBase.baseViewListenerBind(a, a.findViewById(android.R.id.content), i, l);
+                    BindBase.baseListenerBind(a, i, l);
                     if (BindMethod.isAfterAnnotationMethod(i)) {
                         j.add(i);
                     }
@@ -57,7 +57,12 @@ abstract class BindActivity {
             return;
         }
         try {
-            final View d = a.findViewById(FindResources.id(a, c.value(), b));
+            final View d;
+            if (c.value() > 0) {
+                d = a.findViewById(c.value());
+            } else {
+                d = a.findViewById(FindResources.id(a, b.getName()));
+            }
             if (d != null) {
                 AnnotationUtil.set(b, a, d);
             }
@@ -78,7 +83,12 @@ abstract class BindActivity {
         final Class<?> f = b.getType();
         try {
             if (Fragment.class.isAssignableFrom(f)) {
-                Fragment i = a.getFragmentManager().findFragmentById(FindResources.id(a, c.value(), b));
+                Fragment i;
+                if (c.value() > 0) {
+                    i = a.getFragmentManager().findFragmentById(c.value());
+                } else {
+                    i = a.getFragmentManager().findFragmentById(FindResources.id(a, b.getName()));
+                }
                 AnnotationUtil.set(b, a, i);
             } else {
                 final Class<?> sf = Class.forName("android.support.v4.app.Fragment");

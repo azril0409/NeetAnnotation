@@ -1,6 +1,7 @@
 package library.neetoffice.com.neetannotation;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -16,234 +17,120 @@ import java.lang.reflect.Method;
  * Created by Deo on 2016/3/18.
  */
 abstract class BindMethod {
-    static void bindClick(Activity a, Method c) {
-        final Click d = c.getAnnotation(Click.class);
-        if (d == null) {
-            return;
+    static int[] findResourcesID(int[] a, String b, String c, Context d) {
+        if (a.length != 0) {
+            return a;
         }
-        final int[] e = d.value();
-        for (int f : e) {
-            final View g = a.findViewById(f);
-            if (g == null) {
-                continue;
+        try {
+            if (b.toLowerCase().endsWith(c.toLowerCase())) {
+                return new int[]{FindResources.id(d, b.substring(0, b.length() - c.length() - 1))};
             }
-            g.setOnClickListener(new ClickListener(a, c));
+            return new int[]{FindResources.id(d, b)};
+        } catch (Exception e) {
+            throw new AnnotationException(e);
         }
     }
 
-    static void bindClick(Object a, View b, Method c) {
-        final Click d = c.getAnnotation(Click.class);
-        if (d == null) {
+    static void bindClick(Object a, View b, Method c, Context d) {
+        final Click e = c.getAnnotation(Click.class);
+        if (e == null) {
             return;
         }
-        final int[] e = d.value();
-        for (int f : e) {
-            final View g = b.findViewById(f);
-            if (g == null) {
-                continue;
-            }
-            g.setOnClickListener(new ClickListener(a, c));
-        }
-    }
-
-    static void bindLongClick(Activity a, Method c) {
-        final LongClick d = c.getAnnotation(LongClick.class);
-        if (d == null) {
-            return;
-        }
-        final int[] e = d.value();
-        for (int f : e) {
-            final View g = a.findViewById(f);
-            if (g == null) {
-                continue;
-            }
-            g.setOnLongClickListener(new LongClickListener(a, c));
-        }
-    }
-
-    static void bindLongClick(Object a, View b, Method c) {
-        final LongClick d = c.getAnnotation(LongClick.class);
-        if (d == null) {
-            return;
-        }
-        final int[] e = d.value();
-        for (int f : e) {
-            final View g = b.findViewById(f);
-            if (g == null) {
-                continue;
-            }
-            g.setOnLongClickListener(new LongClickListener(a, c));
-        }
-    }
-
-    static void bindTouch(Activity a, Method c, TouchListener l) {
-        final Touch d = c.getAnnotation(Touch.class);
-        if (d == null) {
-            return;
-        }
-        final int[] e = d.value();
-        for (int f : e) {
-            final View g = a.findViewById(f);
-            if (g == null) {
-                continue;
-            }
-            l.addTouch(f, c);
-            g.setOnTouchListener(l);
-        }
-    }
-
-    static void bindTouch(Object a, View b, Method c, TouchListener l) {
-        final Touch d = c.getAnnotation(Touch.class);
-        if (d == null) {
-            return;
-        }
-        final int[] f = d.value();
+        final int[] f = findResourcesID(e.value(), c.getName(), "Clicked", d);
         for (int g : f) {
             final View h = b.findViewById(g);
             if (h == null) {
                 continue;
             }
-            l.addTouch(g, c);
-            h.setOnTouchListener(l);
+            h.setOnClickListener(new ClickListener(a, c));
         }
     }
 
-    static void bindTouchDown(Activity a, Method c, TouchListener l) {
-        final TouchDown d = c.getAnnotation(TouchDown.class);
-        if (d == null) {
+    static void bindLongClick(Object a, View b, Method c, Context d) {
+        final LongClick e = c.getAnnotation(LongClick.class);
+        if (e == null) {
             return;
         }
-        final int[] e = d.value();
-        for (int f : e) {
-            final View g = a.findViewById(f);
-            if (g == null) {
-                continue;
-            }
-            l.addTouchDown(f, c);
-            g.setOnTouchListener(l);
-        }
-    }
-
-    static void bindTouchDown(Object a, View b, Method c, TouchListener l) {
-        final TouchDown d = c.getAnnotation(TouchDown.class);
-        if (d == null) {
-            return;
-        }
-        final int[] f = d.value();
+        final int[] f = findResourcesID(e.value(), c.getName(), "LongClicked", d);
         for (int g : f) {
             final View h = b.findViewById(g);
             if (h == null) {
                 continue;
             }
-            l.addTouchDown(g, c);
-            h.setOnTouchListener(l);
+            h.setOnLongClickListener(new LongClickListener(a, c));
         }
     }
 
-    static void bindTouchMove(Activity a, Method c, TouchListener l) {
-        final TouchMove d = c.getAnnotation(TouchMove.class);
-        if (d == null) {
+    static void bindTouch(Object a, View b, Method c, TouchListener d, Context e) {
+        final Touch f = c.getAnnotation(Touch.class);
+        if (f == null) {
             return;
         }
-        final int[] e = d.value();
-        for (int f : e) {
-            final View g = a.findViewById(f);
-            if (g == null) {
+        final int[] g = findResourcesID(f.value(), c.getName(), "Touched", e);
+        for (int h : g) {
+            final View i = b.findViewById(h);
+            if (i == null) {
                 continue;
             }
-            l.addTouchMove(f, c);
-            g.setOnTouchListener(l);
+            d.addTouch(h, c);
+            i.setOnTouchListener(d);
         }
     }
 
-    static void bindTouchMove(Object a, View b, Method c, TouchListener l) {
-        final TouchMove d = c.getAnnotation(TouchMove.class);
-        if (d == null) {
+    static void bindTouchDown(Object a, View b, Method c, TouchListener d, Context e) {
+        final TouchDown f = c.getAnnotation(TouchDown.class);
+        if (f == null) {
             return;
         }
-        final int[] f = d.value();
-        for (int g : f) {
-            final View h = b.findViewById(g);
-            if (h == null) {
+        final int[] g = findResourcesID(f.value(), c.getName(), "TouchDowned", e);
+        for (int h : g) {
+            final View i = b.findViewById(h);
+            if (i == null) {
                 continue;
             }
-            l.addTouchMove(g, c);
-            h.setOnTouchListener(l);
+            d.addTouchDown(h, c);
+            i.setOnTouchListener(d);
         }
     }
 
-    static void bindTouchUp(Activity a, Method c, TouchListener l) {
-        final TouchUp d = c.getAnnotation(TouchUp.class);
-        if (d == null) {
+    static void bindTouchMove(Object a, View b, Method c, TouchListener d, Context e) {
+        final TouchMove f = c.getAnnotation(TouchMove.class);
+        if (f == null) {
             return;
         }
-        final int[] e = d.value();
-        for (int f : e) {
-            final View g = a.findViewById(f);
-            if (g == null) {
+        final int[] g = findResourcesID(f.value(), c.getName(), "TouchMoved", e);
+        for (int h : g) {
+            final View i = b.findViewById(h);
+            if (i == null) {
                 continue;
             }
-            l.addTouchUp(f, c);
-            g.setOnTouchListener(l);
+            d.addTouchMove(h, c);
+            i.setOnTouchListener(d);
         }
     }
 
-    static void bindTouchUp(Object a, View b, Method c, TouchListener l) {
-        final TouchUp d = c.getAnnotation(TouchUp.class);
-        if (d == null) {
+    static void bindTouchUp(Object a, View b, Method c, TouchListener d, Context e) {
+        final TouchUp f = c.getAnnotation(TouchUp.class);
+        if (f == null) {
             return;
         }
-        final int[] f = d.value();
-        for (int g : f) {
-            final View h = b.findViewById(g);
-            if (h == null) {
+        final int[] g = findResourcesID(f.value(), c.getName(), "TouchUpped", e);
+        for (int h : g) {
+            final View i = b.findViewById(h);
+            if (i == null) {
                 continue;
             }
-            l.addTouchUp(g, c);
-            h.setOnTouchListener(l);
+            d.addTouchUp(h, c);
+            i.setOnTouchListener(d);
         }
     }
 
-    static void bindItemClick(Activity a, Method c) {
-        final ItemClick d = c.getAnnotation(ItemClick.class);
-        if (d == null) {
+    static void bindItemClick(Object a, View b, Method c, Context d) {
+        final ItemClick e = c.getAnnotation(ItemClick.class);
+        if (e == null) {
             return;
         }
-        final int[] f = d.value();
-        for (int g : f) {
-            final View h = a.findViewById(g);
-            if (h == null) {
-                continue;
-            }
-            if (h instanceof AdapterView) {
-                ((AdapterView) h).setOnItemClickListener(new ItemClickListener(a, c));
-            }
-        }
-    }
-
-    static void bindItemLongClick(Activity a, Method c) {
-        final ItemLongClick d = c.getAnnotation(ItemLongClick.class);
-        if (d == null) {
-            return;
-        }
-        final int[] f = d.value();
-        for (int g : f) {
-            final View h = a.findViewById(g);
-            if (h == null) {
-                continue;
-            }
-            if (h instanceof AdapterView) {
-                ((AdapterView) h).setOnItemLongClickListener(new ItemLongClickListener(a, c));
-            }
-        }
-    }
-
-    static void bindItemClick(Object a, View b, Method c) {
-        final ItemClick d = c.getAnnotation(ItemClick.class);
-        if (d == null) {
-            return;
-        }
-        final int[] f = d.value();
+        final int[] f = findResourcesID(e.value(), c.getName(), "ItemClicked", d);
         for (int g : f) {
             final View h = b.findViewById(g);
             if (h == null) {
@@ -255,12 +142,12 @@ abstract class BindMethod {
         }
     }
 
-    static void bindItemLongClick(Object a, View b, Method c) {
-        final ItemLongClick d = c.getAnnotation(ItemLongClick.class);
-        if (d == null) {
+    static void bindItemLongClick(Object a, View b, Method c, Context d) {
+        final ItemLongClick e = c.getAnnotation(ItemLongClick.class);
+        if (e == null) {
             return;
         }
-        final int[] f = d.value();
+        final int[] f = findResourcesID(e.value(), c.getName(), "ItemLongClicked", d);
         for (int g : f) {
             final View h = b.findViewById(g);
             if (h == null) {
@@ -272,29 +159,29 @@ abstract class BindMethod {
         }
     }
 
-    static void bindCheckedChange(Activity a, Method c) {
-        final CheckedChange d = c.getAnnotation(CheckedChange.class);
-        if (d == null) {
+    static void bindItemSelectClick(Object a, View b, Method c, Context d) {
+        final ItemSelect e = c.getAnnotation(ItemSelect.class);
+        if (e == null) {
             return;
         }
-        final int[] f = d.value();
+        final int[] f = findResourcesID(e.value(), c.getName(), "ItemSelected", d);
         for (int g : f) {
-            final View h = a.findViewById(g);
+            final View h = b.findViewById(g);
             if (h == null) {
                 continue;
             }
-            if (h instanceof CompoundButton) {
-                ((CompoundButton) h).setOnCheckedChangeListener(new CheckedChangeListener(a, c));
+            if (h instanceof AdapterView) {
+                ((AdapterView) h).setOnItemSelectedListener(new ItemSelectedListener(a, c));
             }
         }
     }
 
-    static void bindCheckedChange(Object a, View b, Method c) {
-        final CheckedChange d = c.getAnnotation(CheckedChange.class);
-        if (d == null) {
+    static void bindCheckedChange(Object a, View b, Method c, Context d) {
+        final CheckedChange e = c.getAnnotation(CheckedChange.class);
+        if (e == null) {
             return;
         }
-        final int[] f = d.value();
+        final int[] f = findResourcesID(e.value(), c.getName(), "CheckedChanged", d);
         for (int g : f) {
             final View h = b.findViewById(g);
             if (h == null) {
@@ -306,29 +193,12 @@ abstract class BindMethod {
         }
     }
 
-    static void bindTextChange(Activity a, Method c) {
-        final TextChange d = c.getAnnotation(TextChange.class);
-        if (d == null) {
+    static void bindTextChange(Object a, View b, Method c, Context d) {
+        final TextChange e = c.getAnnotation(TextChange.class);
+        if (e == null) {
             return;
         }
-        final int[] f = d.value();
-        for (int g : f) {
-            final View h = a.findViewById(g);
-            if (h == null) {
-                continue;
-            }
-            if (h instanceof TextView) {
-                ((TextView) h).addTextChangedListener(new TextChangeListener(h, a, c));
-            }
-        }
-    }
-
-    static void bindTextChange(Object a, View b, Method c) {
-        final TextChange d = c.getAnnotation(TextChange.class);
-        if (d == null) {
-            return;
-        }
-        final int[] f = d.value();
+        final int[] f = findResourcesID(e.value(), c.getName(), "TextChanged", d);
         for (int g : f) {
             final View h = b.findViewById(g);
             if (h == null) {
@@ -340,27 +210,13 @@ abstract class BindMethod {
         }
     }
 
-    static void bindFocusChange(Activity a, Method c) {
-        final FocusChange d = c.getAnnotation(FocusChange.class);
-        if (d == null) {
-            return;
-        }
-        final int[] f = d.value();
-        for (int g : f) {
-            final View h = a.findViewById(g);
-            if (h == null) {
-                continue;
-            }
-            h.setOnFocusChangeListener(new FocusChangeListener(a, c));
-        }
-    }
 
-    static void bindFocusChange(Object a, View b, Method c) {
-        final FocusChange d = c.getAnnotation(FocusChange.class);
-        if (d == null) {
+    static void bindFocusChange(Object a, View b, Method c, Context d) {
+        final FocusChange e = c.getAnnotation(FocusChange.class);
+        if (e == null) {
             return;
         }
-        final int[] f = d.value();
+        final int[] f = findResourcesID(e.value(), c.getName(), "FocusChanged", d);
         for (int g : f) {
             final View h = b.findViewById(g);
             if (h == null) {

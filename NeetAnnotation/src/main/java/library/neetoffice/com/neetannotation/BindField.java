@@ -408,7 +408,9 @@ abstract class BindField {
         }
         final Class<?> f = b.getType();
         Object i = null;
-        if (WindowManager.class.isAssignableFrom(f)) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+            i = c.getSystemService(f);
+        } else if (WindowManager.class.isAssignableFrom(f)) {
             i = c.getSystemService(Context.WINDOW_SERVICE);
         } else if (LayoutInflater.class.isAssignableFrom(f)) {
             i = c.getSystemService(Context.LAYOUT_INFLATER_SERVICE);

@@ -12,5 +12,5 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface TextChange {
 
-    int[] value();
+    int[] value() default {};
 }

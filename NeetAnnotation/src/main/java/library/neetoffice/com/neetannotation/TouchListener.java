@@ -106,8 +106,8 @@ class TouchListener implements View.OnTouchListener {
     private boolean doA(A a, View v, MotionEvent event) {
         final int d = a.d;
         final Method b = a.b;
-        if (d == 0) {
-            try {
+        try {
+            if (d == 0) {
                 if (b.getReturnType() == void.class) {
                     AnnotationUtil.invoke(b, a);
                 } else if (b.getReturnType() == boolean.class) {
@@ -119,13 +119,7 @@ class TouchListener implements View.OnTouchListener {
                         return (boolean) e;
                     }
                 }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 1) {
-            try {
+            } else if (d == 1) {
                 if (b.getReturnType() == void.class) {
                     AnnotationUtil.invoke(b, a, v);
                 } else if (b.getReturnType() == boolean.class) {
@@ -137,13 +131,7 @@ class TouchListener implements View.OnTouchListener {
                         return (boolean) e;
                     }
                 }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 2) {
-            try {
+            } else if (d == 2) {
                 if (b.getReturnType() == void.class) {
                     AnnotationUtil.invoke(b, a, event);
                 } else if (b.getReturnType() == boolean.class) {
@@ -155,13 +143,7 @@ class TouchListener implements View.OnTouchListener {
                         return (boolean) e;
                     }
                 }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 3) {
-            try {
+            } else if (d == 3) {
                 if (b.getReturnType() == void.class) {
                     AnnotationUtil.invoke(b, a, v, event);
                 } else if (b.getReturnType() == boolean.class) {
@@ -173,13 +155,7 @@ class TouchListener implements View.OnTouchListener {
                         return (boolean) e;
                     }
                 }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 4) {
-            try {
+            } else if (d == 4) {
                 if (b.getReturnType() == void.class) {
                     AnnotationUtil.invoke(b, a, event, v);
                 } else if (b.getReturnType() == boolean.class) {
@@ -191,11 +167,11 @@ class TouchListener implements View.OnTouchListener {
                         return (boolean) e;
                     }
                 }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
             }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
         }
         return false;
     }

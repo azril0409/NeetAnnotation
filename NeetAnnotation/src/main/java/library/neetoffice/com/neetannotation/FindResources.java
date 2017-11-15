@@ -10,17 +10,14 @@ import java.lang.reflect.Field;
 
 public class FindResources {
 
-    private static int getValue(String className, String fieldName) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        Class clz = Class.forName(className);
-        Field field = clz.getDeclaredField(fieldName);
+    private static int getValue(String a, String b) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+        Class clz = Class.forName(a);
+        Field field = clz.getDeclaredField(b);
         return (int) field.get(null);
     }
 
-    public static int id(Context a, int b, Field c) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        if (b > 0) {
-            return b;
-        }
-        return getValue(a.getPackageName() + ".R$id", c.getName());
+    public static int id(Context a, String b) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
+        return getValue(a.getPackageName() + ".R$id", b);
     }
 
     public static int string(Context a, ResString b, Field c) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {

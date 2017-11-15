@@ -2,22 +2,23 @@ package library.neetoffice.com.neetannotation;
 
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Spinner;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 /**
- * Created by Deo on 2016/3/18.
+ * Created by Deo-chainmeans on 2017/11/15.
  */
-class ItemClickListener implements AdapterView.OnItemClickListener {
+
+class ItemSelectedListener implements AdapterView.OnItemSelectedListener {
     private static final String EXCEPTION_MESSAGE = "%s neet  (position(index or object item)) or (View,position(index or object item)) parameter";
     final Object a;
     final Method b;
     final int d;
     final Class<?> f;
 
-    ItemClickListener(Object a, Method b) throws AnnotationException {
+    ItemSelectedListener(Object a, Method b) throws AnnotationException {
         this.a = a;
         this.b = b;
         final Class<?>[] c = b.getParameterTypes();
@@ -40,7 +41,7 @@ class ItemClickListener implements AdapterView.OnItemClickListener {
     }
 
     @Override
-    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
         final Object o = parent.getItemAtPosition(position);
         try {
             switch (d) {
@@ -69,5 +70,10 @@ class ItemClickListener implements AdapterView.OnItemClickListener {
         } catch (IllegalAccessException e) {
         } catch (InvocationTargetException e) {
         }
+    }
+
+    @Override
+    public void onNothingSelected(AdapterView<?> parent) {
+
     }
 }

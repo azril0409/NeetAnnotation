@@ -30,7 +30,7 @@ abstract class BindView {
                 final Method[] h = c.getDeclaredMethods();
                 final TouchListener l = new TouchListener(a);
                 for (Method i : h) {
-                    BindBase.baseViewListenerBind(a, a, i, l);
+                    BindBase.baseViewListenerBind(a, a, i, l, a.getContext());
                     if (BindMethod.isAfterAnnotationMethod(i)) {
                         j.add(i);
                     }
@@ -49,7 +49,12 @@ abstract class BindView {
             return;
         }
         try {
-            final View d = a.findViewById(FindResources.id(a.getContext(), c.value(), b));
+            final View d;
+            if (c.value() > 0) {
+                d = a.findViewById(c.value());
+            } else {
+                d = a.findViewById(FindResources.id(a.getContext(), b.getName()));
+            }
             if (d != null) {
                 AnnotationUtil.set(b, a, d);
             }

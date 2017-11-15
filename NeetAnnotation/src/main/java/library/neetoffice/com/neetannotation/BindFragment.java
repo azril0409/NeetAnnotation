@@ -35,23 +35,8 @@ abstract class BindFragment {
                 a.setHasOptionsMenu(hasMenu);
                 final Field[] f = c.getDeclaredFields();
                 for (Field g : f) {
-                    final SaveInstance d = g.getAnnotation(SaveInstance.class);
-                    if (d == null) {
-                        continue;
-                    }
-                    final String h;
-                    if (d.value().length() > 0) {
-                        h = d.value();
-                    } else {
-                        h = "_" + c.getName();
-                    }
-                    final Object i = b.get(h);
-                    if (f != null) {
-                        try {
-                            AnnotationUtil.set(g, a, i);
-                        } catch (IllegalAccessException e) {
-                        }
-                    }
+                    BindExtra.bindArgument(a, g);
+                    BindField.bindSaveInstance(a, g, b);
                 }
             }
             c = c.getSuperclass();
@@ -75,13 +60,11 @@ abstract class BindFragment {
                 for (Field g : f) {
                     bindViewById(a, v, g);
                     BindBase.baseFieldBind(a, g, a.getActivity());
-                    BindExtra.bindArgument(a, g);
-                    BindField.bindSaveInstance(a, g, w);
                 }
                 final Method[] h = c.getDeclaredMethods();
                 final TouchListener l = new TouchListener(a);
                 for (Method i : h) {
-                    BindBase.baseViewListenerBind(a, v, i, l);
+                    BindBase.baseViewListenerBind(a, v, i, l, a.getActivity());
                     if (BindMethod.isAfterAnnotationMethod(i)) {
                         j.add(i);
                     }
@@ -101,7 +84,12 @@ abstract class BindFragment {
             return;
         }
         try {
-            final View f = b.findViewById(FindResources.id(a.getActivity(), d.value(), c));
+            final View f;
+            if (d.value() > 0) {
+                f = b.findViewById(d.value());
+            } else {
+                f = b.findViewById(FindResources.id(a.getActivity(), c.getName()));
+            }
             if (f != null) {
                 AnnotationUtil.set(c, a, f);
             }

@@ -34,18 +34,33 @@ abstract class BindBase {
         BindRestService.bind(a, b);
     }
 
-    static void baseViewListenerBind(Object a, View b, Method c, TouchListener d) {
-        BindMethod.bindClick(a, b, c);
-        BindMethod.bindLongClick(a, b, c);
-        BindMethod.bindTouch(a, b, c, d);
-        BindMethod.bindTouchDown(a, b, c, d);
-        BindMethod.bindTouchMove(a, b, c, d);
-        BindMethod.bindTouchUp(a, b, c, d);
-        BindMethod.bindItemClick(a, b, c);
-        BindMethod.bindItemLongClick(a, b, c);
-        BindMethod.bindCheckedChange(a, b, c);
-        BindMethod.bindFocusChange(a, b, c);
-        BindMethod.bindTextChange(a, b, c);
+    static void baseListenerBind(Activity a, Method b, TouchListener c) {
+        BindMethod.bindClick(a, a.getWindow().getDecorView(), b, a);
+        BindMethod.bindLongClick(a, a.getWindow().getDecorView(), b, a);
+        BindMethod.bindTouch(a, a.getWindow().getDecorView(), b, c, a);
+        BindMethod.bindTouchDown(a, a.getWindow().getDecorView(), b, c, a);
+        BindMethod.bindTouchMove(a, a.getWindow().getDecorView(), b, c, a);
+        BindMethod.bindTouchUp(a, a.getWindow().getDecorView(), b, c, a);
+        BindMethod.bindItemClick(a, a.getWindow().getDecorView(), b, a);
+        BindMethod.bindItemLongClick(a, a.getWindow().getDecorView(), b, a);
+        BindMethod.bindItemSelectClick(a, a.getWindow().getDecorView(), b, a);
+        BindMethod.bindCheckedChange(a, a.getWindow().getDecorView(), b, a);
+        BindMethod.bindFocusChange(a, a.getWindow().getDecorView(), b, a);
+        BindMethod.bindTextChange(a, a.getWindow().getDecorView(), b, a);
+    }
+
+    static void baseViewListenerBind(Object a, View b, Method c, TouchListener d, Context f) {
+        BindMethod.bindClick(a, b, c, f);
+        BindMethod.bindLongClick(a, b, c, f);
+        BindMethod.bindTouch(a, b, c, d, f);
+        BindMethod.bindTouchDown(a, b, c, d, f);
+        BindMethod.bindTouchMove(a, b, c, d, f);
+        BindMethod.bindTouchUp(a, b, c, d, f);
+        BindMethod.bindItemClick(a, b, c, f);
+        BindMethod.bindItemLongClick(a, b, c, f);
+        BindMethod.bindCheckedChange(a, b, c, f);
+        BindMethod.bindFocusChange(a, b, c, f);
+        BindMethod.bindTextChange(a, b, c, f);
     }
 
     static void callAfterAnnotationMethod(Object a, Method b, Bundle c) {

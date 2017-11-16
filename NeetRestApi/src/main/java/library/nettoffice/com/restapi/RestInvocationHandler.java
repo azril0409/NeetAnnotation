@@ -5,16 +5,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
 import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by Deo-chainmeans on 2017/5/19.
@@ -44,7 +40,6 @@ class RestInvocationHandler implements InvocationHandler {
             return null;
         }
 
-
         final HttpHeaders httpHeaders = new HttpHeaders();
         final Header header = method.getAnnotation(Header.class);
         if (header != null) {
@@ -58,6 +53,7 @@ class RestInvocationHandler implements InvocationHandler {
         }
         final HashMap<String, String> cookies = new HashMap<>();
         final HashMap<String, String> pathMap = new HashMap<>();
+        final HashMap<String, Object> fieldMap = new HashMap<>();
         Object body = null;
         if (args != null) {
             final Annotation[][] t = method.getParameterAnnotations();
@@ -73,10 +69,23 @@ class RestInvocationHandler implements InvocationHandler {
                     if (a.annotationType() == Path.class) {
                         pathMap.put(((Path) a).value(), arg.toString());
                     }
+                    if (a.annotationType() == Field.class) {
+                        fieldMap.put(((Field) a).value(), arg);
+                    }
                     if (a.annotationType() == Body.class) {
                         body = arg;
                     }
                 }
+            }
+        }
+        if (body == null) {
+            body = new HashMap<>();
+            for (Map.Entry<String, Object> e : fieldMap.entrySet()) {
+                ((Map) body).put(e.getKey(), e.getValue());
+            }
+        } else if (body instanceof Map) {
+            for (Map.Entry<String, Object> e : fieldMap.entrySet()) {
+                ((Map) body).put(e.getKey(), e.getValue());
             }
         }
 

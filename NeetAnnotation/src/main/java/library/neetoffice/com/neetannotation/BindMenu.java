@@ -1,6 +1,7 @@
 package library.neetoffice.com.neetannotation;
 
 import android.app.Activity;
+import android.content.Context;
 import android.os.Build;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -64,29 +65,30 @@ abstract class BindMenu {
         return true;
     }
 
-    static boolean onOptionsItemSelected(Object a, MenuItem b) {
-        Class<?> c = a.getClass();
+    static boolean onOptionsItemSelected(Object a, MenuItem b, Context c) {
+        Class<?> d = a.getClass();
         Method j = null;
         do {
-            final NActivity q = c.getAnnotation(NActivity.class);
-            final NFragment r = c.getAnnotation(NFragment.class);
+            final NActivity q = d.getAnnotation(NActivity.class);
+            final NFragment r = d.getAnnotation(NFragment.class);
             if (q != null || r != null) {
-                final Method[] f = c.getDeclaredMethods();
-                for (Method d : f) {
-                    final OptionsItem g = d.getAnnotation(OptionsItem.class);
-                    if (g == null) {
+                final Method[] f = d.getDeclaredMethods();
+                A:for (Method g : f) {
+                    final OptionsItem h = g.getAnnotation(OptionsItem.class);
+                    if (h == null) {
                         continue;
                     }
-                    for (int i : g.value()) {
-                        if (i == b.getItemId()) {
-                            j = d;
-                            break;
+                    int[] i = BindMethod.findResourcesID(h.value(), g.getName(), "Selected", c);
+                    for (int k : i) {
+                        if (k == b.getItemId()) {
+                            j = g;
+                            break A;
                         }
                     }
                 }
             }
-            c = c.getSuperclass();
-        } while (c != null);
+            d = d.getSuperclass();
+        } while (d != null);
         if (j != null) {
             final Class<?>[] k = j.getParameterTypes();
             if (k.length == 0) {

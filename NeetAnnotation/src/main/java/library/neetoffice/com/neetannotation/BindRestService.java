@@ -12,15 +12,15 @@ import java.lang.reflect.Method;
 
 public class BindRestService {
 
-    static void bind(Object a, Field b) {
+    static void bind(Object a, Field b, Context c) {
         final RestService d = b.getAnnotation(RestService.class);
         if (d == null) {
             return;
         }
         try {
             final Class<?> cls = Class.forName("library.nettoffice.com.restapi.RestApiHelp");
-            final Method method = cls.getMethod("create", new Class[]{Class.class});
-            final Object f = method.invoke(null, b.getType());
+            final Method method = cls.getMethod("create", new Class[]{Context.class, Class.class});
+            final Object f = method.invoke(null, c, b.getType());
             if (f != null) {
                 AnnotationUtil.set(b, a, f);
             }

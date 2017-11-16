@@ -10,6 +10,7 @@ import java.lang.reflect.Modifier;
  * Created by Deo on 2016/4/6.
  */
 public class FocusChangeListener implements View.OnFocusChangeListener {
+    private static final String EXCEPTION_MESSAGE = "%s need  () or (View) or (boolean) or (View,boolean) or (boolean,View) parameter";
     final Object a;
     final Method b;
     final int d;
@@ -28,7 +29,7 @@ public class FocusChangeListener implements View.OnFocusChangeListener {
             } else if (c[0] == Boolean.class) {
                 d = 2;
             } else {
-                throw new AnnotationException(b.getName() + " neet  () or (View) or (boolean) or (View,boolean) or (boolean,View) parameter");
+                throw new AnnotationException(String.format(EXCEPTION_MESSAGE, b.getName()));
             }
         } else if (c.length == 2) {
             if (View.class.isAssignableFrom(c[0]) && (c[1] == boolean.class || c[1] == Boolean.class)) {
@@ -36,55 +37,31 @@ public class FocusChangeListener implements View.OnFocusChangeListener {
             } else if (View.class.isAssignableFrom(c[1]) && (c[0] == boolean.class || c[0] == Boolean.class)) {
                 d = 4;
             } else {
-                throw new AnnotationException(b.getName() + " neet  () or (View) or (boolean) or (View,boolean) or (boolean,View) parameter");
+                throw new AnnotationException(String.format(EXCEPTION_MESSAGE, b.getName()));
             }
         } else {
-            throw new AnnotationException(b.getName() + " neet  () or (View) or (boolean) or (View,boolean) or (boolean,View) parameter");
+            throw new AnnotationException(String.format(EXCEPTION_MESSAGE, b.getName()));
         }
     }
 
     @Override
     public void onFocusChange(View v, boolean hasFocus) {
-        if (d == 0) {
-            try {
+        try {
+            if (d == 0) {
                 AnnotationUtil.invoke(b, a);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 1) {
-            try {
+            } else if (d == 1) {
                 AnnotationUtil.invoke(b, a, v);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 2) {
-            try {
+            } else if (d == 2) {
                 AnnotationUtil.invoke(b, a, hasFocus);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 3) {
-            try {
+            } else if (d == 3) {
                 AnnotationUtil.invoke(b, a, v, hasFocus);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 4) {
-            try {
+            } else if (d == 4) {
                 AnnotationUtil.invoke(b, a, hasFocus, v);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
             }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
         }
     }
 }

@@ -12,6 +12,7 @@ import java.util.ArrayList;
  */
 
 public abstract class BeanHelp {
+    @NotProguard
     public static <T> T newInstance(Context context, Class<T> beanClass) {
         final NBean k = beanClass.getAnnotation(NBean.class);
         Object h;
@@ -43,7 +44,7 @@ public abstract class BeanHelp {
                 BindField.bindSharedPreferences(h, j, c);
                 BindField.bindHandler(h, j, c);
                 BindField.bindSystemService(h, j, c);
-                BindRestService.bind(h, j);
+                BindRestService.bind(h, j, c);
             }
             final Method[] g = f.getDeclaredMethods();
             for (Method l : g) {

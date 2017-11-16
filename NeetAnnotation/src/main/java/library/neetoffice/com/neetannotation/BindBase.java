@@ -31,7 +31,7 @@ abstract class BindBase {
         BindField.bindSharedPreferences(a, b, c);
         BindField.bindHandler(a, b, c);
         BindField.bindSystemService(a, b, c);
-        BindRestService.bind(a, b);
+        BindRestService.bind(a, b, c);
     }
 
     static void baseListenerBind(Activity a, Method b, TouchListener c) {

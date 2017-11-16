@@ -11,7 +11,7 @@ import java.lang.reflect.Modifier;
  * Created by Deo on 2016/3/18.
  */
 class ItemClickListener implements AdapterView.OnItemClickListener {
-    private static final String EXCEPTION_MESSAGE = "%s neet  (position(index or object item)) or (View,position(index or object item)) parameter";
+    private static final String EXCEPTION_MESSAGE = "%s need  (position(index or object item)) or (View,position(index or object item)) parameter";
     final Object a;
     final Method b;
     final int d;
@@ -67,7 +67,9 @@ class ItemClickListener implements AdapterView.OnItemClickListener {
                     break;
             }
         } catch (IllegalAccessException e) {
+            e.printStackTrace();
         } catch (InvocationTargetException e) {
+            e.printStackTrace();
         }
     }
 }

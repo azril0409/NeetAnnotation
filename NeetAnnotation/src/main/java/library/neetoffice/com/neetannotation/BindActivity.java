@@ -66,10 +66,6 @@ abstract class BindActivity {
             if (d != null) {
                 AnnotationUtil.set(b, a, d);
             }
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -102,8 +98,6 @@ abstract class BindActivity {
                 }
             }
         } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();

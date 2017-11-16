@@ -338,29 +338,29 @@ public abstract class IntentBuilder {
         };
     }
 
-    public void startActivity(final Object context, final Class<? extends Activity> cls) {
+    public void startActivity(final Object object, final Class<? extends Activity> cls) {
         final Intent intent = new Intent();
         intent.putExtras(bundle());
         intent.setFlags(mFlags);
-        if (context instanceof Context) {
-            intent.setClass((Context) context, cls);
-            ((Context) context).startActivity(intent);
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && context instanceof Fragment) {
-            intent.setClass(((Fragment) context).getActivity(), cls);
-            ((Fragment) context).startActivity(intent);
+        if (object instanceof Context) {
+            intent.setClass((Context) object, cls);
+            ((Context) object).startActivity(intent);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && object instanceof Fragment) {
+            intent.setClass(((Fragment) object).getActivity(), cls);
+            ((Fragment) object).startActivity(intent);
         } else {
             try {
                 final Class<?> sf = Class.forName("android.support.v4.app.Fragment");
-                if (sf.isAssignableFrom(context.getClass())) {
+                if (sf.isAssignableFrom(object.getClass())) {
                     final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupport");
                     if (bsf == null) {
                         throw new AnnotationException("No compile NeetAnnotationSupport");
                     }
                     final Method m = bsf.getDeclaredMethod("getActivity", new Class[]{sf});
-                    final Context c = (Context) m.invoke(null, context);
+                    final Context c = (Context) m.invoke(null, object);
                     intent.setClass(c, cls);
                     final Method n = bsf.getDeclaredMethod("startActivity", new Class[]{sf, Intent.class});
-                    n.invoke(null, context, intent);
+                    n.invoke(null, object, intent);
                 }
             } catch (Exception e) {
                 throw new AnnotationException(e);

@@ -1,5 +1,7 @@
 package library.nettoffice.com.restapi;
 
+import android.content.Context;
+
 import java.lang.reflect.Proxy;
 
 /**
@@ -8,12 +10,12 @@ import java.lang.reflect.Proxy;
 
 public class RestApiHelp {
 
-    public static <T> T create(final Class<T> service) {
+    public static <T> T create(final Context context, final Class<T> service) {
         final RestApi restApi = service.getAnnotation(RestApi.class);
         if (restApi == null) {
             return null;
         }
-        final RestApiRequester restApiHelp = new RestApiRequester(restApi);
+        final RestApiRequester restApiHelp = new RestApiRequester(context, restApi);
         return (T) Proxy.newProxyInstance(service.getClassLoader(), new Class<?>[]{service}, new RestInvocationHandler(restApiHelp));
     }
 }

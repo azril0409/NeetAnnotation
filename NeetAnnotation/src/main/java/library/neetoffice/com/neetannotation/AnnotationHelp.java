@@ -88,7 +88,27 @@ public class AnnotationHelp {
     }
 
     public static boolean onOptionsItemSelected(Object object, MenuItem menu) {
-        return BindMenu.onOptionsItemSelected(object, menu);
+        if (object instanceof Context) {
+            return BindMenu.onOptionsItemSelected(object, menu, (Context) object);
+        } else if (object instanceof Fragment) {
+            return BindMenu.onOptionsItemSelected(object, menu, ((Fragment) object).getActivity());
+        } else {
+            try {
+                final Class<?> sf = Class.forName("android.support.v4.app.Fragment");
+                if (sf.isAssignableFrom(object.getClass())) {
+                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupport");
+                    if (bsf == null) {
+                        throw new AnnotationException("No compile NeetAnnotationSupport");
+                    }
+                    final Method m = bsf.getDeclaredMethod("getActivity", new Class[]{sf});
+                    final Context c = (Context) m.invoke(null, object);
+                    return BindMenu.onOptionsItemSelected(object, menu, c);
+                }
+            } catch (Exception e) {
+                throw new AnnotationException(e);
+            }
+        }
+        return false;
     }
 
     public static View onCreateView(Object fragment, ViewGroup container, Bundle savedInstanceState) {

@@ -37,4 +37,5 @@ dependencies {
     implementation project(':NeetAnnotation')
     implementation project(':NeetAnnotationSupport')
     implementation project(':NeetRestApi')
+    implementation 'com.google.code.gson:gson:2.2.4'
 }

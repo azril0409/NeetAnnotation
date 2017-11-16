@@ -5,12 +5,12 @@ import android.widget.CompoundButton;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 /**
  * Created by Deo on 2016/4/1.
  */
 class CheckedChangeListener implements CompoundButton.OnCheckedChangeListener {
+    private static final String EXCEPTION_MESSAGE = "%s need  (boolean) or (View,boolean) or (boolean,View) parameter";
     final Object a;
     final Method b;
     final int d;
@@ -25,7 +25,7 @@ class CheckedChangeListener implements CompoundButton.OnCheckedChangeListener {
             } else if (c[0] == Boolean.class) {
                 d = 0;
             } else {
-                throw new AnnotationException(b.getName() + " neet  (boolean) or (View,boolean) or (boolean,View) parameter");
+                throw new AnnotationException(String.format(EXCEPTION_MESSAGE, b.getName()));
             }
         } else if (c.length == 2) {
             if (View.class.isAssignableFrom(c[0])) {
@@ -33,39 +33,27 @@ class CheckedChangeListener implements CompoundButton.OnCheckedChangeListener {
             } else if (View.class.isAssignableFrom(c[1])) {
                 d = 2;
             } else {
-                throw new AnnotationException(b.getName() + " neet  (boolean) or (View,boolean) or (boolean,View) parameter");
+                throw new AnnotationException(String.format(EXCEPTION_MESSAGE, b.getName()));
             }
         } else {
-            throw new AnnotationException(b.getName() + " neet  (boolean) or (View,boolean) or (boolean,View) parameter");
+            throw new AnnotationException(String.format(EXCEPTION_MESSAGE, b.getName()));
         }
     }
 
     @Override
     public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        if (d == 0) {
-            try {
+        try {
+            if (d == 0) {
                 AnnotationUtil.invoke(b, a, isChecked);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 1) {
-            try {
+            } else if (d == 1) {
                 AnnotationUtil.invoke(b, a, buttonView, isChecked);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 2) {
-            try {
+            } else if (d == 2) {
                 AnnotationUtil.invoke(b, a, isChecked, buttonView);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
             }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
         }
     }
 }

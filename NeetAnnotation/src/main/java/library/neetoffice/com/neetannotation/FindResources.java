@@ -16,87 +16,131 @@ public class FindResources {
         return (int) field.get(null);
     }
 
-    public static int id(Context a, String b) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        return getValue(a.getPackageName() + ".R$id", b);
+    public static int id(Context a, String b) {
+        try {
+            return getValue(a.getPackageName() + ".R$id", b);
+        } catch (Exception e) {
+            throw new AnnotationException(String.format("No field %s in R.id", b));
+        }
     }
 
-    public static int string(Context a, ResString b, Field c) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        final int id = b.value();
-        if (id > 0) {
-            return id;
+    public static int string(Context a, ResString b, Field c) {
+        try {
+            final int id = b.value();
+            if (id > 0) {
+                return id;
+            }
+            return getValue(a.getPackageName() + ".R$string", c.getName());
+        } catch (Exception e) {
+            throw new AnnotationException(String.format("No field %s in R.string", b));
         }
-        return getValue(a.getPackageName() + ".R$string", c.getName());
     }
 
-    public static int bool(Context a, ResBoolean b, Field c) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        final int id = b.value();
-        if (id > 0) {
-            return id;
+    public static int bool(Context a, ResBoolean b, Field c) {
+        try {
+            final int id = b.value();
+            if (id > 0) {
+                return id;
+            }
+            return getValue(a.getPackageName() + ".R$bool", c.getName());
+        } catch (Exception e) {
+            throw new AnnotationException(String.format("No field %s in R.bool", b));
         }
-        return getValue(a.getPackageName() + ".R$bool", c.getName());
     }
 
-    public static int dimen(Context a, ResDimen b, Field c) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        final int id = b.value();
-        if (id > 0) {
-            return id;
+    public static int dimen(Context a, ResDimen b, Field c) {
+        try {
+            final int id = b.value();
+            if (id > 0) {
+                return id;
+            }
+            return getValue(a.getPackageName() + ".R$dimen", c.getName());
+        } catch (Exception e) {
+            throw new AnnotationException(String.format("No field %s in R.dimen", b));
         }
-        return getValue(a.getPackageName() + ".R$dimen", c.getName());
     }
 
-    public static int integer(Context a, ResInt b, Field c) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        final int id = b.value();
-        if (id > 0) {
-            return id;
+    public static int integer(Context a, ResInt b, Field c) {
+        try {
+            final int id = b.value();
+            if (id > 0) {
+                return id;
+            }
+            return getValue(a.getPackageName() + ".R$integer", c.getName());
+        } catch (Exception e) {
+            throw new AnnotationException(String.format("No field %s in R.integer", b));
         }
-        return getValue(a.getPackageName() + ".R$integer", c.getName());
     }
 
-    public static int array(Context a, ResStringArray b, Field c) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        final int id = b.value();
-        if (id > 0) {
-            return id;
+    public static int array(Context a, ResStringArray b, Field c) {
+        try {
+            final int id = b.value();
+            if (id > 0) {
+                return id;
+            }
+            return getValue(a.getPackageName() + ".R$array", c.getName());
+        } catch (Exception e) {
+            throw new AnnotationException(String.format("No field %s in R.array", b));
         }
-        return getValue(a.getPackageName() + ".R$array", c.getName());
     }
 
-    public static int array(Context a, ResIntArray b, Field c) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        final int id = b.value();
-        if (id > 0) {
-            return id;
+    public static int array(Context a, ResIntArray b, Field c) {
+        try {
+            final int id = b.value();
+            if (id > 0) {
+                return id;
+            }
+            return getValue(a.getPackageName() + ".R$array", c.getName());
+        } catch (Exception e) {
+            throw new AnnotationException(String.format("No field %s in R.array", b));
         }
-        return getValue(a.getPackageName() + ".R$array", c.getName());
     }
 
-    public static int anim(Context a, ResAnimation b, Field c) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        final int id = b.value();
-        if (id > 0) {
-            return id;
+    public static int anim(Context a, ResAnimation b, Field c) {
+        try {
+            final int id = b.value();
+            if (id > 0) {
+                return id;
+            }
+            return getValue(a.getPackageName() + ".R$anim", c.getName());
+        } catch (Exception e) {
+            throw new AnnotationException(String.format("No field %s in R.anim", b));
         }
-        return getValue(a.getPackageName() + ".R$anim", c.getName());
     }
 
-    public static int anim(Context a, ResLayoutAnimation b, Field c) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        final int id = b.value();
-        if (id > 0) {
-            return id;
+    public static int anim(Context a, ResLayoutAnimation b, Field c) {
+        try {
+            final int id = b.value();
+            if (id > 0) {
+                return id;
+            }
+            return getValue(a.getPackageName() + ".R$anim", c.getName());
+        } catch (Exception e) {
+            throw new AnnotationException(String.format("No field %s in R.anim", b));
         }
-        return getValue(a.getPackageName() + ".R$anim", c.getName());
     }
 
-    public static int color(Context a, ResColor b, Field c) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        final int id = b.value();
-        if (id > 0) {
-            return id;
+    public static int color(Context a, ResColor b, Field c) {
+        try {
+            final int id = b.value();
+            if (id > 0) {
+                return id;
+            }
+            return getValue(a.getPackageName() + ".R$color", c.getName());
+        } catch (Exception e) {
+            throw new AnnotationException(String.format("No field %s in R.color", b));
         }
-        return getValue(a.getPackageName() + ".R$color", c.getName());
     }
 
-    public static int drwable(Context a, ResDrawable b, Field c) throws ClassNotFoundException, NoSuchFieldException, IllegalAccessException {
-        final int id = b.value();
-        if (id > 0) {
-            return id;
+    public static int drwable(Context a, ResDrawable b, Field c) {
+        try {
+            final int id = b.value();
+            if (id > 0) {
+                return id;
+            }
+            return getValue(a.getPackageName() + ".R$drwable", c.getName());
+        } catch (Exception e) {
+            throw new AnnotationException(String.format("No field %s in R.drwable", b));
         }
-        return getValue(a.getPackageName() + ".R$drwable", c.getName());
     }
 }

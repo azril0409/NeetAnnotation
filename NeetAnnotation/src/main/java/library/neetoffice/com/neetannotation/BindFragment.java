@@ -93,10 +93,6 @@ abstract class BindFragment {
             if (f != null) {
                 AnnotationUtil.set(c, a, f);
             }
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }

@@ -12,6 +12,8 @@ import java.util.HashMap;
  * Created by Deo on 2016/3/18.
  */
 class TouchListener implements View.OnTouchListener {
+    private static final String EXCEPTION_MESSAGE = "%s need  no parameter or View , MotionEvent parameter";
+
     static class A {
         int d;
         Method b;
@@ -43,7 +45,7 @@ class TouchListener implements View.OnTouchListener {
             } else if (MotionEvent.class.isAssignableFrom(c[0])) {
                 d = 2;
             } else {
-                throw new AnnotationException(b.getName() + " neet  no parameter or View , MotionEvent parameter");
+                throw new AnnotationException(String.format(EXCEPTION_MESSAGE, b.getName()));
             }
         } else if (c.length == 2) {
             if (View.class.isAssignableFrom(c[0]) && MotionEvent.class.isAssignableFrom(c[1])) {
@@ -51,10 +53,10 @@ class TouchListener implements View.OnTouchListener {
             } else if (MotionEvent.class.isAssignableFrom(c[0]) && View.class.isAssignableFrom(c[1])) {
                 d = 4;
             } else {
-                throw new AnnotationException(b.getName() + " neet  no parameter or View , MotionEvent parameter");
+                throw new AnnotationException(String.format(EXCEPTION_MESSAGE, b.getName()));
             }
         } else {
-            throw new AnnotationException(b.getName() + " neet  no parameter or View , MotionEvent parameter");
+            throw new AnnotationException(String.format(EXCEPTION_MESSAGE, b.getName()));
         }
         return new A(d, b);
     }

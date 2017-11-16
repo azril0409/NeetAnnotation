@@ -117,10 +117,6 @@ public class BindSupport {
             if (f != null) {
                 AnnotationUtil.set(c, a, f);
             }
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -142,10 +138,6 @@ public class BindSupport {
                 }
                 AnnotationUtil.set(b, a, i);
             }
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
-        } catch (NoSuchFieldException e) {
-            e.printStackTrace();
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         }

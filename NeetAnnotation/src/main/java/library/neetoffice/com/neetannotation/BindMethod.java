@@ -21,14 +21,10 @@ abstract class BindMethod {
         if (a.length != 0) {
             return a;
         }
-        try {
-            if (b.toLowerCase().endsWith(c.toLowerCase())) {
-                return new int[]{FindResources.id(d, b.substring(0, b.length() - c.length() - 1))};
-            }
-            return new int[]{FindResources.id(d, b)};
-        } catch (Exception e) {
-            throw new AnnotationException(e);
+        if (b.toLowerCase().endsWith(c.toLowerCase())) {
+            return new int[]{FindResources.id(d, b.substring(0, b.length() - c.length()))};
         }
+        return new int[]{FindResources.id(d, b)};
     }
 
     static void bindClick(Object a, View b, Method c, Context d) {
@@ -242,7 +238,7 @@ abstract class BindMethod {
                         if (h.resultCode() != t) {
                             continue;
                         }
-                        Class<?>[] i = g.getParameterTypes();
+                        final Class<?>[] i = g.getParameterTypes();
                         final Object[] o = new Object[i.length];
                         final Annotation[][] j = g.getParameterAnnotations();
                         for (int k = 0; k < i.length; k++) {
@@ -293,7 +289,7 @@ abstract class BindMethod {
         } else if (c.length == 1 && c[0].isAssignableFrom(Bundle.class)) {
             return true;
         } else {
-            final Exception exception = new AnnotationException(a.getName() + " neet  () or (Bundle)");
+            final Exception exception = new AnnotationException(a.getName() + " need  () or (Bundle)");
             exception.printStackTrace();
             return false;
         }

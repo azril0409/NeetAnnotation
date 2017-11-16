@@ -12,6 +12,7 @@ import java.lang.reflect.Modifier;
  * Created by Deo on 2016/4/6.
  */
 class TextChangeListener implements TextWatcher {
+    private static final String EXCEPTION_MESSAGE = "%s need  () or (View) or (String) or (View,String) or (String,String)or (View,String,String) parameter";
     final Object a;
     final Method b;
     final View l;
@@ -31,7 +32,7 @@ class TextChangeListener implements TextWatcher {
             } else if (String.class.isAssignableFrom(c[0])) {
                 d = 2;
             } else {
-                throw new AnnotationException(b.getName() + " neet  () or (View) or (String) or (View,String) or (String,String)or (View,String,String) parameter");
+                throw new AnnotationException(String.format(EXCEPTION_MESSAGE, b.getName()));
             }
         } else if (c.length == 2) {
             if (View.class.isAssignableFrom(c[0]) && String.class.isAssignableFrom(c[1])) {
@@ -41,7 +42,7 @@ class TextChangeListener implements TextWatcher {
             } else if (String.class.isAssignableFrom(c[0]) && String.class.isAssignableFrom(c[1])) {
                 d = 5;
             } else {
-                throw new AnnotationException(b.getName() + " neet  () or (View) or (String) or (View,String) or (String,String)or (View,String,String) parameter");
+                throw new AnnotationException(String.format(EXCEPTION_MESSAGE, b.getName()));
             }
         } else if (c.length == 3) {
             if (View.class.isAssignableFrom(c[0]) && String.class.isAssignableFrom(c[1]) && String.class.isAssignableFrom(c[2])) {
@@ -51,10 +52,10 @@ class TextChangeListener implements TextWatcher {
             } else if (String.class.isAssignableFrom(c[0]) && String.class.isAssignableFrom(c[1]) && View.class.isAssignableFrom(c[2])) {
                 d = 8;
             } else {
-                throw new AnnotationException(b.getName() + " neet  () or (View) or (String) or (View,String) or (String,String)or (View,String,String) parameter");
+                throw new AnnotationException(String.format(EXCEPTION_MESSAGE, b.getName()));
             }
         } else {
-            throw new AnnotationException(b.getName() + " neet  () or (View) or (String) or (View,String) or (String,String)or (View,String,String) parameter");
+            throw new AnnotationException(String.format(EXCEPTION_MESSAGE, b.getName()));
         }
     }
 
@@ -70,78 +71,40 @@ class TextChangeListener implements TextWatcher {
 
     @Override
     public void afterTextChanged(Editable s) {
-        if (d == 0) {
-            try {
-                AnnotationUtil.invoke(b,a);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
+        try {
+            switch (d) {
+                case 0:
+                    AnnotationUtil.invoke(b, a);
+                    break;
+                case 1:
+                    AnnotationUtil.invoke(b, a, l);
+                    break;
+                case 2:
+                    AnnotationUtil.invoke(b, a, s.toString());
+                    break;
+                case 3:
+                    AnnotationUtil.invoke(b, a, l, s.toString());
+                    break;
+                case 4:
+                    AnnotationUtil.invoke(b, a, s.toString(), l);
+                    break;
+                case 5:
+                    AnnotationUtil.invoke(b, a, old, s.toString());
+                    break;
+                case 6:
+                    AnnotationUtil.invoke(b, a, l, old, s.toString());
+                    break;
+                case 7:
+                    AnnotationUtil.invoke(b, a, old, l, s.toString());
+                    break;
+                case 8:
+                    AnnotationUtil.invoke(b, a, old, s.toString(), l);
+                    break;
             }
-        } else if (d == 1) {
-            try {
-                AnnotationUtil.invoke(b,a, l);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 2) {
-            try {
-                AnnotationUtil.invoke(b,a, s.toString());
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 3) {
-            try {
-                AnnotationUtil.invoke(b,a, l, s.toString());
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 4) {
-            try {
-                AnnotationUtil.invoke(b,a, s.toString(), l);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 5) {
-            try {
-                AnnotationUtil.invoke(b,a, old, s.toString());
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 6) {
-            try {
-                AnnotationUtil.invoke(b,a, l, old, s.toString());
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 7) {
-            try {
-                AnnotationUtil.invoke(b,a, old, l, s.toString());
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 8) {
-            try {
-                AnnotationUtil.invoke(b,a, old, s.toString(), l);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
         }
     }
 }

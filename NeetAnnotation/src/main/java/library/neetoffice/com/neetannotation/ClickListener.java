@@ -4,12 +4,12 @@ import android.view.View;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
 /**
  * Created by Deo on 2016/3/17.
  */
 class ClickListener implements View.OnClickListener {
+    private static final String EXCEPTION_MESSAGE = "%s need  () or (View) parameter";
     final Object a;
     final Method b;
     final int d;
@@ -24,31 +24,25 @@ class ClickListener implements View.OnClickListener {
             if (View.class.isAssignableFrom(c[0])) {
                 d = 1;
             } else {
-                throw new AnnotationException(b.getName() + " neet  () or (View) parameter");
+                throw new AnnotationException(String.format(EXCEPTION_MESSAGE, b.getName()));
             }
         } else {
-            throw new AnnotationException(b.getName() + " neet  () or (View) parameter");
+            throw new AnnotationException(String.format(EXCEPTION_MESSAGE, b.getName()));
         }
     }
 
     @Override
     public void onClick(View v) {
-        if (d == 0) {
-            try {
+        try {
+            if (d == 0) {
                 AnnotationUtil.invoke(b, a);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
-            }
-        } else if (d == 1) {
-            try {
+            } else if (d == 1) {
                 AnnotationUtil.invoke(b, a, v);
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (InvocationTargetException e) {
-                e.printStackTrace();
             }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
         }
     }
 }

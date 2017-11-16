@@ -72,7 +72,7 @@ abstract class BindField {
         if (MAP.containsKey(a.getName())) {
             return MAP.get(a.getName());
         } else {
-            final Object b = newInstance(a, c);
+            final Object b = newInstance(a, c.getApplicationContext());
             MAP.put(a.getName(), b);
             return b;
         }
@@ -166,10 +166,6 @@ abstract class BindField {
             try {
                 final String f = c.getString(FindResources.string(c, d, b));
                 AnnotationUtil.set(b, a, f);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -186,10 +182,6 @@ abstract class BindField {
             try {
                 final boolean f = c.getResources().getBoolean(FindResources.bool(c, d, b));
                 AnnotationUtil.set(b, a, f);
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
@@ -211,10 +203,6 @@ abstract class BindField {
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
             }
         }
     }
@@ -230,10 +218,6 @@ abstract class BindField {
                 final float f = c.getResources().getInteger(FindResources.integer(c, d, b));
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (NoSuchFieldException e) {
                 e.printStackTrace();
             }
         }
@@ -251,10 +235,6 @@ abstract class BindField {
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
             }
         }
     }
@@ -270,10 +250,6 @@ abstract class BindField {
                 final int[] f = c.getResources().getIntArray(FindResources.array(c, d, b));
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (NoSuchFieldException e) {
                 e.printStackTrace();
             }
         }
@@ -291,10 +267,6 @@ abstract class BindField {
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
             }
         }
     }
@@ -310,10 +282,6 @@ abstract class BindField {
                 final LayoutAnimationController f = AnimationUtils.loadLayoutAnimation(c, FindResources.anim(c, d, b));
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (NoSuchFieldException e) {
                 e.printStackTrace();
             }
         }
@@ -336,10 +304,6 @@ abstract class BindField {
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
             }
         }
     }
@@ -360,10 +324,6 @@ abstract class BindField {
                 }
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-            } catch (NoSuchFieldException e) {
                 e.printStackTrace();
             }
         }

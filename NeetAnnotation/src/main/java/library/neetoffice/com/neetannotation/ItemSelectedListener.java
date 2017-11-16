@@ -12,7 +12,7 @@ import java.lang.reflect.Method;
  */
 
 class ItemSelectedListener implements AdapterView.OnItemSelectedListener {
-    private static final String EXCEPTION_MESSAGE = "%s neet  (position(index or object item)) or (View,position(index or object item)) parameter";
+    private static final String EXCEPTION_MESSAGE = "%s need (position(index or object item)) or (View,position(index or object item)) parameter";
     final Object a;
     final Method b;
     final int d;

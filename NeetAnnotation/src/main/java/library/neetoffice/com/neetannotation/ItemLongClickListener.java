@@ -10,6 +10,7 @@ import java.lang.reflect.Method;
  * Created by Deo on 2016/3/18.
  */
 class ItemLongClickListener implements AdapterView.OnItemLongClickListener {
+    private static final String EXCEPTION_MESSAGE = "%s need  (position(index or object item)) or (View,position(index or object item)) parameter";
     final Object a;
     final Method b;
     final int d;
@@ -30,64 +31,50 @@ class ItemLongClickListener implements AdapterView.OnItemLongClickListener {
                 d = 2;
                 f = c[0];
             } else {
-                throw new AnnotationException(b.getName() + " neet  (position(index or object item)) or (View,position(index or object item)) parameter");
+                throw new AnnotationException(String.format(EXCEPTION_MESSAGE, b.getName()));
             }
         } else {
-            throw new AnnotationException(b.getName() + " neet  (position(index or object item)) or (View,position(index or object item)) parameter");
+            throw new AnnotationException(String.format(EXCEPTION_MESSAGE, b.getName()));
         }
     }
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
         final Object o = parent.getItemAtPosition(position);
-        if (d == 0) {
-            if (f == int.class) {
-                try {
-                    AnnotationUtil.invoke(b, a, position);
-                    return true;
-                } catch (IllegalAccessException e) {
-                } catch (InvocationTargetException e) {
-                }
-            } else if (o != null && f.isAssignableFrom(o.getClass())) {
-                try {
-                    AnnotationUtil.invoke(b, a, o);
-                    return true;
-                } catch (IllegalAccessException e) {
-                } catch (InvocationTargetException e) {
-                }
+        try {
+            switch (d) {
+                case 0:
+                    if (f == int.class) {
+                        AnnotationUtil.invoke(b, a, position);
+                        return true;
+                    } else if (o != null && f.isAssignableFrom(o.getClass())) {
+                        AnnotationUtil.invoke(b, a, o);
+                        return true;
+                    }
+                    return false;
+                case 1:
+                    if (f == int.class) {
+                        AnnotationUtil.invoke(b, a, parent, position);
+                        return true;
+                    } else if (o != null && f.isAssignableFrom(o.getClass())) {
+                        AnnotationUtil.invoke(b, a, parent, o);
+                        return true;
+                    }
+                    return false;
+                case 2:
+                    if (f == int.class) {
+                        AnnotationUtil.invoke(b, a, position, parent);
+                        return true;
+                    } else if (o != null && f.isAssignableFrom(o.getClass())) {
+                        AnnotationUtil.invoke(b, a, o, parent);
+                        return true;
+                    }
+                    return false;
             }
-        } else if (d == 1) {
-            if (f == int.class) {
-                try {
-                    AnnotationUtil.invoke(b, a, parent, position);
-                    return true;
-                } catch (IllegalAccessException e) {
-                } catch (InvocationTargetException e) {
-                }
-            } else if (o != null && f.isAssignableFrom(o.getClass())) {
-                try {
-                    AnnotationUtil.invoke(b, a, parent, o);
-                    return true;
-                } catch (IllegalAccessException e) {
-                } catch (InvocationTargetException e) {
-                }
-            }
-        } else if (d == 2) {
-            if (f == int.class) {
-                try {
-                    AnnotationUtil.invoke(b, a, position, parent);
-                    return true;
-                } catch (IllegalAccessException e) {
-                } catch (InvocationTargetException e) {
-                }
-            } else if (o != null && f.isAssignableFrom(o.getClass())) {
-                try {
-                    AnnotationUtil.invoke(b, a, o, parent);
-                    return true;
-                } catch (IllegalAccessException e) {
-                } catch (InvocationTargetException e) {
-                }
-            }
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
         }
         return false;
     }

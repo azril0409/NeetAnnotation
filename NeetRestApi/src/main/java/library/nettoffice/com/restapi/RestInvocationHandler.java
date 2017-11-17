@@ -1,5 +1,6 @@
 package library.nettoffice.com.restapi;
 
+import org.springframework.http.HttpAuthentication;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
@@ -55,6 +56,7 @@ class RestInvocationHandler implements InvocationHandler {
         final HashMap<String, String> pathMap = new HashMap<>();
         final HashMap<String, Object> fieldMap = new HashMap<>();
         Object body = null;
+        HttpAuthentication authentication = null;
         if (args != null) {
             final Annotation[][] t = method.getParameterAnnotations();
             for (int i = 0; i < t.length; i++) {
@@ -75,17 +77,10 @@ class RestInvocationHandler implements InvocationHandler {
                     if (a.annotationType() == Body.class) {
                         body = arg;
                     }
+                    if (a.annotationType() == Authorization.class && arg instanceof HttpAuthentication) {
+                        authentication = (HttpAuthentication) arg;
+                    }
                 }
-            }
-        }
-        if (body == null) {
-            body = new HashMap<>();
-            for (Map.Entry<String, Object> e : fieldMap.entrySet()) {
-                ((Map) body).put(e.getKey(), e.getValue());
-            }
-        } else if (body instanceof Map) {
-            for (Map.Entry<String, Object> e : fieldMap.entrySet()) {
-                ((Map) body).put(e.getKey(), e.getValue());
             }
         }
 
@@ -99,21 +94,19 @@ class RestInvocationHandler implements InvocationHandler {
         final Patch patch = method.getAnnotation(Patch.class);
         RestBuild build = null;
         if (get != null) {
-            build = RestBuildMaker.with(restApiHelp.rootUrl, get, httpHeaders, cookies, accept, contentType, pathMap, body);
+            build = RestBuildMaker.with(restApiHelp.rootUrl, get, httpHeaders, cookies, accept, contentType, authentication, pathMap, fieldMap, body);
         } else if (post != null) {
-            build = RestBuildMaker.with(restApiHelp.rootUrl, post, httpHeaders, cookies, accept, contentType, pathMap, body);
+            build = RestBuildMaker.with(restApiHelp.rootUrl, post, httpHeaders, cookies, accept, contentType, authentication, pathMap, fieldMap, body);
         } else if (put != null) {
-            build = RestBuildMaker.with(restApiHelp.rootUrl, put, httpHeaders, cookies, accept, contentType, pathMap, body);
+            build = RestBuildMaker.with(restApiHelp.rootUrl, put, httpHeaders, cookies, accept, contentType, authentication, pathMap, fieldMap, body);
         } else if (delete != null) {
-            build = RestBuildMaker.with(restApiHelp.rootUrl, delete, httpHeaders, cookies, accept, contentType, pathMap, body);
+            build = RestBuildMaker.with(restApiHelp.rootUrl, delete, httpHeaders, cookies, accept, contentType, authentication, pathMap, fieldMap, body);
         } else if (patch != null) {
-            build = RestBuildMaker.with(restApiHelp.rootUrl, patch, httpHeaders, cookies, accept, contentType, pathMap, body);
+            build = RestBuildMaker.with(restApiHelp.rootUrl, patch, httpHeaders, cookies, accept, contentType, authentication, pathMap, fieldMap, body);
         }
-
         if (build == null) {
             return null;
         }
-
         final Type returnType = method.getReturnType();
         if (returnType == void.class) {
             restApiHelp.request(build, new Reference(null));

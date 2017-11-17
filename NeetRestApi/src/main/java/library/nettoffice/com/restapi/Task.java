@@ -26,7 +26,7 @@ class Task extends AsyncTask<RestBuild, Throwable, Object> {
     protected Object doInBackground(RestBuild... params) {
         try {
             if (ParameterizedType.class.isInstance(type) && ParameterizedType.class.cast(type).getRawType() == ResponseEntity.class) {
-                return  restApiRequester.request(params[0], new Reference(((ParameterizedType)type).getActualTypeArguments()[0]));
+                return restApiRequester.request(params[0], new Reference(((ParameterizedType) type).getActualTypeArguments()[0]));
             }
             return restApiRequester.request(params[0], new Reference(type)).getBody();
         } catch (Exception e) {
@@ -38,15 +38,23 @@ class Task extends AsyncTask<RestBuild, Throwable, Object> {
     @Override
     protected void onProgressUpdate(Throwable... values) {
         super.onProgressUpdate(values);
-        if (responseCallBack != null) {
-            responseCallBack.onFailure(values[0]);
+        try {
+            if (responseCallBack != null) {
+                responseCallBack.onFailure(values[0]);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
     @Override
     protected void onPostExecute(Object responseEntity) {
-        if (responseCallBack != null && responseEntity != null) {
-            responseCallBack.onResponse(responseEntity);
+        try {
+            if (responseCallBack != null && responseEntity != null) {
+                responseCallBack.onResponse(responseEntity);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

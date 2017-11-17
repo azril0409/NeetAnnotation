@@ -1,7 +1,6 @@
 package library.nettoffice.com.restapi;
 
 import android.content.Context;
-import android.util.Log;
 
 import org.springframework.http.*;
 import org.springframework.http.client.ClientHttpRequestInterceptor;

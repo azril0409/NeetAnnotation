@@ -58,6 +58,7 @@ abstract class BindBase {
         BindMethod.bindTouchUp(a, b, c, d, f);
         BindMethod.bindItemClick(a, b, c, f);
         BindMethod.bindItemLongClick(a, b, c, f);
+        BindMethod.bindItemSelectClick(a, b, c, f);
         BindMethod.bindCheckedChange(a, b, c, f);
         BindMethod.bindFocusChange(a, b, c, f);
         BindMethod.bindTextChange(a, b, c, f);

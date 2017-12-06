@@ -124,10 +124,11 @@ public class SharedPrefInvocationHandler implements InvocationHandler {
 
     private String getPerKey(final Method method) {
         final PrefKey perKey = method.getAnnotation(PrefKey.class);
+        if (perKey != null && perKey.keyRes() != -1) {
+            return context.getString(perKey.keyRes());
+        }
         if (perKey != null && !perKey.value().isEmpty()) {
             return perKey.value();
-        } else if (perKey != null && perKey.keyRes() != -1) {
-            return context.getString(perKey.keyRes());
         }
         return method.getName();
     }

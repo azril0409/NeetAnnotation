@@ -31,7 +31,7 @@ public class AnnotationHelp {
         BindService.onCreate(service);
     }
 
-    public static void init(ViewGroup view) {
+    public static void init(View view) {
         BindView.onCreate(view);
     }
 
@@ -84,7 +84,27 @@ public class AnnotationHelp {
     }
 
     public static boolean onCreateOptionsMenu(Object object, MenuInflater menuInflater, Menu menu) {
-        return BindMenu.onCreateOptionsMenu(object, menuInflater, menu);
+        if (object instanceof Context) {
+            return BindMenu.onCreateOptionsMenu(object, menuInflater, menu, (Context) object);
+        } else if (object instanceof Fragment) {
+            return BindMenu.onCreateOptionsMenu(object, menuInflater, menu, ((Fragment) object).getActivity());
+        } else {
+            try {
+                final Class<?> sf = Class.forName("android.support.v4.app.Fragment");
+                if (sf.isAssignableFrom(object.getClass())) {
+                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupport");
+                    if (bsf == null) {
+                        throw new AnnotationException("No compile NeetAnnotationSupport");
+                    }
+                    final Method m = bsf.getDeclaredMethod("getActivity", new Class[]{sf});
+                    final Context c = (Context) m.invoke(null, object);
+                    return BindMenu.onCreateOptionsMenu(object, menuInflater, menu, c);
+                }
+            } catch (Exception e) {
+                throw new AnnotationException(e);
+            }
+        }
+        return false;
     }
 
     public static boolean onOptionsItemSelected(Object object, MenuItem menu) {

@@ -9,8 +9,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toolbar;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 
 /**
  * Created by Deo-chainmeans on 2017/3/22.
@@ -48,12 +50,12 @@ abstract class BindMenu {
         }
     }
 
-    static boolean onCreateOptionsMenu(Object a, MenuInflater m, Menu b) {
-        final NToolBar c = a.getClass().getAnnotation(NToolBar.class);
+    static boolean onCreateOptionsMenu(Object a, MenuInflater m, Menu b, Context c) {
+        final NToolBar p = a.getClass().getAnnotation(NToolBar.class);
         final OptionsMenu d = a.getClass().getAnnotation(OptionsMenu.class);
         final int e;
-        if (c != null) {
-            e = c.menuId();
+        if (p != null) {
+            e = p.menuId();
         } else if (d != null) {
             e = d.value();
         } else {
@@ -61,6 +63,27 @@ abstract class BindMenu {
         }
         if (e > 0) {
             m.inflate(e, b);
+        }
+        Class<?> g = a.getClass();
+        while (a.getClass().isAnnotationPresent(NActivity.class) || a.getClass().isAnnotationPresent(NFragment.class)) {
+            for (Field h : a.getClass().getDeclaredFields()) {
+                final OptionsMenuItem i = h.getAnnotation(OptionsMenuItem.class);
+                if (i == null) {
+                    continue;
+                }
+                final Object j;
+                if (i.value() == 0) {
+                    j = b.findItem(FindResources.id(c, h.getName()));
+                } else {
+                    j = b.findItem(i.value());
+                }
+                try {
+                    AnnotationUtil.set(h, a, j);
+                } catch (IllegalAccessException k) {
+                    k.printStackTrace();
+                }
+            }
+            g = g.getSuperclass();
         }
         return true;
     }
@@ -73,8 +96,9 @@ abstract class BindMenu {
             final NFragment r = d.getAnnotation(NFragment.class);
             if (q != null || r != null) {
                 final Method[] f = d.getDeclaredMethods();
-                A:for (Method g : f) {
-                    final OptionsItem h = g.getAnnotation(OptionsItem.class);
+                A:
+                for (Method g : f) {
+                    final OptionsItemSelected h = g.getAnnotation(OptionsItemSelected.class);
                     if (h == null) {
                         continue;
                     }

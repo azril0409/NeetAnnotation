@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface NViewGroup {
+public @interface NView {
 
     /**
      * The R.layout.* field which refer to the layout.

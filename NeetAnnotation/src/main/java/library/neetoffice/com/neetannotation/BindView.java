@@ -12,15 +12,15 @@ import java.util.ArrayList;
  * Created by Deo on 2016/4/1.
  */
 abstract class BindView {
-    static void onCreate(ViewGroup a) {
+    static void onCreate(View a) {
         Class<?> c = a.getClass();
-        final NViewGroup d = c.getAnnotation(NViewGroup.class);
-        if (d != null && d.value() != -1) {
-            ViewGroup.inflate(a.getContext(), d.value(), a);
+        final NView d = c.getAnnotation(NView.class);
+        if (d != null && d.value() != -1 &&  a instanceof ViewGroup) {
+            ViewGroup.inflate(a.getContext(), d.value(), (ViewGroup)a);
         }
         final ArrayList<Method> j = new ArrayList<>();
         do {
-            final NViewGroup q = c.getAnnotation(NViewGroup.class);
+            final NView q = c.getAnnotation(NView.class);
             if (q != null) {
                 final Field[] f = c.getDeclaredFields();
                 for (Field g : f) {
@@ -43,7 +43,7 @@ abstract class BindView {
         }
     }
 
-    private static void bindViewById(ViewGroup a, Field b) {
+    private static void bindViewById(View a, Field b) {
         final ViewById c = b.getAnnotation(ViewById.class);
         if (c == null) {
             return;

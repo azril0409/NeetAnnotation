@@ -35,18 +35,7 @@ abstract class BindBase {
     }
 
     static void baseListenerBind(Activity a, Method b, TouchListener c) {
-        BindMethod.bindClick(a, a.getWindow().getDecorView(), b, a);
-        BindMethod.bindLongClick(a, a.getWindow().getDecorView(), b, a);
-        BindMethod.bindTouch(a, a.getWindow().getDecorView(), b, c, a);
-        BindMethod.bindTouchDown(a, a.getWindow().getDecorView(), b, c, a);
-        BindMethod.bindTouchMove(a, a.getWindow().getDecorView(), b, c, a);
-        BindMethod.bindTouchUp(a, a.getWindow().getDecorView(), b, c, a);
-        BindMethod.bindItemClick(a, a.getWindow().getDecorView(), b, a);
-        BindMethod.bindItemLongClick(a, a.getWindow().getDecorView(), b, a);
-        BindMethod.bindItemSelectClick(a, a.getWindow().getDecorView(), b, a);
-        BindMethod.bindCheckedChange(a, a.getWindow().getDecorView(), b, a);
-        BindMethod.bindFocusChange(a, a.getWindow().getDecorView(), b, a);
-        BindMethod.bindTextChange(a, a.getWindow().getDecorView(), b, a);
+        baseViewListenerBind(a, a.getWindow().getDecorView(), b, c, a);
     }
 
     static void baseViewListenerBind(Object a, View b, Method c, TouchListener d, Context f) {

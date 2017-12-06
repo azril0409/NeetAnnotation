@@ -1,7 +1,6 @@
 package sample.neetoffice.com.neetannotation
 
 import android.view.MenuItem
-import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import library.neetoffice.com.neetannotation.*
@@ -39,17 +38,17 @@ class MainActivity : AnnotationCompatActivity() {
         Toast.makeText(this, view.text.toString(), Toast.LENGTH_SHORT).show()
     }
 
-    @OptionsItem
+    @OptionsItemSelected
     fun menu1Selected(menu: MenuItem) {
         Toast.makeText(this, menu.title, Toast.LENGTH_SHORT).show()
     }
 
-    @OptionsItem
+    @OptionsItemSelected
     fun menu2(menu: MenuItem) {
         Toast.makeText(this, menu.title, Toast.LENGTH_SHORT).show()
     }
 
-    @OptionsItem(R.id.menu3)
+    @OptionsItemSelected(R.id.menu3)
     fun onMenu3Selected(menu: MenuItem) {
         Toast.makeText(this, menu.title, Toast.LENGTH_SHORT).show()
     }

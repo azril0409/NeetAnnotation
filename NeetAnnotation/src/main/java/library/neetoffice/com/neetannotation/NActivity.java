@@ -17,5 +17,13 @@ public @interface NActivity {
      *
      * @return the id of the layout
      */
-    int value() default -1;
+    int value() default 0;
+
+
+    /**
+     * The R.layout.* field which refer to the layout.
+     *
+     * @return the id of the layout
+     */
+    String resName() default "";
 }

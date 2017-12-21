@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.hardware.SensorManager;
+import android.hardware.camera2.CameraManager;
 import android.location.LocationManager;
 import android.media.AudioManager;
 import android.media.MediaRouter;
@@ -164,7 +165,7 @@ abstract class BindField {
         final Class<?> g = b.getType();
         if (String.class.isAssignableFrom(g)) {
             try {
-                final String f = c.getString(FindResources.string(c, d, b));
+                final String f = c.getString(FindResources.string(BindBase.resPath(a, c), d, b));
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
@@ -180,7 +181,7 @@ abstract class BindField {
         final Class<?> g = b.getType();
         if (boolean.class.isAssignableFrom(g) || Boolean.class.isAssignableFrom(g)) {
             try {
-                final boolean f = c.getResources().getBoolean(FindResources.bool(c, d, b));
+                final boolean f = c.getResources().getBoolean(FindResources.bool(BindBase.resPath(a, c), d, b));
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
@@ -199,7 +200,7 @@ abstract class BindField {
                 double.class.isAssignableFrom(g) || Double.class.isAssignableFrom(g) ||
                 long.class.isAssignableFrom(g) || Long.class.isAssignableFrom(g)) {
             try {
-                final int f = c.getResources().getDimensionPixelSize(FindResources.dimen(c, d, b));
+                final int f = c.getResources().getDimensionPixelSize(FindResources.dimen(BindBase.resPath(a, c), d, b));
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
@@ -215,7 +216,7 @@ abstract class BindField {
         final Class<?> g = b.getType();
         if (int.class.isAssignableFrom(g) || Integer.class.isAssignableFrom(g)) {
             try {
-                final float f = c.getResources().getInteger(FindResources.integer(c, d, b));
+                final float f = c.getResources().getInteger(FindResources.integer(BindBase.resPath(a, c), d, b));
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
@@ -231,7 +232,7 @@ abstract class BindField {
         final Class<?> g = b.getType();
         if (String[].class.isAssignableFrom(g)) {
             try {
-                final String[] f = c.getResources().getStringArray(FindResources.array(c, d, b));
+                final String[] f = c.getResources().getStringArray(FindResources.array(BindBase.resPath(a, c), d, b));
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
@@ -247,7 +248,7 @@ abstract class BindField {
         final Class<?> g = b.getType();
         if (int[].class.isAssignableFrom(g)) {
             try {
-                final int[] f = c.getResources().getIntArray(FindResources.array(c, d, b));
+                final int[] f = c.getResources().getIntArray(FindResources.array(BindBase.resPath(a, c), d, b));
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
@@ -263,7 +264,7 @@ abstract class BindField {
         final Class<?> g = b.getType();
         if (Animation.class.isAssignableFrom(g)) {
             try {
-                final Animation f = AnimationUtils.loadAnimation(c, FindResources.anim(c, d, b));
+                final Animation f = AnimationUtils.loadAnimation(c, FindResources.anim(BindBase.resPath(a, c), d, b));
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
@@ -279,7 +280,7 @@ abstract class BindField {
         final Class<?> g = b.getType();
         if (LayoutAnimationController.class.isAssignableFrom(g)) {
             try {
-                final LayoutAnimationController f = AnimationUtils.loadLayoutAnimation(c, FindResources.anim(c, d, b));
+                final LayoutAnimationController f = AnimationUtils.loadLayoutAnimation(c, FindResources.anim(BindBase.resPath(a, c), d, b));
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
                 e.printStackTrace();
@@ -297,9 +298,9 @@ abstract class BindField {
             try {
                 final int f;
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-                    f = c.getResources().getColor(FindResources.color(c, d, b), t);
+                    f = c.getResources().getColor(FindResources.color(BindBase.resPath(a, c), d, b), t);
                 } else {
-                    f = c.getResources().getColor(FindResources.color(c, d, b));
+                    f = c.getResources().getColor(FindResources.color(BindBase.resPath(a, c), d, b));
                 }
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
@@ -318,9 +319,9 @@ abstract class BindField {
             try {
                 final Drawable f;
                 if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
-                    f = c.getResources().getDrawable(FindResources.drwable(c, d, b), t);
+                    f = c.getResources().getDrawable(FindResources.drwable(BindBase.resPath(a, c), d, b), t);
                 } else {
-                    f = c.getResources().getDrawable(FindResources.drwable(c, d, b));
+                    f = c.getResources().getDrawable(FindResources.drwable(BindBase.resPath(a, c), d, b));
                 }
                 AnnotationUtil.set(b, a, f);
             } catch (IllegalAccessException e) {
@@ -420,6 +421,8 @@ abstract class BindField {
             i = c.getSystemService(Context.JOB_SCHEDULER_SERVICE);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && NetworkStatsManager.class.isAssignableFrom(f)) {
             i = c.getSystemService(Context.NETWORK_STATS_SERVICE);
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && CameraManager.class.isAssignableFrom(f)) {
+            i = c.getSystemService(Context.CAMERA_SERVICE);
         }
         try {
             AnnotationUtil.set(b, a, i);

@@ -15,8 +15,10 @@ abstract class BindView {
     static void onCreate(View a) {
         Class<?> c = a.getClass();
         final NView d = c.getAnnotation(NView.class);
-        if (d != null && d.value() != -1 &&  a instanceof ViewGroup) {
-            ViewGroup.inflate(a.getContext(), d.value(), (ViewGroup)a);
+        if (d != null && d.value() != -1 && a instanceof ViewGroup) {
+            ViewGroup.inflate(a.getContext(), d.value(), (ViewGroup) a);
+        } else if (d != null && !d.resName().isEmpty() && a instanceof ViewGroup) {
+            ViewGroup.inflate(a.getContext(), FindResources.layout(BindBase.resPath(a,a.getContext()), d.resName()), (ViewGroup) a);
         }
         final ArrayList<Method> j = new ArrayList<>();
         do {
@@ -53,7 +55,7 @@ abstract class BindView {
             if (c.value() > 0) {
                 d = a.findViewById(c.value());
             } else {
-                d = a.findViewById(FindResources.id(a.getContext(), b.getName()));
+                d = a.findViewById(FindResources.id(BindBase.resPath(a,a.getContext()), b.getName()));
             }
             if (d != null) {
                 AnnotationUtil.set(b, a, d);

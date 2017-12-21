@@ -13,4 +13,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface ItemSelect {
     int[] value() default {};
+
+    String[] resName() default {};
 }

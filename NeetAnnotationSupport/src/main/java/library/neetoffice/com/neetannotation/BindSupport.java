@@ -60,14 +60,23 @@ public class BindSupport {
 
     @NotProguard
     static View onCreateView(Fragment a, ViewGroup b, Bundle w) {
-        Class<?> c = a.getClass();
-        final NFragment d = c.getAnnotation(NFragment.class);
+        final NFragment d = a.getClass().getAnnotation(NFragment.class);
         final View v;
-        if (d != null && d.value() != -1) {
-            v = LayoutInflater.from(a.getContext()).inflate(d.value(), b, false);
+        if (d != null && d.value() != 0) {
+            v = LayoutInflater.from(a.getActivity()).inflate(d.value(), b, false);
+        } else if (d != null && !d.resName().isEmpty()) {
+            v = LayoutInflater.from(a.getActivity()).inflate(FindResources.layout(BindBase.resPath(a, a.getActivity()), d.resName()), b, false);
+        } else if (d != null) {
+            v = LayoutInflater.from(a.getActivity()).inflate(FindResources.layout(BindBase.resPath(a, a.getActivity()), a.getClass().getSimpleName()), b, false);
         } else {
-            v = new View(a.getContext());
+            v = new View(a.getActivity());
         }
+        return v;
+    }
+
+    @NotProguard
+    static void onBeforeAnnotation(Fragment a, View v, Bundle w) {
+        Class<?> c = a.getClass();
         final ArrayList<Method> j = new ArrayList<>();
         do {
             final NFragment q = c.getAnnotation(NFragment.class);
@@ -93,7 +102,6 @@ public class BindSupport {
         for (int i = j.size() - 1; i >= 0; i--) {
             BindBase.callAfterAnnotationMethod(a, j.get(i), w);
         }
-        return v;
     }
 
     @NotProguard
@@ -112,7 +120,7 @@ public class BindSupport {
             if (d.value() > 0) {
                 f = b.findViewById(d.value());
             } else {
-                f = b.findViewById(FindResources.id(a.getContext(), c.getName()));
+                f = b.findViewById(FindResources.id(BindBase.resPath(a, a.getActivity()), c.getName()));
             }
             if (f != null) {
                 AnnotationUtil.set(c, a, f);
@@ -123,7 +131,7 @@ public class BindSupport {
     }
 
     @NotProguard
-    static void bindFragmendById(Activity a, Field b) {
+    static void bindFragmentById(Activity a, Field b) {
         final FragmentById c = b.getAnnotation(FragmentById.class);
         if (c == null) {
             return;
@@ -131,10 +139,12 @@ public class BindSupport {
         try {
             if (a instanceof FragmentActivity) {
                 final Fragment i;
-                if (c.value() > 0) {
+                if (c.value() != 0) {
                     i = ((FragmentActivity) a).getSupportFragmentManager().findFragmentById(c.value());
+                } else if (!c.resName().isEmpty()) {
+                    i = ((FragmentActivity) a).getSupportFragmentManager().findFragmentById(FindResources.id(BindBase.resPath(a, a), c.resName()));
                 } else {
-                    i = ((FragmentActivity) a).getSupportFragmentManager().findFragmentById(FindResources.id(a, b.getName()));
+                    i = ((FragmentActivity) a).getSupportFragmentManager().findFragmentById(FindResources.id(BindBase.resPath(a, a), b.getName()));
                 }
                 AnnotationUtil.set(b, a, i);
             }

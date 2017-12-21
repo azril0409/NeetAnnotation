@@ -25,8 +25,10 @@ abstract class BindMenu {
             return;
         }
         View c = null;
-        if (b.resId() != -1) {
-            c = a.findViewById(b.resId());
+        if (b.viewId() != 0) {
+            c = a.findViewById(b.viewId());
+        } else if (!b.viewResName().isEmpty()) {
+            c = a.findViewById(FindResources.id(BindBase.resPath(a, a), b.viewResName()));
         }
         if (c != null && c instanceof Toolbar) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
@@ -53,29 +55,31 @@ abstract class BindMenu {
     static boolean onCreateOptionsMenu(Object a, MenuInflater m, Menu b, Context c) {
         final NToolBar p = a.getClass().getAnnotation(NToolBar.class);
         final OptionsMenu d = a.getClass().getAnnotation(OptionsMenu.class);
-        final int e;
-        if (p != null) {
-            e = p.menuId();
-        } else if (d != null) {
-            e = d.value();
+        if (p != null && p.menuId() != 0) {
+            m.inflate(p.menuId(), b);
+        } else if (p != null && !p.menuResName().isEmpty()) {
+            m.inflate(FindResources.id(BindBase.resPath(a, c), p.menuResName()), b);
+        } else if (d != null && d.value() != 0) {
+            m.inflate(d.value(), b);
+        } else if (d != null && !d.resName().isEmpty()) {
+            m.inflate(FindResources.id(BindBase.resPath(a, c), d.resName()), b);
         } else {
             return true;
         }
-        if (e > 0) {
-            m.inflate(e, b);
-        }
         Class<?> g = a.getClass();
-        while (a.getClass().isAnnotationPresent(NActivity.class) || a.getClass().isAnnotationPresent(NFragment.class)) {
+        while (g != null && (g.isAnnotationPresent(NActivity.class) || g.isAnnotationPresent(NFragment.class))) {
             for (Field h : a.getClass().getDeclaredFields()) {
                 final OptionsMenuItem i = h.getAnnotation(OptionsMenuItem.class);
                 if (i == null) {
                     continue;
                 }
                 final Object j;
-                if (i.value() == 0) {
-                    j = b.findItem(FindResources.id(c, h.getName()));
-                } else {
+                if (i.value() != 0) {
                     j = b.findItem(i.value());
+                } else if (!i.resName().isEmpty()) {
+                    j = b.findItem(FindResources.id(BindBase.resPath(a, c), i.resName()));
+                } else {
+                    j = b.findItem(FindResources.id(BindBase.resPath(a, c), h.getName()));
                 }
                 try {
                     AnnotationUtil.set(h, a, j);
@@ -102,7 +106,7 @@ abstract class BindMenu {
                     if (h == null) {
                         continue;
                     }
-                    int[] i = BindMethod.findResourcesID(h.value(), g.getName(), "Selected", c);
+                    int[] i = BindMethod.findResourcesID(h.value(), h.resName(), g.getName(), "Selected", BindBase.resPath(a, c));
                     for (int k : i) {
                         if (k == b.getItemId()) {
                             j = g;

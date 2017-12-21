@@ -17,9 +17,16 @@ import java.lang.reflect.Method;
  * Created by Deo on 2016/3/18.
  */
 abstract class BindMethod {
-    static int[] findResourcesID(int[] a, String b, String c, Context d) {
+    static int[] findResourcesID(int[] a, String[] n, String b, String c, String d) {
         if (a.length != 0) {
             return a;
+        }
+        if (n.length != 0) {
+            int[] e = new int[n.length];
+            for (int i = 0; i < n.length; i++) {
+                e[i] = FindResources.id(d, n[i]);
+            }
+            return e;
         }
         if (b.toLowerCase().endsWith(c.toLowerCase())) {
             return new int[]{FindResources.id(d, b.substring(0, b.length() - c.length()))};
@@ -32,7 +39,7 @@ abstract class BindMethod {
         if (e == null) {
             return;
         }
-        final int[] f = findResourcesID(e.value(), c.getName(), "Clicked", d);
+        final int[] f = findResourcesID(e.value(), e.resName(), c.getName(), "Clicked", BindBase.resPath(a,d));
         for (int g : f) {
             final View h = b.findViewById(g);
             if (h == null) {
@@ -47,7 +54,7 @@ abstract class BindMethod {
         if (e == null) {
             return;
         }
-        final int[] f = findResourcesID(e.value(), c.getName(), "LongClicked", d);
+        final int[] f = findResourcesID(e.value(), e.resName(), c.getName(), "LongClicked", BindBase.resPath(a,d));
         for (int g : f) {
             final View h = b.findViewById(g);
             if (h == null) {
@@ -62,7 +69,7 @@ abstract class BindMethod {
         if (f == null) {
             return;
         }
-        final int[] g = findResourcesID(f.value(), c.getName(), "Touched", e);
+        final int[] g = findResourcesID(f.value(), f.resName(), c.getName(), "Touched", BindBase.resPath(a,e));
         for (int h : g) {
             final View i = b.findViewById(h);
             if (i == null) {
@@ -78,7 +85,7 @@ abstract class BindMethod {
         if (f == null) {
             return;
         }
-        final int[] g = findResourcesID(f.value(), c.getName(), "TouchDowned", e);
+        final int[] g = findResourcesID(f.value(), f.resName(), c.getName(), "TouchDowned", BindBase.resPath(a,e));
         for (int h : g) {
             final View i = b.findViewById(h);
             if (i == null) {
@@ -94,7 +101,7 @@ abstract class BindMethod {
         if (f == null) {
             return;
         }
-        final int[] g = findResourcesID(f.value(), c.getName(), "TouchMoved", e);
+        final int[] g = findResourcesID(f.value(), f.resName(), c.getName(), "TouchMoved", BindBase.resPath(a,e));
         for (int h : g) {
             final View i = b.findViewById(h);
             if (i == null) {
@@ -110,7 +117,7 @@ abstract class BindMethod {
         if (f == null) {
             return;
         }
-        final int[] g = findResourcesID(f.value(), c.getName(), "TouchUpped", e);
+        final int[] g = findResourcesID(f.value(), f.resName(), c.getName(), "TouchUpped", BindBase.resPath(a,e));
         for (int h : g) {
             final View i = b.findViewById(h);
             if (i == null) {
@@ -126,7 +133,7 @@ abstract class BindMethod {
         if (e == null) {
             return;
         }
-        final int[] f = findResourcesID(e.value(), c.getName(), "ItemClicked", d);
+        final int[] f = findResourcesID(e.value(), e.resName(), c.getName(), "ItemClicked", BindBase.resPath(a,d));
         for (int g : f) {
             final View h = b.findViewById(g);
             if (h == null) {
@@ -143,7 +150,7 @@ abstract class BindMethod {
         if (e == null) {
             return;
         }
-        final int[] f = findResourcesID(e.value(), c.getName(), "ItemLongClicked", d);
+        final int[] f = findResourcesID(e.value(), e.resName(), c.getName(), "ItemLongClicked", BindBase.resPath(a,d));
         for (int g : f) {
             final View h = b.findViewById(g);
             if (h == null) {
@@ -160,7 +167,7 @@ abstract class BindMethod {
         if (e == null) {
             return;
         }
-        final int[] f = findResourcesID(e.value(), c.getName(), "ItemSelected", d);
+        final int[] f = findResourcesID(e.value(), e.resName(), c.getName(), "ItemSelected", BindBase.resPath(a,d));
         for (int g : f) {
             final View h = b.findViewById(g);
             if (h == null) {
@@ -177,7 +184,7 @@ abstract class BindMethod {
         if (e == null) {
             return;
         }
-        final int[] f = findResourcesID(e.value(), c.getName(), "CheckedChanged", d);
+        final int[] f = findResourcesID(e.value(), e.resName(), c.getName(), "CheckedChanged", BindBase.resPath(a,d));
         for (int g : f) {
             final View h = b.findViewById(g);
             if (h == null) {
@@ -194,7 +201,7 @@ abstract class BindMethod {
         if (e == null) {
             return;
         }
-        final int[] f = findResourcesID(e.value(), c.getName(), "TextChanged", d);
+        final int[] f = findResourcesID(e.value(), e.resName(), c.getName(), "TextChanged", BindBase.resPath(a,d));
         for (int g : f) {
             final View h = b.findViewById(g);
             if (h == null) {
@@ -212,7 +219,7 @@ abstract class BindMethod {
         if (e == null) {
             return;
         }
-        final int[] f = findResourcesID(e.value(), c.getName(), "FocusChanged", d);
+        final int[] f = findResourcesID(e.value(), e.resName(), c.getName(), "FocusChanged", BindBase.resPath(a,d));
         for (int g : f) {
             final View h = b.findViewById(g);
             if (h == null) {

@@ -15,20 +15,26 @@ import java.util.ArrayList;
  */
 abstract class BindActivity {
 
-    static void onCreate(Activity a, Bundle b) {
-        Class<?> c = a.getClass();
-        final NActivity d = c.getAnnotation(NActivity.class);
-        if (d != null && d.value() != -1) {
+    static View onSetContentView(Activity a) {
+        final NActivity d = a.getClass().getAnnotation(NActivity.class);
+        if (d != null && d.value() != 0) {
             a.setContentView(d.value());
+        } else if (d != null && !d.resName().isEmpty()) {
+            a.setContentView(FindResources.layout(BindBase.resPath(a,a), d.resName()));
         }
+        return a.getWindow().getDecorView();
+    }
+
+    static void onCreate(Activity a, View v, Bundle b) {
         final ArrayList<Method> j = new ArrayList<>();
+        Class<?> c = a.getClass();
         do {
             final NActivity q = c.getAnnotation(NActivity.class);
             if (q != null) {
                 final Field[] f = c.getDeclaredFields();
                 for (Field g : f) {
-                    bindViewById(a, g);
-                    bindFragmendById(a, g);
+                    BindBase.bindViewById(a, a.getWindow().getDecorView(), g, a);
+                    bindFragmentById(a, g);
                     bindFragmentByTag(a, g);
                     BindBase.baseFieldBind(a, g, a);
                     BindExtra.bindExtra(a, g);
@@ -38,7 +44,7 @@ abstract class BindActivity {
                 final Method[] h = c.getDeclaredMethods();
                 final TouchListener l = new TouchListener(a);
                 for (Method i : h) {
-                    BindBase.baseListenerBind(a, i, l);
+                    BindBase.baseViewListenerBind(a, a.getWindow().getDecorView(), i, l, a);
                     if (BindMethod.isAfterAnnotationMethod(i)) {
                         j.add(i);
                     }
@@ -51,27 +57,7 @@ abstract class BindActivity {
         }
     }
 
-    private static void bindViewById(Activity a, Field b) {
-        final ViewById c = b.getAnnotation(ViewById.class);
-        if (c == null) {
-            return;
-        }
-        try {
-            final View d;
-            if (c.value() > 0) {
-                d = a.findViewById(c.value());
-            } else {
-                d = a.findViewById(FindResources.id(a, b.getName()));
-            }
-            if (d != null) {
-                AnnotationUtil.set(b, a, d);
-            }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void bindFragmendById(Activity a, Field b) {
+    private static void bindFragmentById(Activity a, Field b) {
         final FragmentById c = b.getAnnotation(FragmentById.class);
         if (c == null) {
             return;
@@ -80,10 +66,12 @@ abstract class BindActivity {
         try {
             if (Fragment.class.isAssignableFrom(f)) {
                 Fragment i;
-                if (c.value() > 0) {
+                if (c.value() != 0) {
                     i = a.getFragmentManager().findFragmentById(c.value());
+                } else if (!c.resName().isEmpty()) {
+                    i = a.getFragmentManager().findFragmentById(FindResources.id(BindBase.resPath(a,a), c.resName()));
                 } else {
-                    i = a.getFragmentManager().findFragmentById(FindResources.id(a, b.getName()));
+                    i = a.getFragmentManager().findFragmentById(FindResources.id(BindBase.resPath(a,a), b.getName()));
                 }
                 AnnotationUtil.set(b, a, i);
             } else {
@@ -93,7 +81,7 @@ abstract class BindActivity {
                     if (bsf == null) {
                         throw new AnnotationException("No compile NeetAnnotationSupport");
                     }
-                    final Method m = bsf.getDeclaredMethod("bindFragmendById", new Class[]{Activity.class, Field.class});
+                    final Method m = bsf.getDeclaredMethod("bindFragmentById", new Class[]{Activity.class, Field.class});
                     m.invoke(null, a, b);
                 }
             }

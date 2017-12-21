@@ -44,21 +44,27 @@ abstract class BindFragment {
     }
 
     static View onCreateView(Fragment a, ViewGroup b, Bundle w) {
-        Class<?> c = a.getClass();
-        final NFragment d = c.getAnnotation(NFragment.class);
+        final NFragment d = a.getClass().getAnnotation(NFragment.class);
         final View v;
-        if (d != null && d.value() != -1) {
+        if (d != null && d.value() != 0) {
             v = LayoutInflater.from(a.getActivity()).inflate(d.value(), b, false);
+        } else if (d != null && !d.resName().isEmpty()) {
+            v = LayoutInflater.from(a.getActivity()).inflate(FindResources.layout(BindBase.resPath(a, a.getActivity()), d.resName()), b, false);
         } else {
             v = new View(a.getActivity());
         }
+        return v;
+    }
+
+    static void onAfterCreateView(Fragment a, View v, Bundle w) {
+        Class<?> c = a.getClass();
         final ArrayList<Method> j = new ArrayList<>();
         do {
             final NFragment q = c.getAnnotation(NFragment.class);
             if (q != null) {
                 final Field[] f = c.getDeclaredFields();
                 for (Field g : f) {
-                    bindViewById(a, v, g);
+                    BindBase.bindViewById(a, v, g, a.getActivity());
                     BindBase.baseFieldBind(a, g, a.getActivity());
                 }
                 final Method[] h = c.getDeclaredMethods();
@@ -74,27 +80,6 @@ abstract class BindFragment {
         } while (c != null);
         for (int i = j.size() - 1; i >= 0; i--) {
             BindBase.callAfterAnnotationMethod(a, j.get(i), w);
-        }
-        return v;
-    }
-
-    static void bindViewById(Fragment a, View b, Field c) {
-        final ViewById d = c.getAnnotation(ViewById.class);
-        if (d == null) {
-            return;
-        }
-        try {
-            final View f;
-            if (d.value() > 0) {
-                f = b.findViewById(d.value());
-            } else {
-                f = b.findViewById(FindResources.id(a.getActivity(), c.getName()));
-            }
-            if (f != null) {
-                AnnotationUtil.set(c, a, f);
-            }
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
         }
     }
 

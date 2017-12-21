@@ -17,13 +17,20 @@ public class SharedPrefHelp {
         if (g == null) {
             return null;
         }
+        final ResPath r = SharedPrefInterface.getAnnotation(ResPath.class);
+        final String f;
+        if (r != null && !r.value().isEmpty()) {
+            f = r.value();
+        } else {
+            f = context.getPackageName();
+        }
         final SharedPreferences h;
         if (g.value() == SharedPref.Scope.Default) {
             h = PreferenceManager.getDefaultSharedPreferences(context.getApplicationContext());
         } else {
             h = context.getSharedPreferences(context.getClass().getSimpleName() + "_preferences", Context.MODE_PRIVATE);
         }
-        final Object i = Proxy.newProxyInstance(SharedPrefInterface.getClassLoader(), new Class<?>[]{SharedPrefInterface}, new SharedPrefInvocationHandler(context, h));
+        final Object i = Proxy.newProxyInstance(SharedPrefInterface.getClassLoader(), new Class<?>[]{SharedPrefInterface}, new SharedPrefInvocationHandler(context, f, h));
         return (T) i;
     }
 

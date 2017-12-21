@@ -13,4 +13,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 public @interface OptionsMenuItem {
     int value() default 0;
+
+    String resName() default "";
 }

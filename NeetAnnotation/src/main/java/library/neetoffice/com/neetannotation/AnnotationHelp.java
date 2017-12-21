@@ -37,7 +37,7 @@ public class AnnotationHelp {
 
     public static void onCreate(Object object, Bundle savedInstanceState) {
         if (object instanceof Activity) {
-            BindActivity.onCreate((Activity) object, savedInstanceState);
+            onBeforeAnnotation(object, BindActivity.onSetContentView((Activity) object), savedInstanceState);
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && object instanceof android.app.Fragment) {
             BindFragment.onCreate((Fragment) object, savedInstanceState);
         } else {
@@ -133,7 +133,9 @@ public class AnnotationHelp {
 
     public static View onCreateView(Object fragment, ViewGroup container, Bundle savedInstanceState) {
         if (fragment instanceof Fragment) {
-            return BindFragment.onCreateView((Fragment) fragment, container, savedInstanceState);
+            final View contentView = BindFragment.onCreateView((Fragment) fragment, container, savedInstanceState);
+            onBeforeAnnotation(fragment, contentView, savedInstanceState);
+            return contentView;
         } else {
             try {
                 final Class<?> sf = Class.forName("android.support.v4.app.Fragment");
@@ -143,9 +145,35 @@ public class AnnotationHelp {
                         throw new AnnotationException("No compile NeetAnnotationSupport");
                     }
                     final Method m = bsf.getDeclaredMethod("onCreateView", new Class[]{sf, ViewGroup.class, Bundle.class});
-                    return (View) m.invoke(null, fragment, container, savedInstanceState);
+                    final View contentView = (View) m.invoke(null, fragment, container, savedInstanceState);
+                    final Method n = bsf.getDeclaredMethod("onBeforeAnnotation", new Class[]{sf, View.class, Bundle.class});
+                    n.invoke(null, fragment, contentView, savedInstanceState);
+                    return contentView;
                 } else {
                     return new View(((Fragment) fragment).getActivity());
+                }
+            } catch (Exception e) {
+                throw new AnnotationException(e);
+            }
+        }
+    }
+
+    public static void onBeforeAnnotation(Object object, View contentView, Bundle savedInstanceState) {
+        if (object instanceof Activity) {
+            BindActivity.onCreate((Activity) object, contentView, savedInstanceState);
+        } else if (object instanceof Fragment) {
+            BindFragment.onAfterCreateView((Fragment) object, contentView, savedInstanceState);
+        } else {
+            try {
+                final Class<?> sf = Class.forName("android.support.v4.app.Fragment");
+                if (sf.isAssignableFrom(object.getClass())) {
+                    final Class<?> bsf = Class.forName("library.neetoffice.com.neetannotation.BindSupport");
+                    if (bsf == null) {
+                        throw new AnnotationException("No compile NeetAnnotationSupport");
+                    }
+                    final Method m = bsf.getDeclaredMethod("onCreateView", new Class[]{sf, ViewGroup.class, Bundle.class});
+
+                } else {
                 }
             } catch (Exception e) {
                 throw new AnnotationException(e);

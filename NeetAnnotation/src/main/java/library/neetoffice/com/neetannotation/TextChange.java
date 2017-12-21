@@ -13,4 +13,6 @@ import java.lang.annotation.Target;
 public @interface TextChange {
 
     int[] value() default {};
+
+    String[] resName() default {};
 }

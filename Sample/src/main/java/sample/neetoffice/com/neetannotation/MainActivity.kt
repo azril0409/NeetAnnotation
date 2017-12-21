@@ -7,7 +7,7 @@ import library.neetoffice.com.neetannotation.*
 import library.nettoffice.com.restapi.ResponseCallBack
 
 @NActivity(R.layout.activity_main)
-@OptionsMenu(R.menu.mian)
+@NToolBar(viewId = R.id.toolbar, menuId = R.menu.mian)
 class MainActivity : AnnotationCompatActivity() {
     @RestService
     lateinit var api: Api

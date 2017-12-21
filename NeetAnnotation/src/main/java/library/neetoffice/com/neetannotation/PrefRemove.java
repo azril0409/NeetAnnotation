@@ -17,4 +17,6 @@ public @interface PrefRemove {
      * @return the resource name of the preference key
      */
     int[] keyRes() default {};
+
+    String[] keyNames() default {};
 }

@@ -13,4 +13,6 @@ import java.lang.annotation.Target;
 public @interface CheckedChange {
 
     int[] value() default {};
+
+    String[] resName() default {};
 }

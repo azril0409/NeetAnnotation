@@ -12,4 +12,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface TouchDown {
     int[] value() default {};
+
+    String[] resName() default {};
 }

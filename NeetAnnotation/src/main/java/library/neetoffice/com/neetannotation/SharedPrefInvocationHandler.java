@@ -19,10 +19,12 @@ import java.util.Set;
 
 public class SharedPrefInvocationHandler implements InvocationHandler {
     private final Context context;
+    private final String resourcesPath;
     private final SharedPreferences sharedPreferences;
 
-    public SharedPrefInvocationHandler(Context context, SharedPreferences sharedPreferences) {
+    public SharedPrefInvocationHandler(Context context, String resourcesPath, SharedPreferences sharedPreferences) {
         this.context = context;
+        this.resourcesPath = resourcesPath;
         this.sharedPreferences = sharedPreferences;
     }
 
@@ -38,12 +40,19 @@ public class SharedPrefInvocationHandler implements InvocationHandler {
                 final PrefRemove perRemove = method.getAnnotation(PrefRemove.class);
                 if (perRemove != null) {
                     int[] keyRes = perRemove.keyRes();
+                    String[] keyNames = perRemove.keyNames();
                     SharedPreferences.Editor edit = sharedPreferences.edit();
                     for (int keyRe : keyRes) {
-                        if (keyRe != -1) {
+                        if (keyRe != 0) {
                             edit = edit.remove(context.getString(keyRe));
+                            edit.apply();
                         }
-                        edit.apply();
+                    }
+                    for (String keyName : keyNames) {
+                        if (!keyName.isEmpty()) {
+                            edit = edit.remove(context.getString(FindResources.id(resourcesPath, keyName)));
+                            edit.apply();
+                        }
                     }
                 }
                 return null;
@@ -124,7 +133,7 @@ public class SharedPrefInvocationHandler implements InvocationHandler {
 
     private String getPerKey(final Method method) {
         final PrefKey perKey = method.getAnnotation(PrefKey.class);
-        if (perKey != null && perKey.keyRes() != -1) {
+        if (perKey != null && perKey.keyRes() != 0) {
             return context.getString(perKey.keyRes());
         }
         if (perKey != null && !perKey.value().isEmpty()) {

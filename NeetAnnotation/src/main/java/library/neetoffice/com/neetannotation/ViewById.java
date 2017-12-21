@@ -11,5 +11,19 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface ViewById {
-    int value() default -1;
+
+    /**
+     * The R.id.* field which refer to the layout.
+     *
+     * @return the id of the R.id
+     */
+    int value() default 0;
+
+
+    /**
+     * The R.layout.* field which refer to the layout.
+     *
+     * @return the id of the R.id
+     */
+    String resName() default "";
 }

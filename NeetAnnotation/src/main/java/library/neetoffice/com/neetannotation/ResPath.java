@@ -6,12 +6,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by Deo-chainmeans on 2017/10/30.
+ * Created by Deo-chainmeans on 2017/12/18.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
-public @interface FragmentById {
-    int value() default 0;
-
-    String resName() default "";
+@Target(ElementType.TYPE)
+public @interface ResPath {
+    String value();
 }

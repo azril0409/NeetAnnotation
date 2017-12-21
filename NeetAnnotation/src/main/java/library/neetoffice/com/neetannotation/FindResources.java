@@ -16,131 +16,159 @@ public class FindResources {
         return (int) field.get(null);
     }
 
-    public static int id(Context a, String b) {
+    public static int id(String a, String b) {
         try {
-            return getValue(a.getPackageName() + ".R$id", b);
+            return getValue(a + ".R$id", b);
         } catch (Exception e) {
             throw new AnnotationException(String.format("No field %s in R.id", b));
         }
     }
 
-    public static int string(Context a, ResString b, Field c) {
+    public static int string(String a, ResString b, Field c) {
         try {
-            final int id = b.value();
-            if (id > 0) {
-                return id;
+            if (b.value() != 0) {
+                return b.value();
             }
-            return getValue(a.getPackageName() + ".R$string", c.getName());
+            if(!b.resName().isEmpty()){
+                return getValue(a + ".R$string", b.resName());
+            }
+            return getValue(a + ".R$string", c.getName());
         } catch (Exception e) {
             throw new AnnotationException(String.format("No field %s in R.string", b));
         }
     }
 
-    public static int bool(Context a, ResBoolean b, Field c) {
+    public static int bool(String a, ResBoolean b, Field c) {
         try {
-            final int id = b.value();
-            if (id > 0) {
-                return id;
+            if (b.value() != 0) {
+                return b.value();
             }
-            return getValue(a.getPackageName() + ".R$bool", c.getName());
+            if(!b.resName().isEmpty()){
+                return getValue(a + ".R$bool", b.resName());
+            }
+            return getValue(a + ".R$bool", c.getName());
         } catch (Exception e) {
             throw new AnnotationException(String.format("No field %s in R.bool", b));
         }
     }
 
-    public static int dimen(Context a, ResDimen b, Field c) {
+    public static int dimen(String a, ResDimen b, Field c) {
         try {
-            final int id = b.value();
-            if (id > 0) {
-                return id;
+            if (b.value() != 0) {
+                return b.value();
             }
-            return getValue(a.getPackageName() + ".R$dimen", c.getName());
+            if(!b.resName().isEmpty()){
+                return getValue(a + ".R$dimen", b.resName());
+            }
+            return getValue(a + ".R$dimen", c.getName());
         } catch (Exception e) {
             throw new AnnotationException(String.format("No field %s in R.dimen", b));
         }
     }
 
-    public static int integer(Context a, ResInt b, Field c) {
+    public static int integer(String a, ResInt b, Field c) {
         try {
-            final int id = b.value();
-            if (id > 0) {
-                return id;
+            if (b.value() != 0) {
+                return b.value();
             }
-            return getValue(a.getPackageName() + ".R$integer", c.getName());
+            if(!b.resName().isEmpty()){
+                return getValue(a + ".R$integer", b.resName());
+            }
+            return getValue(a + ".R$integer", c.getName());
         } catch (Exception e) {
             throw new AnnotationException(String.format("No field %s in R.integer", b));
         }
     }
 
-    public static int array(Context a, ResStringArray b, Field c) {
+    public static int array(String a, ResStringArray b, Field c) {
         try {
-            final int id = b.value();
-            if (id > 0) {
-                return id;
+            if (b.value() != 0) {
+                return b.value();
             }
-            return getValue(a.getPackageName() + ".R$array", c.getName());
+            if(!b.resName().isEmpty()){
+                return getValue(a + ".R$array", b.resName());
+            }
+            return getValue(a + ".R$array", c.getName());
         } catch (Exception e) {
             throw new AnnotationException(String.format("No field %s in R.array", b));
         }
     }
 
-    public static int array(Context a, ResIntArray b, Field c) {
+    public static int array(String a, ResIntArray b, Field c) {
         try {
-            final int id = b.value();
-            if (id > 0) {
-                return id;
+            if (b.value() != 0) {
+                return b.value();
             }
-            return getValue(a.getPackageName() + ".R$array", c.getName());
+            if(!b.resName().isEmpty()){
+                return getValue(a + ".R$array", b.resName());
+            }
+            return getValue(a + ".R$array", c.getName());
         } catch (Exception e) {
             throw new AnnotationException(String.format("No field %s in R.array", b));
         }
     }
 
-    public static int anim(Context a, ResAnimation b, Field c) {
+    public static int anim(String a, ResAnimation b, Field c) {
         try {
-            final int id = b.value();
-            if (id > 0) {
-                return id;
+            if (b.value() != 0) {
+                return b.value();
             }
-            return getValue(a.getPackageName() + ".R$anim", c.getName());
+            if(!b.resName().isEmpty()){
+                return getValue(a + ".R$anim", b.resName());
+            }
+            return getValue(a + ".R$anim", c.getName());
         } catch (Exception e) {
             throw new AnnotationException(String.format("No field %s in R.anim", b));
         }
     }
 
-    public static int anim(Context a, ResLayoutAnimation b, Field c) {
+    public static int anim(String a, ResLayoutAnimation b, Field c) {
         try {
-            final int id = b.value();
-            if (id > 0) {
-                return id;
+            if (b.value() != 0) {
+                return b.value();
             }
-            return getValue(a.getPackageName() + ".R$anim", c.getName());
+            if(!b.resName().isEmpty()){
+                return getValue(a + ".R$anim", b.resName());
+            }
+            return getValue(a + ".R$anim", c.getName());
         } catch (Exception e) {
             throw new AnnotationException(String.format("No field %s in R.anim", b));
         }
     }
 
-    public static int color(Context a, ResColor b, Field c) {
+    public static int color(String a, ResColor b, Field c) {
         try {
-            final int id = b.value();
-            if (id > 0) {
-                return id;
+            if (b.value() != 0) {
+                return b.value();
             }
-            return getValue(a.getPackageName() + ".R$color", c.getName());
+            if(!b.resName().isEmpty()){
+                return getValue(a + ".R$anim", b.resName());
+            }
+            return getValue(a + ".R$color", c.getName());
         } catch (Exception e) {
             throw new AnnotationException(String.format("No field %s in R.color", b));
         }
     }
 
-    public static int drwable(Context a, ResDrawable b, Field c) {
+    public static int drwable(String a, ResDrawable b, Field c) {
         try {
-            final int id = b.value();
-            if (id > 0) {
-                return id;
+            if (b.value() != 0) {
+                return b.value();
             }
-            return getValue(a.getPackageName() + ".R$drwable", c.getName());
+            if(!b.resName().isEmpty()){
+                return getValue(a + ".R$drawable", b.resName());
+            }
+            return getValue(a + ".R$drawable", c.getName());
         } catch (Exception e) {
-            throw new AnnotationException(String.format("No field %s in R.drwable", b));
+            throw new AnnotationException(String.format("No field %s in R.drawable", b));
+        }
+    }
+
+    public static int layout(String a, String b) {
+        try {
+            return getValue(a + ".R$layout", b);
+        } catch (Exception e) {
+            throw new AnnotationException(String.format("No field %s in R.layout", b));
         }
     }
 }

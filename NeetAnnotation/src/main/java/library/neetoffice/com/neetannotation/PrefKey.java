@@ -17,7 +17,7 @@ public @interface PrefKey {
      *
      * @return the resource name of the preference key
      */
-    int keyRes() default -1;
+    int keyRes() default 0;
 
     String value() default "";
 }

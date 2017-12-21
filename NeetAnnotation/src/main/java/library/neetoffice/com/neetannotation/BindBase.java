@@ -14,6 +14,37 @@ import java.lang.reflect.Method;
  */
 
 abstract class BindBase {
+    static String resPath(Object a, Context b) {
+        final ResPath r = a.getClass().getAnnotation(ResPath.class);
+        if (r != null && !r.value().isEmpty()) {
+            return r.value();
+        } else {
+            return b.getPackageName();
+        }
+    }
+
+    static void bindViewById(Object a, View b, Field c, Context d) {
+        final ViewById e = c.getAnnotation(ViewById.class);
+        if (e == null) {
+            return;
+        }
+        try {
+            final View f;
+            if (e.value() != 0) {
+                f = b.findViewById(e.value());
+            } else if (!e.resName().isEmpty()) {
+                f = b.findViewById(FindResources.id(resPath(a, d), e.resName()));
+            } else {
+                f = b.findViewById(FindResources.id(resPath(a, d), c.getName()));
+            }
+            if (f != null) {
+                AnnotationUtil.set(c, a, f);
+            }
+        } catch (IllegalAccessException g) {
+            g.printStackTrace();
+        }
+    }
+
     static void baseFieldBind(Object a, Field b, Context c) {
         BindField.bindRootContext(a, b, c);
         BindField.bindApp(a, b, c);
@@ -32,10 +63,6 @@ abstract class BindBase {
         BindField.bindHandler(a, b, c);
         BindField.bindSystemService(a, b, c);
         BindRestService.bind(a, b, c);
-    }
-
-    static void baseListenerBind(Activity a, Method b, TouchListener c) {
-        baseViewListenerBind(a, a.getWindow().getDecorView(), b, c, a);
     }
 
     static void baseViewListenerBind(Object a, View b, Method c, TouchListener d, Context f) {

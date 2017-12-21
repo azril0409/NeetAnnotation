@@ -12,5 +12,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface FocusChange {
 
-    int[] value();
+    int[] value() default {};
+
+    String[] resName() default {};
 }

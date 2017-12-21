@@ -11,5 +11,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.FIELD)
 public @interface ResDimen {
-    int value() default -1;
+    int value() default 0;
+
+    String resName() default "";
 }

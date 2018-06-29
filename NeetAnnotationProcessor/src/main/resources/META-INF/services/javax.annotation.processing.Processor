@@ -1,0 +1,4 @@
+library.neetoffice.com.neetannotation.processor.ActivityProcessor
+library.neetoffice.com.neetannotation.processor.DaggerProcessor
+library.neetoffice.com.neetannotation.processor.InteractorProcessor
+library.neetoffice.com.neetannotation.processor.ViewModelProcessor

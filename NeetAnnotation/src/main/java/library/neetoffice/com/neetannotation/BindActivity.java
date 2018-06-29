@@ -33,7 +33,7 @@ abstract class BindActivity {
             if (q != null) {
                 final Field[] f = c.getDeclaredFields();
                 for (Field g : f) {
-                    BindBase.bindViewById(a, a.getWindow().getDecorView(), g, a);
+                    BindBase.bindViewById(a, v, g, a);
                     bindFragmentById(a, g);
                     bindFragmentByTag(a, g);
                     BindBase.baseFieldBind(a, g, a);
@@ -44,7 +44,7 @@ abstract class BindActivity {
                 final Method[] h = c.getDeclaredMethods();
                 final TouchListener l = new TouchListener(a);
                 for (Method i : h) {
-                    BindBase.baseViewListenerBind(a, a.getWindow().getDecorView(), i, l, a);
+                    BindBase.baseViewListenerBind(a, v, i, l, a);
                     if (BindMethod.isAfterAnnotationMethod(i)) {
                         j.add(i);
                     }

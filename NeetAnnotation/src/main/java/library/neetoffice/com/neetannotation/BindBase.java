@@ -13,7 +13,7 @@ import java.lang.reflect.Method;
  * Created by Deo-chainmeans on 2017/10/23.
  */
 
-abstract class BindBase {
+public abstract class BindBase {
     static String resPath(Object a, Context b) {
         final ResPath r = a.getClass().getAnnotation(ResPath.class);
         if (r != null && !r.value().isEmpty()) {
@@ -45,7 +45,7 @@ abstract class BindBase {
         }
     }
 
-    static void baseFieldBind(Object a, Field b, Context c) {
+    public  static void baseFieldBind(Object a, Field b, Context c) {
         BindField.bindRootContext(a, b, c);
         BindField.bindApp(a, b, c);
         BindField.bindBean(a, b, c);

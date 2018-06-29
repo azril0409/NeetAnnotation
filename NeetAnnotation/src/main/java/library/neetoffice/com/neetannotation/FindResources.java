@@ -142,7 +142,7 @@ public class FindResources {
                 return b.value();
             }
             if(!b.resName().isEmpty()){
-                return getValue(a + ".R$anim", b.resName());
+                return getValue(a + ".R$color", b.resName());
             }
             return getValue(a + ".R$color", c.getName());
         } catch (Exception e) {

@@ -1,0 +1,27 @@
+apply plugin: 'java-library'
+dependencies {
+    compile 'com.google.auto.service:auto-service:1.0-rc2'
+    compile 'com.squareup:javapoet:1.8.0'
+    api project(':Neetannotation-api')
+    api fileTree(include: ['*.jar'], dir: 'libs')
+    compile "com.google.dagger:dagger-compiler:$dagger_version"
+}
+
+sourceCompatibility = "1.8"
+targetCompatibility = "1.8"
+
+
+def name = 'NeetAnnotation-kapt'
+def libname = name + "_" + lib_version + ".jar"
+def toPath = '../librarys/'
+def fromPath = 'build/libs/'
+task clearAar(type: Delete) {
+    delete toPath + '/' + libname
+}
+task makeAar(type: Copy) {
+    from(fromPath)
+    into(toPath)
+    include("NeetAnnotationProcessor.jar")
+    rename("NeetAnnotationProcessor.jar", libname)
+}
+makeAar.dependsOn(clearAar, "build")

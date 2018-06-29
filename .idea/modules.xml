@@ -4,8 +4,11 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/NeetAnnotation.iml" filepath="$PROJECT_DIR$/NeetAnnotation.iml" />
       <module fileurl="file://$PROJECT_DIR$/NeetAnnotation/NeetAnnotation-NeetAnnotation.iml" filepath="$PROJECT_DIR$/NeetAnnotation/NeetAnnotation-NeetAnnotation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/NeetAnnotationProcessor/NeetAnnotationProcessor.iml" filepath="$PROJECT_DIR$/NeetAnnotationProcessor/NeetAnnotationProcessor.iml" />
       <module fileurl="file://$PROJECT_DIR$/NeetAnnotationSupport/NeetAnnotationSupport.iml" filepath="$PROJECT_DIR$/NeetAnnotationSupport/NeetAnnotationSupport.iml" />
       <module fileurl="file://$PROJECT_DIR$/NeetRestApi/NeetRestApi.iml" filepath="$PROJECT_DIR$/NeetRestApi/NeetRestApi.iml" />
+      <module fileurl="file://$PROJECT_DIR$/NeetViewModelSupport/NeetViewModelSupport.iml" filepath="$PROJECT_DIR$/NeetViewModelSupport/NeetViewModelSupport.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Neetannotation-api/Neetannotation-api.iml" filepath="$PROJECT_DIR$/Neetannotation-api/Neetannotation-api.iml" />
       <module fileurl="file://$PROJECT_DIR$/Sample/Sample.iml" filepath="$PROJECT_DIR$/Sample/Sample.iml" />
     </modules>
   </component>

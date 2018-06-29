@@ -1,1 +1,1 @@
-include ':NeetAnnotation', ':NeetAnnotationSupport', ':NeetRestApi', ':Sample'
+include ':NeetAnnotation', ':NeetAnnotationSupport', ':NeetRestApi', ':Sample', ':NeetViewModelSupport', ':Neetannotation-api', ':NeetAnnotationProcessor'

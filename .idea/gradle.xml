@@ -9,8 +9,11 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/NeetAnnotation" />
+            <option value="$PROJECT_DIR$/NeetAnnotationProcessor" />
             <option value="$PROJECT_DIR$/NeetAnnotationSupport" />
             <option value="$PROJECT_DIR$/NeetRestApi" />
+            <option value="$PROJECT_DIR$/NeetViewModelSupport" />
+            <option value="$PROJECT_DIR$/Neetannotation-api" />
             <option value="$PROJECT_DIR$/Sample" />
           </set>
         </option>

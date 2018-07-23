@@ -42,7 +42,11 @@ public class ReactiveXHelp {
                 .build();
     }
 
-    public static CodeBlock subscribe(String observerName) {
-        return CodeBlock.builder().addStatement(".subscribe($N)", observerName).build();
+    public static CodeBlock subscribe(TypeName parameterType, String observerName) {
+        return CodeBlock.builder()
+                .add(subscribeConsumer(parameterType, "s", CodeBlock.builder()
+                        .addStatement("$N.onNext(s)", observerName)
+                        .build()))
+                .build();
     }
 }

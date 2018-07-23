@@ -8,7 +8,8 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 @Retention(SOURCE)
 @Target(TYPE)
-public @interface NActivity {
+
+public @interface NFragment {
 
     /**
      * The R.layout.* field which refer to the layout.

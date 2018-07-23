@@ -8,5 +8,6 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 @Retention(SOURCE)
 @Target(FIELD)
-public @interface NullEntity {
+public @interface DefaultDouble {
+    double value();
 }

@@ -14,9 +14,9 @@ public class AndroidResHelp {
         if (rid > 0) {
             return CodeBlock.builder().add(String.valueOf(rid)).build();
         } else if (!resName.isEmpty()) {
-            return CodeBlock.builder().add("$N.getResources().getIdentifier($S, $S, $N)",context_from, resName, defType, defPackage).build();
+            return CodeBlock.builder().add("$N.getResources().getIdentifier($S, $S, $N)", context_from, resName, defType, defPackage).build();
         }
-        return CodeBlock.builder().add("$N.getResources().getIdentifier($S, $S, $N)",context_from, elementName, defType, defPackage).build();
+        return CodeBlock.builder().add("$N.getResources().getIdentifier($S, $S, $N)", context_from, elementName, defType, defPackage).build();
     }
 
     public static CodeBlock id(int rid, String resName, String elementName, String context_from, String defPackage) {
@@ -59,4 +59,7 @@ public class AndroidResHelp {
         return createCodeBlock(rid, resName, elementName, context_from, "anim", defPackage);
     }
 
+    public static CodeBlock menu(int rid, String resName, String context_from, String defPackage) {
+        return createCodeBlock(rid, resName, "", context_from, "menu", defPackage);
+    }
 }

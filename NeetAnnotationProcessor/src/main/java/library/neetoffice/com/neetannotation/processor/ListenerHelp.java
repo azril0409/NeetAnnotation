@@ -29,15 +29,16 @@ import library.neetoffice.com.neetannotation.TouchMove;
 import library.neetoffice.com.neetannotation.TouchUp;
 
 public class ListenerHelp {
-    private final ProcessorUtil processorUtil;
+    private static final String RETURNS = "returns";
+    private final BaseCreator creator;
 
-    public ListenerHelp(ProcessorUtil processorUtil) {
-        this.processorUtil = processorUtil;
+    public ListenerHelp(BaseCreator creator) {
+        this.creator = creator;
     }
 
 
     public Builder builder(String className, String findView_from, String context_from, String defPackage) {
-        return new Builder(processorUtil, className, findView_from, context_from, defPackage);
+        return new Builder(creator, className, findView_from, context_from, defPackage);
     }
 
     private static class ElementBundle {
@@ -51,7 +52,7 @@ public class ListenerHelp {
     }
 
     public static class Builder {
-        private final ProcessorUtil processorUtil;
+        private final BaseCreator creator;
         private final String className;
         private final String findView_from;
         private final String context_from;
@@ -71,8 +72,8 @@ public class ListenerHelp {
         private final HashMap<String, ElementBundle> afterTextChangeElements = new HashMap<>();
 
 
-        public Builder(ProcessorUtil processorUtil, String className, String findView_from, String context_from, String defPackage) {
-            this.processorUtil = processorUtil;
+        public Builder(BaseCreator creator, String className, String findView_from, String context_from, String defPackage) {
+            this.creator = creator;
             this.className = className;
             this.findView_from = findView_from;
             this.context_from = context_from;
@@ -221,7 +222,7 @@ public class ListenerHelp {
                         .add("$N.this.$N(", className, method.getSimpleName());
                 while (parameters.hasNext()) {
                     final VariableElement parameter = parameters.next();
-                    if (processorUtil.isInstanceOf(parameter.asType(), AndroidClass.View)) {
+                    if (creator.isInstanceOf(parameter.asType(), AndroidClass.View)) {
                         if (AndroidClass.View.equals(ClassName.get(parameter.asType()))) {
                             code.add("$N", "view");
                         } else {
@@ -254,14 +255,14 @@ public class ListenerHelp {
                 final Iterator<? extends VariableElement> parameters = method.getParameters().iterator();
                 final CodeBlock.Builder code = CodeBlock.builder()
                         .addStatement("boolean returns = false");
-                if (processorUtil.getClassName(method.getReturnType()).equals(ClassName.get(Boolean.class))) {
-                    code.add("returns = $N.this.$N(", className, method.getSimpleName());
+                if (creator.getClassName(method.getReturnType()).equals(ClassName.get(Boolean.class))) {
+                    code.add("returns = returns|$N.this.$N(", className, method.getSimpleName());
                 } else {
                     code.add("$N.this.$N(", className, method.getSimpleName());
                 }
                 while (parameters.hasNext()) {
                     final VariableElement parameter = parameters.next();
-                    if (processorUtil.isInstanceOf(parameter.asType(), AndroidClass.View)) {
+                    if (creator.isInstanceOf(parameter.asType(), AndroidClass.View)) {
                         if (AndroidClass.View.equals(ClassName.get(parameter.asType()))) {
                             code.add("$N", "view");
                         } else {
@@ -308,21 +309,21 @@ public class ListenerHelp {
                 final CodeBlock.Builder onTouchListenerCode = entry.getValue();
                 if (touchElements.containsKey(entry.getKey())) {
                     final ElementBundle touch = touchElements.get(entry.getKey());
-                    onTouchListenerCode.add(createTouchCode(touch, processorUtil, className));
+                    onTouchListenerCode.add(createTouchCode(touch, creator, className));
                 }
                 if (touchDownElements.containsKey(entry.getKey())) {
                     final ElementBundle touchDown = touchDownElements.get(entry.getKey());
-                    onTouchListenerCode.add(createTouchDownCode(touchDown, processorUtil, className));
+                    onTouchListenerCode.add(createTouchDownCode(touchDown, creator, className));
                 }
                 if (touchMovenElements.containsKey(entry.getKey())) {
                     final ElementBundle touchMoven = touchMovenElements.get(entry.getKey());
-                    onTouchListenerCode.add(createTouchMovenCode(touchMoven, processorUtil, className));
+                    onTouchListenerCode.add(createTouchMovenCode(touchMoven, creator, className));
                 }
                 if (touchUpElements.containsKey(entry.getKey())) {
                     final ElementBundle touchUp = touchUpElements.get(entry.getKey());
-                    onTouchListenerCode.add(createTouchUpCode(touchUp, processorUtil, className));
+                    onTouchListenerCode.add(createTouchUpCode(touchUp, creator, className));
                 }
-                onTouchListenerCode.addStatement("return returns")
+                onTouchListenerCode.addStatement("return $N", RETURNS)
                         .endControlFlow()
                         .endControlFlow(")");
                 cb.add(addInstanceOfCode(entry.getKey(), AndroidClass.View, onTouchListenerCode.build()));
@@ -340,15 +341,15 @@ public class ListenerHelp {
                 TypeMirror itemType = null;
                 while (parameters.hasNext()) {
                     final VariableElement parameter = parameters.next();
-                    if (processorUtil.isInstanceOf(parameter.asType(), AndroidClass.View)) {
+                    if (creator.isInstanceOf(parameter.asType(), AndroidClass.View)) {
                         if (AndroidClass.View.equals(ClassName.get(parameter.asType()))) {
                             code.add("$N", "view");
                         } else {
                             code.add("($T)$N", parameter.asType(), "view");
                         }
-                    } else if (processorUtil.getClassName(parameter.asType()).equals(ClassName.get(Integer.class))) {
+                    } else if (creator.getClassName(parameter.asType()).equals(ClassName.get(Integer.class))) {
                         code.add("position");
-                    } else if (processorUtil.getClassName(parameter.asType()).equals(ClassName.get(Long.class))) {
+                    } else if (creator.getClassName(parameter.asType()).equals(ClassName.get(Long.class))) {
                         code.add("id");
                     } else {
                         if (itemType == null) {
@@ -383,7 +384,7 @@ public class ListenerHelp {
                 final Iterator<? extends VariableElement> parameters = method.getParameters().iterator();
                 final CodeBlock.Builder code = CodeBlock.builder()
                         .addStatement("boolean returns = false");
-                if (processorUtil.getClassName(method.getReturnType()).equals(ClassName.get(Boolean.class))) {
+                if (creator.getClassName(method.getReturnType()).equals(ClassName.get(Boolean.class))) {
                     code.add("returns = $N.this.$N(", className, method.getSimpleName());
                 } else {
                     code.add("$N.this.$N(", className, method.getSimpleName());
@@ -391,15 +392,15 @@ public class ListenerHelp {
                 TypeMirror itemType = null;
                 while (parameters.hasNext()) {
                     final VariableElement parameter = parameters.next();
-                    if (processorUtil.isInstanceOf(parameter.asType(), AndroidClass.View)) {
+                    if (creator.isInstanceOf(parameter.asType(), AndroidClass.View)) {
                         if (AndroidClass.View.equals(ClassName.get(parameter.asType()))) {
                             code.add("$N", "view");
                         } else {
                             code.add("($T)$N", parameter.asType(), "view");
                         }
-                    } else if (processorUtil.getClassName(parameter.asType()).equals(ClassName.get(Integer.class))) {
+                    } else if (creator.getClassName(parameter.asType()).equals(ClassName.get(Integer.class))) {
                         code.add("position");
-                    } else if (processorUtil.getClassName(parameter.asType()).equals(ClassName.get(Long.class))) {
+                    } else if (creator.getClassName(parameter.asType()).equals(ClassName.get(Long.class))) {
                         code.add("id");
                     } else {
                         if (itemType == null) {
@@ -438,15 +439,15 @@ public class ListenerHelp {
                 TypeMirror itemType = null;
                 while (parameters.hasNext()) {
                     final VariableElement parameter = parameters.next();
-                    if (processorUtil.isInstanceOf(parameter.asType(), AndroidClass.View)) {
+                    if (creator.isInstanceOf(parameter.asType(), AndroidClass.View)) {
                         if (AndroidClass.View.equals(ClassName.get(parameter.asType()))) {
                             code.add("$N", "view");
                         } else {
                             code.add("($T)$N", parameter.asType(), "view");
                         }
-                    } else if (processorUtil.getClassName(parameter.asType()).equals(ClassName.get(Integer.class))) {
+                    } else if (creator.getClassName(parameter.asType()).equals(ClassName.get(Integer.class))) {
                         code.add("position");
-                    } else if (processorUtil.getClassName(parameter.asType()).equals(ClassName.get(Long.class))) {
+                    } else if (creator.getClassName(parameter.asType()).equals(ClassName.get(Long.class))) {
                         code.add("id");
                     } else {
                         if (itemType == null) {
@@ -485,13 +486,13 @@ public class ListenerHelp {
                         .add("$N.this.$N(", className, method.getSimpleName());
                 while (parameters.hasNext()) {
                     final VariableElement parameter = parameters.next();
-                    if (processorUtil.isInstanceOf(parameter.asType(), AndroidClass.View)) {
+                    if (creator.isInstanceOf(parameter.asType(), AndroidClass.View)) {
                         if (AndroidClass.CompoundButton.equals(ClassName.get(parameter.asType()))) {
                             code.add("$N", "view");
                         } else {
                             code.add("($T)$N", parameter.asType(), "view");
                         }
-                    } else if (processorUtil.getClassName(parameter.asType()).equals(ClassName.get(Boolean.class))) {
+                    } else if (creator.getClassName(parameter.asType()).equals(ClassName.get(Boolean.class))) {
                         code.add("isChecked");
                     } else {
                         code.add(AnnotationHelp.addNullCode(parameter));
@@ -534,15 +535,15 @@ public class ListenerHelp {
                             .add("$N.this.$N(", className, method.getSimpleName());
                     while (parameters.hasNext()) {
                         final VariableElement parameter = parameters.next();
-                        if (processorUtil.isInstanceOf(parameter.asType(), AndroidClass.View)) {
+                        if (creator.isInstanceOf(parameter.asType(), AndroidClass.View)) {
                             if (AndroidClass.TextView.equals(ClassName.get(parameter.asType()))) {
                                 code.add("$N", entry.getKey());
                             } else {
                                 code.add("($T)$N", parameter.asType(), entry.getKey());
                             }
-                        } else if (processorUtil.getClassName(parameter.asType()).equals(ClassName.get(String.class))) {
+                        } else if (creator.getClassName(parameter.asType()).equals(ClassName.get(String.class))) {
                             code.add("s.toString()");
-                        } else if (processorUtil.getClassName(parameter.asType()).equals(ClassName.get(CharSequence.class))) {
+                        } else if (creator.getClassName(parameter.asType()).equals(ClassName.get(CharSequence.class))) {
                             code.add("s");
                         } else {
                             code.add(AnnotationHelp.addNullCode(parameter));
@@ -562,15 +563,15 @@ public class ListenerHelp {
                             .add("$N.this.$N(", className, method.getSimpleName());
                     while (parameters.hasNext()) {
                         final VariableElement parameter = parameters.next();
-                        if (processorUtil.isInstanceOf(parameter.asType(), AndroidClass.View)) {
+                        if (creator.isInstanceOf(parameter.asType(), AndroidClass.View)) {
                             if (AndroidClass.TextView.equals(ClassName.get(parameter.asType()))) {
                                 code.add("$N", entry.getKey());
                             } else {
                                 code.add("($T)$N", parameter.asType(), entry.getKey());
                             }
-                        } else if (processorUtil.getClassName(parameter.asType()).equals(ClassName.get(String.class))) {
+                        } else if (creator.getClassName(parameter.asType()).equals(ClassName.get(String.class))) {
                             code.add("s.toString()");
-                        } else if (processorUtil.getClassName(parameter.asType()).equals(ClassName.get("android.text", "Editable"))) {
+                        } else if (creator.getClassName(parameter.asType()).equals(ClassName.get("android.text", "Editable"))) {
                             code.add("s");
                         } else {
                             code.add(AnnotationHelp.addNullCode(parameter));
@@ -592,13 +593,13 @@ public class ListenerHelp {
                     boolean after = false;
                     while (parameters.hasNext()) {
                         final VariableElement parameter = parameters.next();
-                        if (processorUtil.isInstanceOf(parameter.asType(), AndroidClass.View)) {
+                        if (creator.isInstanceOf(parameter.asType(), AndroidClass.View)) {
                             if (AndroidClass.TextView.equals(ClassName.get(parameter.asType()))) {
                                 code.add("$N", entry.getKey());
                             } else {
                                 code.add("($T)$N", parameter.asType(), entry.getKey());
                             }
-                        } else if (countText < 2 && processorUtil.getClassName(parameter.asType()).equals(ClassName.get(String.class))) {
+                        } else if (countText < 2 && creator.getClassName(parameter.asType()).equals(ClassName.get(String.class))) {
                             if (parameter.getAnnotation(TextChange.Before.class) != null) {
                                 code.add("old");
                                 before = true;
@@ -619,7 +620,7 @@ public class ListenerHelp {
                                 code.add("$S", "");
                                 countText++;
                             }
-                        } else if (countText < 2 && processorUtil.getClassName(parameter.asType()).equals(ClassName.get(CharSequence.class))) {
+                        } else if (countText < 2 && creator.getClassName(parameter.asType()).equals(ClassName.get(CharSequence.class))) {
                             if (parameter.getAnnotation(TextChange.Before.class) != null) {
                                 code.add("old");
                                 before = true;
@@ -682,15 +683,15 @@ public class ListenerHelp {
                 .add("setOnTouchListener(")
                 .beginControlFlow("new $T()", AndroidClass.View_OnTouchListener)
                 .beginControlFlow("@$T\npublic boolean onTouch($T view,$T event)", Override.class, AndroidClass.View, AndroidClass.MotionEvent)
-                .addStatement("boolean returns = false");
+                .addStatement("boolean $N = false", RETURNS);
     }
 
-    private static CodeBlock createTouchCode(ElementBundle touch, ProcessorUtil processorUtil, String className) {
+    private static CodeBlock createTouchCode(ElementBundle touch, BaseCreator creator, String className) {
         final ExecutableElement method = (ExecutableElement) touch.element;
         final Iterator<? extends VariableElement> iterator = method.getParameters().iterator();
         final CodeBlock.Builder code = CodeBlock.builder();
-        if (processorUtil.getClassName(method.getReturnType()).equals(ClassName.get(Boolean.class))) {
-            code.add("returns = $N.this.$N(", className, method.getSimpleName());
+        if (creator.getClassName(method.getReturnType()).equals(ClassName.get(Boolean.class))) {
+            code.add("$N = $N|$N.this.$N(",RETURNS, RETURNS, className, method.getSimpleName());
         } else {
             code.add("$N.this.$N(", className, method.getSimpleName());
         }
@@ -699,13 +700,13 @@ public class ListenerHelp {
         boolean index = false;
         while (iterator.hasNext()) {
             final VariableElement parameter = iterator.next();
-            if (processorUtil.isInstanceOf(parameter.asType(), AndroidClass.View)) {
-                if (AndroidClass.View.equals(processorUtil.getClassName(parameter.asType()))) {
+            if (creator.isInstanceOf(parameter.asType(), AndroidClass.View)) {
+                if (AndroidClass.View.equals(creator.getClassName(parameter.asType()))) {
                     code.add("$N", "view");
                 } else {
                     code.add("($T)$N", parameter.asType(), "view");
                 }
-            } else if (processorUtil.getClassName(parameter.asType()).equals(ClassName.get(Integer.class))) {
+            } else if (creator.getClassName(parameter.asType()).equals(ClassName.get(Integer.class))) {
                 if (parameter.getSimpleName().toString().toLowerCase().equals("action")) {
                     code.add("event.getAction()");
                     countInt++;
@@ -740,7 +741,7 @@ public class ListenerHelp {
                 } else {
                     code.add("0");
                 }
-            } else if (ClassName.get("android.view", "MotionEvent").equals(processorUtil.getClassName(parameter.asType()))) {
+            } else if (ClassName.get("android.view", "MotionEvent").equals(creator.getClassName(parameter.asType()))) {
                 code.add("event");
             } else {
                 code.add(AnnotationHelp.addNullCode(parameter));
@@ -753,25 +754,25 @@ public class ListenerHelp {
         return code.build();
     }
 
-    private static CodeBlock createTouchDownCode(ElementBundle touchDown, ProcessorUtil processorUtil, String className) {
+    private static CodeBlock createTouchDownCode(ElementBundle touchDown, BaseCreator creator, String className) {
         final ExecutableElement method = (ExecutableElement) touchDown.element;
         final Iterator<? extends VariableElement> parameters = method.getParameters().iterator();
         final CodeBlock.Builder code = CodeBlock.builder();
         code.beginControlFlow("if(event.getAction()==MotionEvent.ACTION_DOWN)");
-        if (processorUtil.getClassName(method.getReturnType()).equals(ClassName.get(Boolean.class))) {
-            code.add("returns = $N.this.$N(", className, method.getSimpleName());
+        if (creator.getClassName(method.getReturnType()).equals(ClassName.get(Boolean.class))) {
+            code.add("$N = $N|$N.this.$N(", RETURNS, RETURNS,className, method.getSimpleName());
         } else {
             code.add("$N.this.$N(", className, method.getSimpleName());
         }
         while (parameters.hasNext()) {
             final VariableElement parameter = parameters.next();
-            if (processorUtil.isInstanceOf(parameter.asType(), AndroidClass.View)) {
-                if (AndroidClass.View.equals(processorUtil.getClassName(parameter.asType()))) {
+            if (creator.isInstanceOf(parameter.asType(), AndroidClass.View)) {
+                if (AndroidClass.View.equals(creator.getClassName(parameter.asType()))) {
                     code.add("$N", "view");
                 } else {
                     code.add("($T)$N", parameter.asType(), "view");
                 }
-            } else if (processorUtil.getClassName(parameter.asType()).equals(ClassName.get(Integer.class))) {
+            } else if (creator.getClassName(parameter.asType()).equals(ClassName.get(Integer.class))) {
                 code.add("event.getActionIndex()");
             } else {
                 code.add(AnnotationHelp.addNullCode(parameter));
@@ -785,25 +786,25 @@ public class ListenerHelp {
     }
 
 
-    private static CodeBlock createTouchMovenCode(ElementBundle touchMoven, ProcessorUtil processorUtil, String className) {
+    private static CodeBlock createTouchMovenCode(ElementBundle touchMoven, BaseCreator creator, String className) {
         final ExecutableElement method = (ExecutableElement) touchMoven.element;
         final Iterator<? extends VariableElement> parameters = method.getParameters().iterator();
         final CodeBlock.Builder code = CodeBlock.builder();
         code.beginControlFlow("if(event.getAction()==MotionEvent.ACTION_MOVE)");
-        if (processorUtil.getClassName(method.getReturnType()).equals(ClassName.get(Boolean.class))) {
-            code.add("returns = $N.this.$N(", className, method.getSimpleName());
+        if (creator.getClassName(method.getReturnType()).equals(ClassName.get(Boolean.class))) {
+            code.add("$N = $N|$N.this.$N(", RETURNS, RETURNS,className, method.getSimpleName());
         } else {
             code.add("$N.this.$N(", className, method.getSimpleName());
         }
         while (parameters.hasNext()) {
             final VariableElement parameter = parameters.next();
-            if (processorUtil.isInstanceOf(parameter.asType(), AndroidClass.View)) {
-                if (AndroidClass.View.equals(processorUtil.getClassName(parameter.asType()))) {
+            if (creator.isInstanceOf(parameter.asType(), AndroidClass.View)) {
+                if (AndroidClass.View.equals(creator.getClassName(parameter.asType()))) {
                     code.add("$N", "view");
                 } else {
                     code.add("($T)$N", parameter.asType(), "view");
                 }
-            } else if (processorUtil.getClassName(parameter.asType()).equals(ClassName.get(Integer.class))) {
+            } else if (creator.getClassName(parameter.asType()).equals(ClassName.get(Integer.class))) {
                 code.add("event.getActionIndex()");
             } else {
                 code.add(AnnotationHelp.addNullCode(parameter));
@@ -816,25 +817,25 @@ public class ListenerHelp {
         return code.endControlFlow().build();
     }
 
-    private static CodeBlock createTouchUpCode(ElementBundle touchUp, ProcessorUtil processorUtil, String className) {
+    private static CodeBlock createTouchUpCode(ElementBundle touchUp, BaseCreator creator, String className) {
         final ExecutableElement method = (ExecutableElement) touchUp.element;
         final Iterator<? extends VariableElement> parameters = method.getParameters().iterator();
         final CodeBlock.Builder code = CodeBlock.builder();
         code.beginControlFlow("if(event.getAction()==MotionEvent.ACTION_UP)");
-        if (processorUtil.getClassName(method.getReturnType()).equals(ClassName.get(Boolean.class))) {
-            code.add("returns = $N.this.$N(", className, method.getSimpleName());
+        if (creator.getClassName(method.getReturnType()).equals(ClassName.get(Boolean.class))) {
+            code.add("$N = $N|$N.this.$N(", RETURNS, RETURNS, className, method.getSimpleName());
         } else {
             code.add("$N.this.$N(", className, method.getSimpleName());
         }
         while (parameters.hasNext()) {
             final VariableElement parameter = parameters.next();
-            if (processorUtil.isInstanceOf(parameter.asType(), AndroidClass.View)) {
-                if (AndroidClass.View.equals(processorUtil.getClassName(parameter.asType()))) {
+            if (creator.isInstanceOf(parameter.asType(), AndroidClass.View)) {
+                if (AndroidClass.View.equals(creator.getClassName(parameter.asType()))) {
                     code.add("$N", "view");
                 } else {
                     code.add("($T)$N", parameter.asType(), "view");
                 }
-            } else if (processorUtil.getClassName(parameter.asType()).equals(ClassName.get(Integer.class))) {
+            } else if (creator.getClassName(parameter.asType()).equals(ClassName.get(Integer.class))) {
                 code.add("event.getActionIndex()");
             } else {
                 code.add(AnnotationHelp.addNullCode(parameter));

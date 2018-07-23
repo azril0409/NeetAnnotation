@@ -4,6 +4,7 @@ dependencies {
     compile 'com.squareup:javapoet:1.8.0'
     api project(':Neetannotation-api')
     api fileTree(include: ['*.jar'], dir: 'libs')
+    //don't move out
     compile "com.google.dagger:dagger-compiler:$dagger_version"
 }
 

@@ -93,11 +93,11 @@ public class ProcessorUtil {
     }
 
     public boolean isInstanceOf(TypeMirror elementClass, ClassName subClass) {
-        return processingEnv.getTypeUtils().isSubtype(elementClass, processingEnv.getElementUtils().getTypeElement(subClass.toString()).asType());
+       return processingEnv.getTypeUtils().isAssignable(processingEnv.getTypeUtils().erasure(elementClass), processingEnv.getElementUtils().getTypeElement(subClass.toString()).asType());
     }
 
     private boolean isInstanceOf(TypeElement element, String className) {
-        return processingEnv.getTypeUtils().isSubtype(element.asType(), processingEnv.getElementUtils().getTypeElement(className).asType());
+        return processingEnv.getTypeUtils().isAssignable(processingEnv.getTypeUtils().erasure(element.asType()), processingEnv.getElementUtils().getTypeElement(className).asType());
     }
 
     Object findAnnotationValue(Element element, Class<?> annotationClass, String executableName) {

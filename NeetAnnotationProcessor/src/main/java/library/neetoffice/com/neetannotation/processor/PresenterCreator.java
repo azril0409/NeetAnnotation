@@ -23,8 +23,9 @@ import javax.lang.model.element.VariableElement;
 public class PresenterCreator extends BaseCreator {
     static final String PRESENTER = "Presenter";
     static final String PRESENTER_ = PRESENTER + "_";
-    static final String ENTITY = "entity";
     static final String UPDATE = "update";
+    static final String ENTITY = "entity";
+    static final String SUBJECT = "subject";
     static final String ACCEPT = "accept";
     static final String ENTITY_FIELD_NAME = "entity";
     static final String SUBJECT_FIELD_NAME = "subject";
@@ -55,12 +56,14 @@ public class PresenterCreator extends BaseCreator {
     }
 
     static class Setter {
+        final Element element;
         final String fieldMame;
         final String methodName;
         final TypeName parameterTypeName;
         final String parameterName;
 
-        Setter(String fieldMame, String methodName, TypeName parameterTypeName, String parameterName) {
+        Setter(Element element, String fieldMame, String methodName, TypeName parameterTypeName, String parameterName) {
+            this.element = element;
             this.fieldMame = fieldMame;
             this.methodName = methodName;
             this.parameterTypeName = parameterTypeName;
@@ -69,11 +72,13 @@ public class PresenterCreator extends BaseCreator {
     }
 
     static class Getter {
+        final Element element;
         final String fieldMame;
         final String methodName;
         final TypeName returnTypeName;
 
-        Getter(String fieldMame, String methodName, TypeName returnTypeName) {
+        Getter(Element element, String fieldMame, String methodName, TypeName returnTypeName) {
+            this.element = element;
             this.fieldMame = fieldMame;
             this.methodName = methodName;
             this.returnTypeName = returnTypeName;
@@ -103,14 +108,19 @@ public class PresenterCreator extends BaseCreator {
                 .addModifiers(Modifier.PUBLIC)
                 .addSuperinterface(RxJavaClass.Consumer(entityType));
 
-        final MethodSpec.Builder entity = MethodSpec.methodBuilder(ENTITY)
-                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                .returns(entityType);
 
         final MethodSpec.Builder update = MethodSpec.methodBuilder(UPDATE)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .addParameter(entityType, interactElement.getSimpleName().toString())
                 .returns(void.class);
+
+        final MethodSpec.Builder entity = MethodSpec.methodBuilder(ENTITY)
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                .returns(entityType);
+
+        final MethodSpec.Builder subject = MethodSpec.methodBuilder(SUBJECT)
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                .returns(RxJavaClass.Subject(entityType));
 
         for (Element element : interactElement.getEnclosedElements()) {
             if (element.getKind() == ElementKind.FIELD) {
@@ -125,14 +135,17 @@ public class PresenterCreator extends BaseCreator {
                 final MethodSpec.Builder getter = MethodSpec.methodBuilder(getterName)
                         .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                         .returns(fieldType);
-                tb.addMethod(setter.build());
+                if (!element.getModifiers().contains(Modifier.FINAL)) {
+                    tb.addMethod(setter.build());
+                    interactBuild.setters.add(new Setter(element, fieldMame, setterName, fieldType, fieldMame));
+                }
                 tb.addMethod(getter.build());
-                interactBuild.setters.add(new Setter(fieldMame, setterName, fieldType, fieldMame));
-                interactBuild.getters.add(new Getter(fieldMame, getterName, fieldType));
+                interactBuild.getters.add(new Getter(element, fieldMame, getterName, fieldType));
             }
         }
         tb.addMethod(update.build());
         tb.addMethod(entity.build());
+        tb.addMethod(subject.build());
         writeTo(packageName, tb.build());
         interactBuilds.put(interfaceClassName.toString(), interactBuild);
         interactBuilds.put(interfaceName, interactBuild);
@@ -156,9 +169,12 @@ public class PresenterCreator extends BaseCreator {
                 .addSuperinterface(interactBuild.interactTypeName);
 
         final FieldSpec entityField = FieldSpec.builder(entityType, ENTITY_FIELD_NAME, Modifier.PRIVATE).build();
-        final FieldSpec subjectField = FieldSpec.builder(subjectType, SUBJECT_FIELD_NAME, Modifier.PRIVATE, Modifier.FINAL).build();
-        final MethodSpec constructor = createConstructor(entityType, subjectType);
+        final FieldSpec subjectField = FieldSpec.builder(subjectType, SUBJECT_FIELD_NAME, Modifier.PRIVATE, Modifier.FINAL)
+                .initializer("$T.create()", RxJavaClass.PublishSubject)
+                .build();
+        final MethodSpec constructor = createConstructor(entityType);
         final MethodSpec entity = createEntityMethod(entityType);
+        final MethodSpec subject = createSubjectMethod(entityType);
         final MethodSpec update = createUpdateMethod(entityType);
         final MethodSpec accept = createAcceptMethod(entityType);
 
@@ -173,6 +189,7 @@ public class PresenterCreator extends BaseCreator {
         tb.addMethod(constructor);
         tb.addMethod(update);
         tb.addMethod(entity);
+        tb.addMethod(subject);
         tb.addMethod(accept);
         writeTo(interactBuild.packageName, tb.build());
     }
@@ -202,13 +219,12 @@ public class PresenterCreator extends BaseCreator {
         return map;
     }
 
-    private MethodSpec createConstructor(TypeName entityType, TypeName subjectType) {
+    private MethodSpec createConstructor(TypeName entityType) {
         return MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(entityType, ENTITY_FIELD_NAME)
-                .addParameter(subjectType, SUBJECT_FIELD_NAME)
                 .addStatement("this.$N = $N", ENTITY_FIELD_NAME, ENTITY_FIELD_NAME)
-                .addStatement("this.$N = $N", SUBJECT_FIELD_NAME, SUBJECT_FIELD_NAME).build();
+                .build();
     }
 
     private MethodSpec createEntityMethod(TypeName entityType) {
@@ -217,6 +233,14 @@ public class PresenterCreator extends BaseCreator {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .returns(entityType)
                 .addStatement("return $N", ENTITY_FIELD_NAME).build();
+    }
+
+    private MethodSpec createSubjectMethod(TypeName entityType) {
+        return MethodSpec.methodBuilder(SUBJECT)
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .returns(RxJavaClass.Subject(entityType))
+                .addStatement("return $N", SUBJECT_FIELD_NAME).build();
     }
 
     private MethodSpec createUpdateMethod(TypeName entityType) {
@@ -261,6 +285,8 @@ public class PresenterCreator extends BaseCreator {
         } else if (fieldElements.containsKey(interactMethodName.substring(SET.length()))) {
             final VariableElement fieldElement = fieldElements.get(interactMethodName.substring(SET.length()));
             codeBlock.addStatement("$N.this.$N.$N = $N", implementClassName, ENTITY_FIELD_NAME, fieldElement.getSimpleName(), parameterName);
+        } else if (setter.element.getModifiers().contains(Modifier.STATIC)) {
+            codeBlock.addStatement("$T = $N", setter.parameterTypeName, parameterName);
         }
         return CodeBlock.builder()
                 .add(codeBlock.build())
@@ -286,6 +312,12 @@ public class PresenterCreator extends BaseCreator {
         } else if (fieldElements.containsKey(interactMethodName.substring(GET.length()))) {
             final VariableElement fieldElement = fieldElements.get(interactMethodName.substring(GET.length()));
             codeBlock.addStatement("return $N.this.$N.$N", implementClassName, ENTITY_FIELD_NAME, fieldElement.getSimpleName());
+        } else if (getter.element.getModifiers().contains(Modifier.STATIC)) {
+            codeBlock.addStatement("return $T", getter.returnTypeName);
+        } else {
+            codeBlock.add("return ")
+                    .add(addNullCode(getClassName(getter.element.asType())))
+                    .addStatement("");
         }
         return codeBlock.build();
     }

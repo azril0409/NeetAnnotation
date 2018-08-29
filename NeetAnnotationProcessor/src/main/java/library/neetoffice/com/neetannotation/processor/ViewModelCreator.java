@@ -65,9 +65,9 @@ public class ViewModelCreator extends BaseCreator {
             final List<? extends Element> enclosedElements = viewModel.getEnclosedElements();
             for (Element enclosedElement : enclosedElements) {
                 if (enclosedElement.getAnnotation(Subject.class) != null) {
-                    final FieldSpec subjectField = createSubjectField(enclosedElement);
-                    tb.addField(subjectField);
-                    final CodeBlock instanceInteractor = createInstanceCode(viewModelElement, (VariableElement) enclosedElement, subjectField, haveDagger);
+                    //final FieldSpec subjectField = createSubjectField(enclosedElement);
+                    //tb.addField(subjectField);
+                    final CodeBlock instanceInteractor = createInstanceCode(viewModelElement, (VariableElement) enclosedElement, haveDagger);
                     init.add(instanceInteractor);
                     final CodeBlock findSubjectByNameCode = createFindSubjectByNameCode((VariableElement) enclosedElement);
                     findSubjectByName.addCode(findSubjectByNameCode);
@@ -105,7 +105,7 @@ public class ViewModelCreator extends BaseCreator {
                 .addStatement("default: return $T.create()", RxJavaClass.PublishSubject);
     }
 
-    FieldSpec createSubjectField(Element interactor) {
+    /*FieldSpec createSubjectField(Element interactor) {
         final String interactorName = interactor.asType().toString();
         final Element entityElement = processor.interactorCreator.interactElements.get(interactorName);
         final TypeName entityType;
@@ -119,9 +119,9 @@ public class ViewModelCreator extends BaseCreator {
         final FieldSpec.Builder fb = FieldSpec.builder(subjectTypeName, fieldName, Modifier.PUBLIC)
                 .initializer("$T.create()", RxJavaClass.PublishSubject);
         return fb.build();
-    }
+    }*/
 
-    CodeBlock createInstanceCode(TypeElement viewModelElement, VariableElement interactElement, FieldSpec subjectField, boolean haveDagger) {
+    CodeBlock createInstanceCode(TypeElement viewModelElement, VariableElement interactElement, boolean haveDagger) {
         final boolean isSubAndroidViewModel = isSubAndroidViewModel(viewModelElement);
         final String daggerMethodName = DaggerHelp.findNameFromDagger(this, interactElement);
         final PresenterCreator.InteractBuild interactBuild = processor.interactorCreator.interactBuilds.get(interactElement.asType().toString());
@@ -138,24 +138,23 @@ public class ViewModelCreator extends BaseCreator {
             return CodeBlock.builder()
                     .add("$N = new $T(", interactElement.getSimpleName(), implementType)
                     .add(addNullCode(implementType))
-                    .addStatement(",$N)", subjectField.name)
+                    .addStatement(")")
                     .build();
         }
         if (isSubAndroidViewModel) {
             return CodeBlock.builder()
                     .add("$N = new $T(", interactElement.getSimpleName(), implementType)
                     .add("$N.$N()", DAGGER_NAME, daggerMethodName)
-                    .addStatement(",$N)", subjectField.name)
+                    .addStatement(")")
                     .build();
         }
         return CodeBlock.builder()
-                .addStatement("$N = new $T($N.$N(),$N)", interactElement.getSimpleName(), implementType, DAGGER_NAME, daggerMethodName, subjectField.name)
+                .addStatement("$N = new $T($N.$N())", interactElement.getSimpleName(), implementType, DAGGER_NAME, daggerMethodName)
                 .build();
     }
 
     CodeBlock createFindSubjectByNameCode(VariableElement interactElement) {
         final CodeBlock.Builder code = CodeBlock.builder();
-        final String fieldName = interactElement.getSimpleName().toString() + _SUBJECT;
 
         final AnnotationMirror named = findAnnotationMirror(interactElement, DaggerClass.Named);
         final String name;
@@ -169,8 +168,8 @@ public class ViewModelCreator extends BaseCreator {
         } else {
             name = "n_" + interactElement.getSimpleName().toString();
         }
-        code.addStatement("case $S: return ($T) $N", name, RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), fieldName).build();
-        code.addStatement("case $S: return ($T) $N", interactElement.getSimpleName(), RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), fieldName).build();
+        code.addStatement("case $S: return ($T) $N.$N()", name, RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(),PresenterCreator.SUBJECT).build();
+        code.addStatement("case $S: return ($T) $N.$N()", interactElement.getSimpleName(), RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(),PresenterCreator.SUBJECT).build();
         return code.build();
     }
 

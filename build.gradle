@@ -3,7 +3,7 @@
 buildscript {
     ext{
         kotlin_version = '1.1.51'
-        lib_version = '114'
+        lib_version = '115'
         dagger_version = "2.16"
         lifecycle_version = "1.1.1"
     }

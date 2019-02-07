@@ -16,5 +16,8 @@ class RecordModule {
     fun record(databaseHelper: DatabaseHelper) = databaseHelper.getDao(Record::class.java)
 
     @Provides
+    fun injectRecord() = Record()
+
+    @Provides
     fun adapter(context: Context) = RecordAdapter(context)
 }

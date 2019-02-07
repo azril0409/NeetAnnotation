@@ -90,7 +90,7 @@ public class DaggerCreator extends BaseCreator {
         final TypeName entityType;
         if (entityElement == null) {
             final String typeString = subjectElement.asType().toString();
-            entityType = ClassName.bestGuess(typeString.substring(0, typeString.length() - processor.interactorCreator.PRESENTER.length()));
+            entityType = ClassName.bestGuess(typeString.substring(0, typeString.length() - processor.interactorCreator.INTERACTOR.length()));
         } else {
             entityType = getClassName(entityElement.asType());
         }
@@ -127,10 +127,6 @@ public class DaggerCreator extends BaseCreator {
                 .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
                 .build());
         contextModuleBuilder.addField(FieldSpec.
-                builder(AndroidClass.Fragment_v4, "fragment_v4")
-                .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
-                .build());
-        contextModuleBuilder.addField(FieldSpec.
                 builder(AndroidClass.Service, "service")
                 .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
                 .build());
@@ -141,7 +137,6 @@ public class DaggerCreator extends BaseCreator {
                 .addStatement("this.application = null")
                 .addStatement("this.activity = null")
                 .addStatement("this.fragment = null")
-                .addStatement("this.fragment_v4 = null")
                 .addStatement("this.service = null")
                 .build());
         contextModuleBuilder.addMethod(MethodSpec.constructorBuilder()
@@ -151,7 +146,6 @@ public class DaggerCreator extends BaseCreator {
                 .addStatement("this.application = application")
                 .addStatement("this.activity = null")
                 .addStatement("this.fragment = null")
-                .addStatement("this.fragment_v4 = null")
                 .addStatement("this.service = null")
                 .build());
         contextModuleBuilder.addMethod(MethodSpec.constructorBuilder()
@@ -161,7 +155,6 @@ public class DaggerCreator extends BaseCreator {
                 .addStatement("this.application = activity.getApplication()")
                 .addStatement("this.activity = activity")
                 .addStatement("this.fragment = null")
-                .addStatement("this.fragment_v4 = null")
                 .addStatement("this.service = null")
                 .build());
         contextModuleBuilder.addMethod(MethodSpec.constructorBuilder()
@@ -171,17 +164,6 @@ public class DaggerCreator extends BaseCreator {
                 .addStatement("this.application = fragment.getActivity().getApplication()")
                 .addStatement("this.activity = fragment.getActivity()")
                 .addStatement("this.fragment = fragment")
-                .addStatement("this.fragment_v4 = null")
-                .addStatement("this.service = null")
-                .build());
-        contextModuleBuilder.addMethod(MethodSpec.constructorBuilder()
-                .addModifiers(Modifier.PUBLIC)
-                .addParameter(AndroidClass.Fragment_v4, "fragment_v4")
-                .addStatement("this.context = fragment_v4.getActivity()")
-                .addStatement("this.application = fragment_v4.getActivity().getApplication()")
-                .addStatement("this.activity = fragment_v4.getActivity()")
-                .addStatement("this.fragment = null")
-                .addStatement("this.fragment_v4 = fragment_v4")
                 .addStatement("this.service = null")
                 .build());
         contextModuleBuilder.addMethod(MethodSpec.constructorBuilder()
@@ -191,7 +173,6 @@ public class DaggerCreator extends BaseCreator {
                 .addStatement("this.application = service.getApplication()")
                 .addStatement("this.activity = null")
                 .addStatement("this.fragment = null")
-                .addStatement("this.fragment_v4 = null")
                 .addStatement("this.service = service")
                 .build());
         //
@@ -218,12 +199,6 @@ public class DaggerCreator extends BaseCreator {
                 .addAnnotation(DaggerClass.Provides)
                 .returns(AndroidClass.Fragment)
                 .addStatement("return fragment")
-                .build());
-        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("fragment_v4")
-                .addModifiers(Modifier.PUBLIC)
-                .addAnnotation(DaggerClass.Provides)
-                .returns(AndroidClass.Fragment_v4)
-                .addStatement("return fragment_v4")
                 .build());
         contextModuleBuilder.addMethod(MethodSpec.methodBuilder("service")
                 .addModifiers(Modifier.PUBLIC)

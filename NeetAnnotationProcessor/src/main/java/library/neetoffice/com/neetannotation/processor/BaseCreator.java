@@ -129,7 +129,7 @@ public abstract class BaseCreator {
     }
 
     boolean isSubFragment(TypeElement element) {
-        return isInstanceOf(element, AndroidClass.Fragment) || isInstanceOf(element, AndroidClass.Fragment_v4);
+        return isInstanceOf(element, AndroidClass.Fragment);
     }
 
     boolean isSubAndroidViewModel(TypeElement element) {
@@ -145,10 +145,6 @@ public abstract class BaseCreator {
 
     public boolean isInstanceOf(TypeMirror elementClass, ClassName subClass) {
         return isInstanceOf(elementClass, subClass.toString());
-    }
-
-    private boolean isInstanceOf(TypeElement element, String className) {
-        return isInstanceOf(element.asType(), className);
     }
 
     public boolean isInstanceOf(TypeMirror elementClass, String className) {

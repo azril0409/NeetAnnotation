@@ -126,13 +126,13 @@ public class ExtraHelp {
             } else if (isCollection(extraElement.asType())) {
                 final DeclaredType declaredType = (DeclaredType) extraElement.asType();
                 if (ClassName.get(declaredType.getTypeArguments().get(0)).equals(ClassName.get(Integer.class))) {
-                    code.addStatement("$N.putIntegerArrayList($S,new $T<>($N))", bundleName, key, ArrayList.class, varName);
+                    code.addStatement("$N.putIntegerArrayList($S,new $T<$T>($N))", bundleName, key, ArrayList.class,Integer.class, varName);
                 } else if (ClassName.get(declaredType.getTypeArguments().get(0)).equals(ClassName.get(CharSequence.class))) {
-                    code.addStatement("$N.putCharSequenceArrayList($S,new $T<>($N))", bundleName, key, ArrayList.class, varName);
+                    code.addStatement("$N.putCharSequenceArrayList($S,new $T<$T>($N))", bundleName, key, ArrayList.class,CharSequence.class, varName);
                 } else if (ClassName.get(declaredType.getTypeArguments().get(0)).equals(ClassName.get(String.class))) {
-                    code.addStatement("$N.putStringArrayList($S,new $T<>($N))", bundleName, key, ArrayList.class, varName);
+                    code.addStatement("$N.putStringArrayList($S,new $T<$T>($N))", bundleName, key, ArrayList.class,String.class, varName);
                 } else {
-                    code.addStatement("$N.putParcelableArrayList($S,new $T<>($N))", bundleName, key, ArrayList.class, varName);
+                    code.addStatement("$N.putParcelableArrayList($S,new $T<$T>($N))", bundleName, key, ArrayList.class,declaredType.getTypeArguments().get(0), varName);
                 }
             } else if (isParcelable(extraElement.asType())) {
                 code.addStatement("$N.putParcelable($S,$N)", bundleName, key, varName);

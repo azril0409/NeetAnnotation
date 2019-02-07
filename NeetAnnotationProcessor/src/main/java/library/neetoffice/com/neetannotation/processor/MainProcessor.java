@@ -13,7 +13,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
-import library.neetoffice.com.neetannotation.Presenter;
+import library.neetoffice.com.neetannotation.Interactor;
 import library.neetoffice.com.neetannotation.NActivity;
 import library.neetoffice.com.neetannotation.NDagger;
 import library.neetoffice.com.neetannotation.NFragment;
@@ -22,16 +22,19 @@ import library.neetoffice.com.neetannotation.NView;
 import library.neetoffice.com.neetannotation.NViewModel;
 
 @SupportedAnnotationTypes({
-        "library.neetoffice.com.neetannotation.Presenter",
+        "library.neetoffice.com.neetannotation.Interactor",
         "library.neetoffice.com.neetannotation.NDagger",
         "library.neetoffice.com.neetannotation.NViewModel",
-        "library.neetoffice.com.neetannotation.NActivity"})
+        "library.neetoffice.com.neetannotation.NActivity",
+        "library.neetoffice.com.neetannotation.NFragment",
+        "library.neetoffice.com.neetannotation.NView",
+        "library.neetoffice.com.neetannotation.NService"})
 @AutoService(Process.class)
 public class MainProcessor extends AbstractProcessor {
     private static final String APPLY = "apply";
     private static final String APPLICATION = "application";
     private static final String LIBRARY = "library";
-    PresenterCreator interactorCreator;
+    InteractorCreator interactorCreator;
     DaggerCreator daggerCreator;
     ViewModelCreator viewModelCreator;
     ActivityCreator activityCreator;
@@ -48,7 +51,7 @@ public class MainProcessor extends AbstractProcessor {
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
-        interactorCreator = new PresenterCreator(this, processingEnv);
+        interactorCreator = new InteractorCreator(this, processingEnv);
         daggerCreator = new DaggerCreator(this, processingEnv);
         viewModelCreator = new ViewModelCreator(this, processingEnv);
         activityCreator = new ActivityCreator(this, processingEnv);
@@ -64,7 +67,7 @@ public class MainProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnv) {
-        final Set<? extends Element> interacts = roundEnv.getElementsAnnotatedWith(Presenter.class);
+        final Set<? extends Element> interacts = roundEnv.getElementsAnnotatedWith(Interactor.class);
         for (Element interact : interacts) {
             interactorCreator.process((TypeElement) interact, roundEnv);
         }

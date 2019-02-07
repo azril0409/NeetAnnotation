@@ -2,7 +2,6 @@ package library.neetoffice.com.neetannotation.processor;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
-import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
@@ -13,6 +12,7 @@ import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.inject.Named;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -21,6 +21,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
+import library.neetoffice.com.neetannotation.AfterAnnotation;
 import library.neetoffice.com.neetannotation.InjectEntity;
 import library.neetoffice.com.neetannotation.NViewModel;
 import library.neetoffice.com.neetannotation.Subject;
@@ -57,10 +58,12 @@ public class ViewModelCreator extends BaseCreator {
         final MethodSpec.Builder findSubjectByName = createFindSubjectByNameMethodBuilder();
 
         final CodeBlock.Builder init = CodeBlock.builder();
+        final CodeBlock.Builder afterAnnotationCode = CodeBlock.builder();
 
         if (haveDagger) {
             init.add(createDaggerCode(viewModelElement));
         }
+
         for (TypeElement viewModel : viewModelElements) {
             final List<? extends Element> enclosedElements = viewModel.getEnclosedElements();
             for (Element enclosedElement : enclosedElements) {
@@ -69,14 +72,16 @@ public class ViewModelCreator extends BaseCreator {
                     //tb.addField(subjectField);
                     final CodeBlock instanceInteractor = createInstanceCode(viewModelElement, (VariableElement) enclosedElement, haveDagger);
                     init.add(instanceInteractor);
-                    final CodeBlock findSubjectByNameCode = createFindSubjectByNameCode((VariableElement) enclosedElement);
+                    final CodeBlock findSubjectByNameCode = createFindSubjectByNameCode(enclosedElement);
                     findSubjectByName.addCode(findSubjectByNameCode);
                 }
+                afterAnnotationCode.add(createAfterAnnotationCode(enclosedElement));
             }
         }
         if (haveDagger) {
             init.addStatement("$N.inject(this)", DAGGER_NAME);
         }
+        init.add(afterAnnotationCode.build());
         boolean haveConstructor = false;
         for (Element enclosedElement : viewModelElement.getEnclosedElements()) {
             if (enclosedElement.getKind() == ElementKind.CONSTRUCTOR) {
@@ -124,7 +129,7 @@ public class ViewModelCreator extends BaseCreator {
     CodeBlock createInstanceCode(TypeElement viewModelElement, VariableElement interactElement, boolean haveDagger) {
         final boolean isSubAndroidViewModel = isSubAndroidViewModel(viewModelElement);
         final String daggerMethodName = DaggerHelp.findNameFromDagger(this, interactElement);
-        final PresenterCreator.InteractBuild interactBuild = processor.interactorCreator.interactBuilds.get(interactElement.asType().toString());
+        final InteractorCreator.InteractBuild interactBuild = processor.interactorCreator.interactBuilds.get(interactElement.asType().toString());
         final TypeName implementType;
         if (interactBuild == null) {
             final String implementTypeString = interactElement.asType().toString();
@@ -153,23 +158,18 @@ public class ViewModelCreator extends BaseCreator {
                 .build();
     }
 
-    CodeBlock createFindSubjectByNameCode(VariableElement interactElement) {
+    CodeBlock createFindSubjectByNameCode(Element interactElement) {
         final CodeBlock.Builder code = CodeBlock.builder();
-
-        final AnnotationMirror named = findAnnotationMirror(interactElement, DaggerClass.Named);
-        final String name;
-        if (named != null) {
-            final Object value = findAnnotationValue(named, "value");
-            if (value == null) {
-                name = "n_" + value.toString();
-            } else {
-                name = "n_" + interactElement.getSimpleName().toString();
+        final Subject aSubject= interactElement.getAnnotation(Subject.class);
+        final String name = aSubject.name();
+        if(!name.isEmpty()){
+            code.addStatement("case $S: return ($T) $N.$N()", name, RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.SUBJECT).build();
+            if(!interactElement.getSimpleName().equals(name)){
+                code.addStatement("case $S: return ($T) $N.$N()", interactElement.getSimpleName(), RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.SUBJECT).build();
             }
-        } else {
-            name = "n_" + interactElement.getSimpleName().toString();
+        }else {
+            code.addStatement("case $S: return ($T) $N.$N()", interactElement.getSimpleName(), RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.SUBJECT).build();
         }
-        code.addStatement("case $S: return ($T) $N.$N()", name, RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(),PresenterCreator.SUBJECT).build();
-        code.addStatement("case $S: return ($T) $N.$N()", interactElement.getSimpleName(), RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(),PresenterCreator.SUBJECT).build();
         return code.build();
     }
 
@@ -216,5 +216,28 @@ public class ViewModelCreator extends BaseCreator {
         mb.addCode(code.addStatement(")").build())
                 .addCode(init);
         return mb.build();
+    }
+
+
+    CodeBlock createAfterAnnotationCode(Element afterAnnotationElement) {
+        final AfterAnnotation aAfterAnnotation = afterAnnotationElement.getAnnotation(AfterAnnotation.class);
+        if (aAfterAnnotation == null) {
+            return CodeBlock.builder().build();
+        }
+        final ExecutableElement mothod = (ExecutableElement) afterAnnotationElement;
+        final CodeBlock.Builder parameters = CodeBlock.builder();
+        final Iterator<? extends VariableElement> iterator = mothod.getParameters().iterator();
+        while (iterator.hasNext()) {
+            final VariableElement parameter = iterator.next();
+            parameters.add(addNullCode(parameter.asType()));
+            if (iterator.hasNext()) {
+                parameters.add(",");
+            }
+        }
+        return CodeBlock.builder()
+                .add("$N(", afterAnnotationElement.getSimpleName())
+                .add(parameters.build())
+                .addStatement(")")
+                .build();
     }
 }

@@ -3,11 +3,13 @@ package library.neetoffice.com.neetannotation.processor;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.TypeName;
 
+import java.util.concurrent.TimeUnit;
+
 public class ReactiveXHelp {
 
 
     public static CodeBlock delay(long dalayTimeMillis) {
-        return CodeBlock.builder().add(".delay($N, TimeUnit.MILLISECONDS)", dalayTimeMillis).build();
+        return CodeBlock.builder().add(".delay(").add(String.valueOf(dalayTimeMillis)).add(", $T.MILLISECONDS)",TimeUnit.class).build();
     }
 
     public static CodeBlock observeOnMain() {
@@ -15,7 +17,15 @@ public class ReactiveXHelp {
     }
 
     public static CodeBlock observeOnThread() {
-        return CodeBlock.builder().add(".observeOn($T.newThread())", RxJavaClass.Subject).build();
+        return CodeBlock.builder().add(".observeOn($T.newThread())", RxJavaClass.Schedulers).build();
+    }
+
+    public static CodeBlock subscribeOnMain() {
+        return CodeBlock.builder().add(".subscribeOn($T.mainThread())", RxJavaClass.AndroidSchedulers).build();
+    }
+
+    public static CodeBlock subscribeOnThread() {
+        return CodeBlock.builder().add(".subscribeOn($T.newThread())", RxJavaClass.Schedulers).build();
     }
 
     public static CodeBlock subscribeConsumer(TypeName parameterizedType, String parameterized, CodeBlock accept) {

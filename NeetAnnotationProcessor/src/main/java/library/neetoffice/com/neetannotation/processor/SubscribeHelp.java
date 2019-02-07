@@ -3,7 +3,6 @@ package library.neetoffice.com.neetannotation.processor;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
-import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
@@ -12,6 +11,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.inject.Named;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -19,9 +19,8 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 
-import library.neetoffice.com.neetannotation.Background;
 import library.neetoffice.com.neetannotation.Subscribe;
-import library.neetoffice.com.neetannotation.UIThread;
+import library.neetoffice.com.neetannotation.ViewModelKey;
 import library.neetoffice.com.neetannotation.ViewModelOf;
 
 public class SubscribeHelp {
@@ -29,6 +28,7 @@ public class SubscribeHelp {
         final Element element;
         Object viewModel;
         String key = "";
+        String subjectName = "";
         String named = "";
 
         SubscribeElement(Element element) {
@@ -74,7 +74,7 @@ public class SubscribeHelp {
         }
 
         private String mapKey(SubscribeElement subscribeElement) {
-            return subscribeElement.named + "_" + subscribeElement.viewModel.toString();
+            return subscribeElement.key + "_" + subscribeElement.viewModel.toString();
         }
 
         private String mapKey(ViewModelOfElement viewModelOfElement) {
@@ -84,11 +84,15 @@ public class SubscribeHelp {
         public void parseElement(Element element) {
             if (element.getAnnotation(Subscribe.class) != null) {
                 final SubscribeElement subscribeElement = new SubscribeElement(element);
-                subscribeElement.viewModel = creator.findAnnotationValue(element, Subscribe.class, "value");
+                subscribeElement.viewModel = creator.findAnnotationValue(element, Subscribe.class, "viewmode");
                 final Object named = creator.findAnnotationValue(element, DaggerClass.Named, "value");
                 subscribeElement.named = named != null ? named.toString() : element.getSimpleName().toString();
-                final Object subscribe_key = creator.findAnnotationValue(element, Subscribe.class, "key");
-                subscribeElement.key = subscribe_key != null ? subscribe_key.toString() : "";
+                final Object subscribe_key = creator.findAnnotationValue(element, Subscribe.class, "subjectName");
+                subscribeElement.subjectName = subscribe_key != null ? subscribe_key.toString() : "";
+                if(element.getAnnotation(ViewModelKey.class) != null){
+                    final Object viewModelKey = creator.findAnnotationValue(element, ViewModelKey.class,"value");
+                    subscribeElement.key = viewModelKey != null ? viewModelKey.toString() : "";
+                }
                 if (subscribeElement.viewModel != null) {
                     final String key = mapKey(subscribeElement);
                     if (subscribeMap.containsKey(key)) {
@@ -101,8 +105,13 @@ public class SubscribeHelp {
                 }
             }
             if (element.getAnnotation(ViewModelOf.class) != null) {
+                final Object v;
+                if(element.getAnnotation(ViewModelKey.class)!=null){
+                    v = creator.findAnnotationValue(element, ViewModelKey.class, "value");
+                }else {
+                    v = null;
+                }
                 final ViewModelOfElement viewModelOfElement = new ViewModelOfElement(element);
-                final Object v = creator.findAnnotationValue(element, ViewModelOf.class, "key");
                 viewModelOfElement.key = v != null ? v.toString() : "";
                 final String key = mapKey(viewModelOfElement);
                 viewModelOfMap.put(key, viewModelOfElement);
@@ -118,16 +127,12 @@ public class SubscribeHelp {
         }
 
         private CodeBlock createGetViewModeByViewModelProviders(ViewModelOfElement viewModelOf, String context_from) {
-            final ClassName viewModelProviders = ClassName.get("android.arch.lifecycle", "ViewModelProviders");
             final ClassName typeName = viewModelOf.getProcessorType(creator);
             final String key = viewModelOf.key;
-            if (key.isEmpty()) {
-                return CodeBlock.builder()
-                        .addStatement("this.$N = $T.of($N).get($T.class)", viewModelOf.element.getSimpleName(), viewModelProviders, context_from, typeName)
-                        .build();
-            }
             return CodeBlock.builder()
-                    .addStatement("this.$N = $T.of($N).get($S,$T.class)", viewModelOf.element.getSimpleName(), viewModelProviders, context_from, key, typeName)
+                    .add("this.$N = ",viewModelOf.element.getSimpleName())
+                    .add(ViewModelHelp.viewModelProvidersOf(context_from,key,typeName))
+                    .addStatement("")
                     .build();
         }
 
@@ -172,28 +177,13 @@ public class SubscribeHelp {
             final Element element = subscribeElement.element;
             if (element.asType() instanceof DeclaredType) {
                 final DeclaredType declaredType = (DeclaredType) element.asType();
-                final String subjectName = DaggerHelp.findNameFromDagger(creator, element);
+                final String subjectName = subscribeElement.subjectName;
                 cb.add("$N = (($T)$N).<$T>findSubjectByName($S)", disposableFieldName, viewModelType, viewModelName, declaredType, subjectName);
-                if (element.getAnnotation(Background.class) != null) {
-                    final Background aBackground = element.getAnnotation(Background.class);
-                    if (aBackground.delayMillis() > 0) {
-                        cb.add(ReactiveXHelp.delay(aBackground.delayMillis()));
-                    }
-                    cb.add(ReactiveXHelp.observeOnThread());
-                } else if (element.getAnnotation(UIThread.class) != null) {
-                    final UIThread aUIThread = element.getAnnotation(UIThread.class);
-                    if (aUIThread.delayMillis() > 0) {
-                        cb.add(ReactiveXHelp.delay(aUIThread.delayMillis()));
-                    }
-                    cb.add(ReactiveXHelp.observeOnMain());
-                } else {
-                    cb.add(ReactiveXHelp.observeOnMain());
-                }
                 cb.add(ReactiveXHelp.subscribeConsumer(ClassName.get(declaredType), "t",
                         CodeBlock.builder().addStatement("$N.this.$N = t", thisClassName, element.getSimpleName()).build()));
             } else if (element instanceof ExecutableElement) {
                 final ExecutableElement method = (ExecutableElement) element;
-                final String subjectName = DaggerHelp.findNameFromDagger(creator, element);
+                final String subjectName = subscribeElement.subjectName;
                 final List<? extends VariableElement> parameters = method.getParameters();
                 final TypeName parameterType;
                 if (parameters.size() > 0) {
@@ -215,11 +205,6 @@ public class SubscribeHelp {
                     }
                 }
                 cb.add("$N = (($T)$N).<$T>findSubjectByName($S)", disposableFieldName, viewModelType, viewModelName, parameterType, subjectName);
-                if (element.getAnnotation(Background.class) != null) {
-                    cb.add(ReactiveXHelp.observeOnThread());
-                } else {
-                    cb.add(ReactiveXHelp.observeOnMain());
-                }
                 cb.add(ReactiveXHelp.subscribeConsumer(parameterType, "t",
                         CodeBlock.builder().addStatement("$N.this.$N($N)", thisClassName, element.getSimpleName(), parameterString.toString()).build()));
             }
@@ -241,12 +226,8 @@ public class SubscribeHelp {
                         final ClassName typeName = ClassName.bestGuess(subscribeElement.viewModel.toString() + "_");
                         if (!localViewModelNames.containsKey(mapKey(subscribeElement))) {
                             final String localViewModelName = "lm" + typeName.simpleName();
-                            final ClassName viewModelProviders = ClassName.get("android.arch.lifecycle", "ViewModelProviders");
-                            if (subscribeElement.key.isEmpty()) {
-                                cb.addStatement("$T $N = $T.of($N).get($T.class)", typeName, localViewModelName, viewModelProviders, context_from, typeName);
-                            } else {
-                                cb.addStatement("$T $N = $T.of($N).get($S,$T.class)", typeName, localViewModelName, viewModelProviders, context_from, subscribeElement.key, typeName);
-                            }
+                            cb.add("$T $N = ",typeName, localViewModelName);
+                            cb.add(ViewModelHelp.viewModelProvidersOf(context_from,subscribeElement.key,typeName));
                             localViewModelNames.put(mapKey(subscribeElement), localViewModelName);
                             final String disposableFieldName = getDisposableFieldName(subscribeElement);
                             cb.add(createSubscribeToViewMode(subscribeElement, thisClassName, typeName, localViewModelName, disposableFieldName));

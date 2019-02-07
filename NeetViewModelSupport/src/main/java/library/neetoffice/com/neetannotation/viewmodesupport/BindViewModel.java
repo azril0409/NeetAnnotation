@@ -1,17 +1,16 @@
 package library.neetoffice.com.neetannotation.viewmodesupport;
 
-import android.arch.lifecycle.ViewModel;
-import android.arch.lifecycle.ViewModelProviders;
 import android.content.Context;
-import android.support.v4.app.FragmentActivity;
 
-import org.reactivestreams.Subscriber;
 import org.reactivestreams.Publisher;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-import io.reactivex.functions.Consumer;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.lifecycle.ViewModel;
+import androidx.lifecycle.ViewModelProviders;
 import io.reactivex.subjects.PublishSubject;
 import library.neetoffice.com.neetannotation.BindBase;
 
@@ -32,8 +31,8 @@ public class BindViewModel {
         }
         if ( a instanceof FragmentActivity) {
             ViewModelProviders.of((FragmentActivity)a);
-        }else if ( a instanceof android.support.v4.app.Fragment) {
-            ViewModelProviders.of((android.support.v4.app.Fragment)a);
+        }else if ( a instanceof Fragment) {
+            ViewModelProviders.of((Fragment)a);
         }
     }
 

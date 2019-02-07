@@ -20,10 +20,6 @@ import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 
 public class ProcessorUtil {
-    private static final String ACTIVITY = "android.app.Activity";
-    private static final String FRAGMENT = "android.app.Fragment";
-    private static final String FRAGMENT_V4 = "android.support.v4.app.Fragment";
-    private static final String VIEWMODEL = "android.arch.lifecycle.AndroidViewModel";
     final ProcessingEnvironment processingEnv;
 
     public ProcessorUtil(ProcessingEnvironment processingEnv) {
@@ -81,23 +77,23 @@ public class ProcessorUtil {
     }
 
     public boolean isSubActivity(TypeElement element) {
-        return isInstanceOf(element, ACTIVITY);
+        return isInstanceOf(element, AndroidClass.Activity);
     }
 
     public boolean isSubFragment(TypeElement element) {
-        return isInstanceOf(element, FRAGMENT) || isInstanceOf(element, FRAGMENT_V4);
+        return isInstanceOf(element, AndroidClass.Fragment);
     }
 
     public boolean isSubAndroidViewModel(TypeElement element) {
-        return isInstanceOf(element, VIEWMODEL);
+        return isInstanceOf(element, AndroidClass.AndroidViewModel);
+    }
+
+    private boolean isInstanceOf(TypeElement element, ClassName className) {
+        return isInstanceOf(element.asType(),className);
     }
 
     public boolean isInstanceOf(TypeMirror elementClass, ClassName subClass) {
        return processingEnv.getTypeUtils().isAssignable(processingEnv.getTypeUtils().erasure(elementClass), processingEnv.getElementUtils().getTypeElement(subClass.toString()).asType());
-    }
-
-    private boolean isInstanceOf(TypeElement element, String className) {
-        return processingEnv.getTypeUtils().isAssignable(processingEnv.getTypeUtils().erasure(element.asType()), processingEnv.getElementUtils().getTypeElement(className).asType());
     }
 
     Object findAnnotationValue(Element element, Class<?> annotationClass, String executableName) {

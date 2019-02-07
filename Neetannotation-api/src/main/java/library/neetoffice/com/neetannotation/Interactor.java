@@ -8,5 +8,5 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 @Retention(SOURCE)
 @Target(TYPE)
-public @interface Presenter {
+public @interface Interactor {
 }

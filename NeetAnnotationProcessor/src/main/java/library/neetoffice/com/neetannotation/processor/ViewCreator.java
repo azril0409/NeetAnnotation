@@ -18,10 +18,12 @@ import javax.lang.model.element.VariableElement;
 
 import library.neetoffice.com.neetannotation.AfterAnnotation;
 import library.neetoffice.com.neetannotation.NView;
+import library.neetoffice.com.neetannotation.Noproguard;
 import library.neetoffice.com.neetannotation.ViewById;
 
 public class ViewCreator extends BaseCreator {
     private static final String CONTEXT = "context";
+    private static final String THIS = "this";
     private static final String DEF_PACKAGE = "context.getApplicationContext().getPackageName()";
     private static final String INIT_METHOD = "_init";
 
@@ -50,11 +52,12 @@ public class ViewCreator extends BaseCreator {
         final List<TypeElement> viewElements = findSuperElements(viewElement, roundEnv, NView.class);
         viewElements.add(viewElement);
         //======================================================
-        final ListenerHelp.Builder listenerBuilder = listenerHelp.builder(className, CONTEXT, CONTEXT, DEF_PACKAGE);
+        final ListenerHelp.Builder listenerBuilder = listenerHelp.builder(className, THIS, CONTEXT, DEF_PACKAGE);
         final SubscribeHelp.Builder subscribeBuilder = subscribeHelp.builder();
         //======================================================
 
         final TypeSpec.Builder tb = TypeSpec.classBuilder(className)
+                .addAnnotation(Noproguard.class)
                 .superclass(getClassName(viewElement.asType()))
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
@@ -117,8 +120,8 @@ public class ViewCreator extends BaseCreator {
         final boolean haveDagger = DaggerHelp.process(viewElement);
         //
         initMethodBuilder.addCode(inflateLayout(viewElement));
-        initMethodBuilder.addCode(findViewByIdCode.build());
         initMethodBuilder.addCode(resCode.build());
+        initMethodBuilder.addCode(findViewByIdCode.build());
         initMethodBuilder.addCode(listenerBuilder.createListenerCode());
         if (subscribeBuilder.hasElement()) {
             initMethodBuilder.beginControlFlow("if($N instanceof $T)", CONTEXT, AndroidClass.FragmentActivity);

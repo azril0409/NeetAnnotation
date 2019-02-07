@@ -8,7 +8,6 @@ import com.squareup.javapoet.TypeSpec;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.zip.Inflater;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
@@ -20,12 +19,14 @@ import javax.lang.model.element.VariableElement;
 
 import library.neetoffice.com.neetannotation.AfterAnnotation;
 import library.neetoffice.com.neetannotation.NFragment;
+import library.neetoffice.com.neetannotation.Noproguard;
 import library.neetoffice.com.neetannotation.ViewById;
 
 public class FragmentCreator extends BaseCreator {
     static final String CONTEXT_FROM = "this";
+    static final String ACTIVITY =  "this.getActivity()";
     static final String DEF_PACKAGE = "getActivity().getApplicationContext().getPackageName()";
-    static final String GET_BUNDEL_METHOD = "a.getArguments()";
+    static final String GET_BUNDEL_METHOD = "getArguments()";
     static final String INFLATER = "inflater";
     static final String CONTAINER = "container";
     static final String SAVE_INSTANCE_STATE = "savedInstanceState";
@@ -43,6 +44,7 @@ public class FragmentCreator extends BaseCreator {
     final SubscribeHelp subscribeHelp;
     final MenuHelp menuHelp;
     final ActivityResultHelp activityResultHelp;
+    final HandleHelp handleHelp;
 
     public FragmentCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
@@ -52,6 +54,7 @@ public class FragmentCreator extends BaseCreator {
         subscribeHelp = new SubscribeHelp(this);
         menuHelp = new MenuHelp(this);
         activityResultHelp = new ActivityResultHelp(this);
+        handleHelp = new HandleHelp(this);
     }
 
     @Override
@@ -60,7 +63,7 @@ public class FragmentCreator extends BaseCreator {
         if (isAabstract) {
             return;
         }
-        if (isSubFragment(fragmentElement)) {
+        if (!isSubFragment(fragmentElement)) {
             return;
         }
         final String packageName = getPackageName(fragmentElement);
@@ -68,14 +71,16 @@ public class FragmentCreator extends BaseCreator {
         final List<TypeElement> fragmentElements = findSuperElements(fragmentElement, roundEnv, NFragment.class);
         fragmentElements.add(fragmentElement);
         //======================================================
-        final ListenerHelp.Builder listenerBuilder = listenerHelp.builder(className, CONTEXT_FROM, CONTEXT_FROM, DEF_PACKAGE);
+        final ListenerHelp.Builder listenerBuilder = listenerHelp.builder(className, VIEW, CONTEXT_FROM, DEF_PACKAGE);
         final ExtraHelp.Builder extraBuilder = extraHelp.builder(GET_BUNDEL_METHOD);
         final SubscribeHelp.Builder subscribeBuilder = subscribeHelp.builder();
         final MenuHelp.Builder menuBuilder = menuHelp.builder(CONTEXT_FROM, DEF_PACKAGE);
         final ActivityResultHelp.Builder activityResultBuilder = activityResultHelp.builder(REQUEST_CODE, RESULT_CODE, DATA);
+        final HandleHelp.Builder handleHelpBuilder = handleHelp.builder(className);
         //======================================================
 
         final TypeSpec.Builder tb = TypeSpec.classBuilder(className)
+                .addAnnotation(Noproguard.class)
                 .superclass(getClassName(fragmentElement.asType()))
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
@@ -103,6 +108,7 @@ public class FragmentCreator extends BaseCreator {
                 subscribeBuilder.parseElement(element);
                 menuBuilder.parseElement(element);
                 activityResultBuilder.parseElement(element);
+                handleHelpBuilder.parseElement(element);
             }
         }
         subscribeBuilder.addDisposableFieldInType(tb);
@@ -111,12 +117,12 @@ public class FragmentCreator extends BaseCreator {
         //
         onCreateMethodBuilder.addCode(menuBuilder.parseOptionsMenuInOnCreate(fragmentElement));
         onCreateMethodBuilder.addCode(extraBuilder.createGetExtra(SAVE_INSTANCE_STATE));
+        onCreateMethodBuilder.addCode(resCode.build());
         //
         onViewCreatedMethodBuilder.addCode(findViewByIdCode.build());
-        onViewCreatedMethodBuilder.addCode(resCode.build());
         onViewCreatedMethodBuilder.addCode(listenerBuilder.createListenerCode());
-        onViewCreatedMethodBuilder.addCode(subscribeBuilder.createAddViewModelOfCode(CONTEXT_FROM));
-        onViewCreatedMethodBuilder.addCode(subscribeBuilder.createCodeSubscribeInOnCreate(className, CONTEXT_FROM));
+        onViewCreatedMethodBuilder.addCode(subscribeBuilder.createAddViewModelOfCode(ACTIVITY));
+        onViewCreatedMethodBuilder.addCode(subscribeBuilder.createCodeSubscribeInOnCreate(className, ACTIVITY));
         if (haveDagger) {
             onViewCreatedMethodBuilder.addCode(createDaggerInjectCode(fragmentElement));
         }
@@ -144,12 +150,15 @@ public class FragmentCreator extends BaseCreator {
         tb.addMethod(onCreateOptionsMenuBuilder.build());
         tb.addMethod(onOptionsItemSelectedBuilder.build());
         tb.addMethod(onDestroyMethodBuilder.build());
+        for(MethodSpec methodSpec : handleHelpBuilder.createMotheds()){
+            tb.addMethod(methodSpec);
+        }
         writeTo(packageName, tb.build());
     }
 
     MethodSpec.Builder createOnCreateMethodBuilder() {
         return MethodSpec.methodBuilder("onCreate")
-                .addModifiers(Modifier.PROTECTED)
+                .addModifiers(Modifier.PUBLIC)
                 .addParameter(AndroidClass.Bundle, SAVE_INSTANCE_STATE)
                 .addAnnotation(Override.class)
                 .returns(void.class)
@@ -207,7 +216,7 @@ public class FragmentCreator extends BaseCreator {
         return MethodSpec.methodBuilder("onCreateOptionsMenu")
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(AndroidClass.Menu, MENU)
-                .addParameter(AndroidClass.LayoutInflater, INFLATER)
+                .addParameter(AndroidClass.MenuInflater, INFLATER)
                 .addAnnotation(Override.class)
                 .returns(void.class)
                 .addStatement("super.onCreateOptionsMenu($N, $N)", MENU, INFLATER);
@@ -235,7 +244,7 @@ public class FragmentCreator extends BaseCreator {
             return CodeBlock.builder().build();
         }
         return CodeBlock.builder()
-                .add("$N = $N.findViewById(", VIEW, viewByIdElement.getSimpleName())
+                .add("$N = $N.findViewById(",  viewByIdElement.getSimpleName(),VIEW)
                 .add(AndroidResHelp.id(aViewById.value(), aViewById.resName(), viewByIdElement.getSimpleName().toString(), CONTEXT_FROM, DEF_PACKAGE))
                 .addStatement(")")
                 .build();

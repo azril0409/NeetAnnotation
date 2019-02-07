@@ -14,10 +14,10 @@ public @interface Subscribe {
     /**
      * @return the Class of items observed and emitted by the Subject
      */
-    Class<?> value();
+    Class<?> viewmode();
 
     /**
      * @return this key for ViewModelProviders of key
-     * */
-    String key() default "";
+     */
+    String subjectName() default "";
 }

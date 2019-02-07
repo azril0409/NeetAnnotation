@@ -20,9 +20,9 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
-public class PresenterCreator extends BaseCreator {
-    static final String PRESENTER = "Presenter";
-    static final String PRESENTER_ = PRESENTER + "_";
+public class InteractorCreator extends BaseCreator {
+    static final String INTERACTOR = "Interactor";
+    static final String PRESENTER_ = INTERACTOR + "_";
     static final String UPDATE = "update";
     static final String ENTITY = "entity";
     static final String SUBJECT = "subject";
@@ -88,7 +88,7 @@ public class PresenterCreator extends BaseCreator {
     final HashMap<String, InteractBuild> interactBuilds = new HashMap<>();
     final HashMap<String, Element> interactElements = new HashMap<>();
 
-    public PresenterCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
+    public InteractorCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
     }
 
@@ -99,7 +99,7 @@ public class PresenterCreator extends BaseCreator {
     }
 
     private InteractBuild createInterface(TypeElement interactElement) {
-        final String interfaceName = interactElement.getSimpleName() + PRESENTER;
+        final String interfaceName = interactElement.getSimpleName() + INTERACTOR;
         final String packageName = getPackageName(interactElement);
         final TypeName entityType = getClassName(interactElement.asType());
         final ClassName interfaceClassName = ClassName.get(packageName, interfaceName);

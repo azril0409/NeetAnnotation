@@ -9,8 +9,4 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 @Retention(SOURCE)
 @Target(FIELD)
 public @interface ViewModelOf {
-    /**
-     * @return this key for ViewModelProviders of key
-     * */
-    String key() default "";
 }

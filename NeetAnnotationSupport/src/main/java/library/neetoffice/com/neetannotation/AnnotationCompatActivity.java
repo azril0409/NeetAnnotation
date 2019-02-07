@@ -2,12 +2,10 @@ package library.neetoffice.com.neetannotation;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v7.app.AppCompatActivity;
 import android.view.Menu;
 import android.view.MenuItem;
 
-import library.neetoffice.com.neetannotation.AnnotationHelp;
-import library.neetoffice.com.neetannotation.NActivity;
+import androidx.appcompat.app.AppCompatActivity;
 
 /**
  * Created by Deo-chainmeans on 2017/10/23.

@@ -30,6 +30,7 @@ import library.neetoffice.com.neetannotation.DefaultInt;
 import library.neetoffice.com.neetannotation.DefaultLong;
 import library.neetoffice.com.neetannotation.DefaultShort;
 import library.neetoffice.com.neetannotation.NService;
+import library.neetoffice.com.neetannotation.Noproguard;
 import library.neetoffice.com.neetannotation.StartAction;
 
 public class ServiceCreator extends BaseCreator {
@@ -62,6 +63,7 @@ public class ServiceCreator extends BaseCreator {
         final List<VariableElement> extras = new ArrayList<>();
         //======================================================
         final TypeSpec.Builder tb = TypeSpec.classBuilder(className)
+                .addAnnotation(Noproguard.class)
                 .superclass(getClassName(serviceElement.asType()))
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 

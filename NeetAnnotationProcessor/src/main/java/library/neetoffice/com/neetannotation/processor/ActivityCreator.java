@@ -4,6 +4,7 @@ import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
@@ -18,7 +19,9 @@ import javax.lang.model.element.VariableElement;
 import javax.tools.Diagnostic;
 
 import library.neetoffice.com.neetannotation.AfterAnnotation;
+import library.neetoffice.com.neetannotation.FragmentBy;
 import library.neetoffice.com.neetannotation.NActivity;
+import library.neetoffice.com.neetannotation.Noproguard;
 import library.neetoffice.com.neetannotation.ViewById;
 
 public class ActivityCreator extends BaseCreator {
@@ -38,6 +41,7 @@ public class ActivityCreator extends BaseCreator {
     final SubscribeHelp subscribeHelp;
     final MenuHelp menuHelp;
     final ActivityResultHelp activityResultHelp;
+    final HandleHelp handleHelp;
 
     public ActivityCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
@@ -47,6 +51,7 @@ public class ActivityCreator extends BaseCreator {
         subscribeHelp = new SubscribeHelp(this);
         menuHelp = new MenuHelp(this);
         activityResultHelp = new ActivityResultHelp(this);
+        handleHelp = new HandleHelp(this);
     }
 
     @Override
@@ -68,9 +73,11 @@ public class ActivityCreator extends BaseCreator {
         final SubscribeHelp.Builder subscribeBuilder = subscribeHelp.builder();
         final MenuHelp.Builder menuBuilder = menuHelp.builder(CONTEXT_FROM, DEF_PACKAGE);
         final ActivityResultHelp.Builder activityResultBuilder = activityResultHelp.builder(REQUEST_CODE, RESULT_CODE, DATA);
+        final HandleHelp.Builder handleHelpBuilder = handleHelp.builder(className);
         //======================================================
 
         final TypeSpec.Builder tb = TypeSpec.classBuilder(className)
+                .addAnnotation(Noproguard.class)
                 .superclass(getClassName(activityElement.asType()))
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
@@ -82,6 +89,7 @@ public class ActivityCreator extends BaseCreator {
         final MethodSpec.Builder onDestroyMethodBuilder = createOnDestroy();
 
         final CodeBlock.Builder findViewByIdCode = CodeBlock.builder();
+        final CodeBlock.Builder findFragmentByCode = CodeBlock.builder();
         final CodeBlock.Builder afterAnnotationCode = CodeBlock.builder();
         final CodeBlock.Builder resCode = CodeBlock.builder();
 
@@ -89,6 +97,7 @@ public class ActivityCreator extends BaseCreator {
             final List<? extends Element> enclosedElements = superActivityElement.getEnclosedElements();
             for (Element element : enclosedElements) {
                 findViewByIdCode.add(createFindViewByIdCode(element));
+                findFragmentByCode.add(createFindFragmentByCode(element));
                 afterAnnotationCode.add(createAfterAnnotationCode(element));
                 resCode.add(resourcesHelp.bindResourcesAnnotation(element, CONTEXT_FROM, DEF_PACKAGE));
                 extraBuilder.parseElement(element);
@@ -96,6 +105,7 @@ public class ActivityCreator extends BaseCreator {
                 subscribeBuilder.parseElement(element);
                 menuBuilder.parseElement(element);
                 activityResultBuilder.parseElement(element);
+                handleHelpBuilder.parseElement(element);
             }
         }
         subscribeBuilder.addDisposableFieldInType(tb);
@@ -104,9 +114,10 @@ public class ActivityCreator extends BaseCreator {
         //
         onCreateMethodBuilder.addCode(createSetContentViewCode(activityElement));
         onCreateMethodBuilder.addCode(menuBuilder.parseOptionsMenuInOnCreate(activityElement));
-        onCreateMethodBuilder.addCode(findViewByIdCode.build());
         onCreateMethodBuilder.addCode(extraBuilder.createGetExtra(SAVE_INSTANCE_STATE));
         onCreateMethodBuilder.addCode(resCode.build());
+        onCreateMethodBuilder.addCode(findViewByIdCode.build());
+        onCreateMethodBuilder.addCode(findFragmentByCode.build());
         onCreateMethodBuilder.addCode(listenerBuilder.createListenerCode());
         onCreateMethodBuilder.addCode(subscribeBuilder.createAddViewModelOfCode(CONTEXT_FROM));
         onCreateMethodBuilder.addCode(subscribeBuilder.createCodeSubscribeInOnCreate(className, CONTEXT_FROM));
@@ -136,6 +147,9 @@ public class ActivityCreator extends BaseCreator {
         tb.addMethod(onCreateOptionsMenuBuilder.build());
         tb.addMethod(onOptionsItemSelectedBuilder.build());
         tb.addMethod(onDestroyMethodBuilder.build());
+        for(MethodSpec methodSpec : handleHelpBuilder.createMotheds()){
+            tb.addMethod(methodSpec);
+        }
         writeTo(packageName, tb.build());
     }
 
@@ -213,6 +227,25 @@ public class ActivityCreator extends BaseCreator {
                 .add(AndroidResHelp.id(aViewById.value(), aViewById.resName(), viewByIdElement.getSimpleName().toString(), CONTEXT_FROM, DEF_PACKAGE))
                 .addStatement(")")
                 .build();
+    }
+
+    CodeBlock createFindFragmentByCode(Element element) {
+        final FragmentBy aFragmentBy = element.getAnnotation(FragmentBy.class);
+        if (aFragmentBy == null) {
+            return CodeBlock.builder().build();
+        }
+        if(aFragmentBy.id() != 0){
+            return CodeBlock.builder()
+                    .add("$N = $N.getSupportFragmentManager().findFragmentById(",element.getSimpleName(), CONTEXT_FROM)
+                    .add(AndroidResHelp.id(aFragmentBy.id(), aFragmentBy.resName(), element.getSimpleName().toString(), CONTEXT_FROM, DEF_PACKAGE))
+                    .addStatement(")")
+                    .build();
+        }else if(!aFragmentBy.tag().isEmpty()){
+            return CodeBlock.builder()
+                    .addStatement("$N = $N.getSupportFragmentManager().findFragmentByTag($N)",element.getSimpleName(), CONTEXT_FROM,aFragmentBy.tag())
+                    .build();
+        }
+        return CodeBlock.builder().build();
     }
 
     CodeBlock createAfterAnnotationCode(Element afterAnnotationElement) {

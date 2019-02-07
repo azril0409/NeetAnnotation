@@ -10,8 +10,10 @@ public class RxJavaClass {
     public static final ClassName Disposable = ClassName.get("io.reactivex.disposables", "Disposable");
     public static final ClassName Function = ClassName.get("io.reactivex.functions", "Function");
     public static final ClassName Observable = ClassName.get("io.reactivex", "Observable");
+    public static final ClassName Observer = ClassName.get("io.reactivex", "Observer");
     public static final ClassName PublishSubject = ClassName.get("io.reactivex.subjects", "PublishSubject");
     public static final ClassName Subject = ClassName.get("io.reactivex.subjects", "Subject");
+    public static final ClassName Schedulers = ClassName.get("io.reactivex.schedulers", "Schedulers");
 
     public static final TypeName Consumer(TypeName parameterizedTypeName) {
         return ParameterizedTypeName.get(Consumer, parameterizedTypeName);

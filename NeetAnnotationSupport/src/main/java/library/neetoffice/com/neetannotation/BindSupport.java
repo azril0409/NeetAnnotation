@@ -4,11 +4,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +11,11 @@ import android.view.ViewGroup;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
 
 /**
  * Created by Deo on 2016/3/18.
@@ -199,7 +199,7 @@ public class BindSupport {
     }
 
     @NotProguard
-    static void bindArgument(android.support.v4.app.Fragment a, Field b) {
+    static void bindArgument(Fragment a, Field b) {
         final Extra c = b.getAnnotation(Extra.class);
         if (c == null) {
             return;

@@ -1,8 +1,9 @@
 package sample.neetoffice.com.neetannotation.views.activies
 
-import android.support.v7.app.AppCompatActivity
 import android.widget.ListView
-import io.reactivex.Observable
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
+import kotlinx.android.synthetic.main.activity_main.*
 import library.neetoffice.com.neetannotation.*
 import sample.neetoffice.com.neetannotation.R
 import sample.neetoffice.com.neetannotation.models.Record
@@ -21,15 +22,19 @@ open class MainActivity : AppCompatActivity() {
     lateinit var viewModel: RecordViewModel
     @Inject
     lateinit var adapter: RecordAdapter
+    @Extra
+    lateinit var list:ArrayList<Record>
 
     @AfterAnnotation
     fun onAfter() {
         listView.adapter = adapter
+        var toolbar:Toolbar
         adapter.setAll(viewModel.load())
     }
 
     @Click(R.id.action)
-    fun onActionClicked() {
+    @ThreadOn(ThreadOn.Mode.UIThread)
+    open fun onActionClicked() {
         var record = Record(Calendar.getInstance().time)
         record.id = viewModel.insert(record).toInt()
         adapter.add(record)

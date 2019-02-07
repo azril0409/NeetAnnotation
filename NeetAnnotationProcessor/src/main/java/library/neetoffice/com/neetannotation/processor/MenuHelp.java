@@ -68,8 +68,8 @@ public class MenuHelp {
                             .add("$T _toolbar = findViewById(", AndroidClass.View)
                             .add(AndroidResHelp.id(aViewById.value(), aViewById.resName(), "", context_from, defPackage))
                             .addStatement(")")
-                            .beginControlFlow("if(_toolbar instanceof $T)", AndroidClass.Toolbar_v7)
-                            .addStatement("setSupportActionBar(($T)_toolbar)", AndroidClass.Toolbar_v7)
+                            .beginControlFlow("if(_toolbar instanceof $T)", AndroidClass.Toolbar_x)
+                            .addStatement("setSupportActionBar(($T)_toolbar)", AndroidClass.Toolbar_x)
                             .endControlFlow()
                             .build();
                 } else if (creator.isSubActivity(typeElement)) {

@@ -3,13 +3,16 @@ package library.neetoffice.com.neetannotation.processor;
 import com.squareup.javapoet.ClassName;
 
 public class AndroidClass {
-    public static final String CONTEXT_MODULE_PACKAGE = "com.neetoffice.neetannotation";
+    //public static final String CONTEXT_MODULE_PACKAGE = "com.neetoffice.neetannotation";
     public static final String CONTEXT_MODULE_NAME = "ContextModule";
-    public static final ClassName CONTEXT_MODULE = ClassName.get(CONTEXT_MODULE_PACKAGE, CONTEXT_MODULE_NAME);
+    //public static final ClassName CONTEXT_MODULE = ClassName.get(CONTEXT_MODULE_PACKAGE, CONTEXT_MODULE_NAME);
     public static final ClassName Application = ClassName.get("android.app", "Application");
     public static final ClassName Activity = ClassName.get("android.app", "Activity");
     public static final ClassName AndroidViewModel = ClassName.get("androidx.lifecycle", "AndroidViewModel");
+    public static final ClassName LifecycleObserver = ClassName.get("androidx.lifecycle", "LifecycleObserver");
     public static final ClassName ViewModelProviders = ClassName.get("androidx.lifecycle", "ViewModelProviders");
+    public static final ClassName ViewModelProvider = ClassName.get("androidx.lifecycle", "ViewModelProvider");
+    public static final ClassName Factory = ClassName.get("androidx.lifecycle", "ViewModelProvider","Factory");
     public static final ClassName AdapterView = ClassName.get("android.widget", "AdapterView");
     public static final ClassName AdapterView_OnItemClickListener = ClassName.get("android.widget", "AdapterView", "OnItemClickListener");
     public static final ClassName AdapterView_OnItemLongClickListener = ClassName.get("android.widget", "AdapterView", "OnItemLongClickListener");
@@ -19,6 +22,7 @@ public class AndroidClass {
     public static final ClassName CompoundButton = ClassName.get("android.widget", "CompoundButton");
     public static final ClassName CompoundButton_OnCheckedChangeListener = ClassName.get("android.widget", "CompoundButton", "OnCheckedChangeListener");
     public static final ClassName Context = ClassName.get("android.content", "Context");
+    public static final ClassName Editable = ClassName.get("android.text","Editable");
     public static final ClassName FragmentActivity = ClassName.get("androidx.fragment.app", "FragmentActivity");
     public static final ClassName Fragment = ClassName.get("androidx.fragment.app", "Fragment");
     public static final ClassName Intent = ClassName.get("android.content", "Intent");
@@ -35,11 +39,14 @@ public class AndroidClass {
     public static final ClassName Toolbar = ClassName.get("android.widget", "Toolbar");
     public static final ClassName Toolbar_x = ClassName.get("androidx.appcompat.widget", "Toolbar");
     public static final ClassName RequiresApi = ClassName.get("androidx.annotation", "RequiresApi");
+    public static final ClassName Keep = ClassName.get("androidx.annotation", "Keep");
+    public static final ClassName NonNull = ClassName.get("androidx.annotation","NonNull");
     public static final ClassName Uri = ClassName.get("android.net", "Uri");
     public static final ClassName View = ClassName.get("android.view", "View");
     public static final ClassName View_OnClickListener = ClassName.get("android.view", "View", "OnClickListener");
     public static final ClassName View_OnLongClickListener = ClassName.get("android.view", "View", "OnLongClickListener");
     public static final ClassName View_OnTouchListener = ClassName.get("android.view", "View", "OnTouchListener");
+    public static final ClassName View_OnFocusChangeListener = ClassName.get("android.view", "View", "OnFocusChangeListener");
     public static final ClassName ViewGroup = ClassName.get("android.view", "ViewGroup");
     public static final ClassName ViewGroup_LayoutParams = ClassName.get("android.view", "ViewGroup", "LayoutParams");
 }

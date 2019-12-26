@@ -18,13 +18,13 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import library.neetoffice.com.neetannotation.AfterAnnotation;
+import library.neetoffice.com.neetannotation.FragmentBy;
 import library.neetoffice.com.neetannotation.NFragment;
-import library.neetoffice.com.neetannotation.Noproguard;
 import library.neetoffice.com.neetannotation.ViewById;
 
 public class FragmentCreator extends BaseCreator {
     static final String CONTEXT_FROM = "this";
-    static final String ACTIVITY =  "this.getActivity()";
+    static final String ACTIVITY = "this.getActivity()";
     static final String DEF_PACKAGE = "getActivity().getApplicationContext().getPackageName()";
     static final String GET_BUNDEL_METHOD = "getArguments()";
     static final String INFLATER = "inflater";
@@ -45,9 +45,11 @@ public class FragmentCreator extends BaseCreator {
     final MenuHelp menuHelp;
     final ActivityResultHelp activityResultHelp;
     final HandleHelp handleHelp;
+    private final SecondProcessor mainProcessor;
 
-    public FragmentCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
+    public FragmentCreator(SecondProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
+        mainProcessor = processor;
         resourcesHelp = new ResourcesHelp();
         listenerHelp = new ListenerHelp(this);
         extraHelp = new ExtraHelp(this);
@@ -72,7 +74,7 @@ public class FragmentCreator extends BaseCreator {
         fragmentElements.add(fragmentElement);
         //======================================================
         final ListenerHelp.Builder listenerBuilder = listenerHelp.builder(className, VIEW, CONTEXT_FROM, DEF_PACKAGE);
-        final ExtraHelp.Builder extraBuilder = extraHelp.builder(GET_BUNDEL_METHOD);
+        final ExtraHelp.Builder extraBuilder = extraHelp.builder(GET_BUNDEL_METHOD,SAVE_INSTANCE_STATE);
         final SubscribeHelp.Builder subscribeBuilder = subscribeHelp.builder();
         final MenuHelp.Builder menuBuilder = menuHelp.builder(CONTEXT_FROM, DEF_PACKAGE);
         final ActivityResultHelp.Builder activityResultBuilder = activityResultHelp.builder(REQUEST_CODE, RESULT_CODE, DATA);
@@ -80,11 +82,12 @@ public class FragmentCreator extends BaseCreator {
         //======================================================
 
         final TypeSpec.Builder tb = TypeSpec.classBuilder(className)
-                .addAnnotation(Noproguard.class)
+                .addAnnotation(AndroidClass.Keep)
                 .superclass(getClassName(fragmentElement.asType()))
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
         final MethodSpec.Builder onCreateMethodBuilder = createOnCreateMethodBuilder();
+        final MethodSpec.Builder onActivityCreateMethodBuilder = createOnActivityCreateMethodBuilder();
         final MethodSpec.Builder onCreateViewMethodBuilder = createOnCreateViewMethodBuilder(fragmentElement);
         final MethodSpec.Builder onViewCreatedMethodBuilder = createOnViewCreatedMethodBuilder();
         final MethodSpec.Builder onSaveInstanceStateMethodBuilder = createOnSaveInstanceStateMethodBuilder();
@@ -94,6 +97,7 @@ public class FragmentCreator extends BaseCreator {
         final MethodSpec.Builder onDestroyMethodBuilder = createOnDestroy();
 
         final CodeBlock.Builder findViewByIdCode = CodeBlock.builder();
+        final CodeBlock.Builder findFragmentByCode = CodeBlock.builder();
         final CodeBlock.Builder afterAnnotationCode = CodeBlock.builder();
         final CodeBlock.Builder resCode = CodeBlock.builder();
 
@@ -101,6 +105,7 @@ public class FragmentCreator extends BaseCreator {
             final List<? extends Element> enclosedElements = superFragmentElement.getEnclosedElements();
             for (Element element : enclosedElements) {
                 findViewByIdCode.add(createFindViewByIdCode(element));
+                findFragmentByCode.add(createFindFragmentByCode(element));
                 afterAnnotationCode.add(createAfterAnnotationCode(element));
                 resCode.add(resourcesHelp.bindResourcesAnnotation(element, CONTEXT_FROM, DEF_PACKAGE));
                 extraBuilder.parseElement(element);
@@ -120,13 +125,16 @@ public class FragmentCreator extends BaseCreator {
         onCreateMethodBuilder.addCode(resCode.build());
         //
         onViewCreatedMethodBuilder.addCode(findViewByIdCode.build());
+        onViewCreatedMethodBuilder.addCode(findFragmentByCode.build());
         onViewCreatedMethodBuilder.addCode(listenerBuilder.createListenerCode());
-        onViewCreatedMethodBuilder.addCode(subscribeBuilder.createAddViewModelOfCode(ACTIVITY));
-        onViewCreatedMethodBuilder.addCode(subscribeBuilder.createCodeSubscribeInOnCreate(className, ACTIVITY));
+        //
+        onActivityCreateMethodBuilder.addCode(subscribeBuilder.createAddViewModelOfCode(ACTIVITY));
+        onActivityCreateMethodBuilder.addCode(subscribeBuilder.createCodeSubscribeInOnCreate(className, ACTIVITY));
+        onActivityCreateMethodBuilder.addCode(subscribeBuilder.createAddLifecycle(ACTIVITY));
         if (haveDagger) {
-            onViewCreatedMethodBuilder.addCode(createDaggerInjectCode(fragmentElement));
+            onActivityCreateMethodBuilder.addCode(createDaggerInjectCode(fragmentElement));
         }
-        onViewCreatedMethodBuilder.addCode(afterAnnotationCode.build());
+        onActivityCreateMethodBuilder.addCode(afterAnnotationCode.build());
         //
         onSaveInstanceStateMethodBuilder.addCode(extraBuilder.createSaveInstanceState(OUT_STATE));
         //
@@ -143,6 +151,7 @@ public class FragmentCreator extends BaseCreator {
         //
         tb.addType(extraBuilder.createArgument(packageName, className));
         tb.addMethod(onCreateMethodBuilder.build());
+        tb.addMethod(onActivityCreateMethodBuilder.build());
         tb.addMethod(onCreateViewMethodBuilder.build());
         tb.addMethod(onViewCreatedMethodBuilder.build());
         tb.addMethod(onSaveInstanceStateMethodBuilder.build());
@@ -150,7 +159,7 @@ public class FragmentCreator extends BaseCreator {
         tb.addMethod(onCreateOptionsMenuBuilder.build());
         tb.addMethod(onOptionsItemSelectedBuilder.build());
         tb.addMethod(onDestroyMethodBuilder.build());
-        for(MethodSpec methodSpec : handleHelpBuilder.createMotheds()){
+        for (MethodSpec methodSpec : handleHelpBuilder.createMotheds()) {
             tb.addMethod(methodSpec);
         }
         writeTo(packageName, tb.build());
@@ -163,6 +172,15 @@ public class FragmentCreator extends BaseCreator {
                 .addAnnotation(Override.class)
                 .returns(void.class)
                 .addStatement("super.onCreate($N)", SAVE_INSTANCE_STATE);
+    }
+
+    MethodSpec.Builder createOnActivityCreateMethodBuilder() {
+        return MethodSpec.methodBuilder("onActivityCreated")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Bundle, SAVE_INSTANCE_STATE)
+                .addAnnotation(Override.class)
+                .returns(void.class)
+                .addStatement("super.onActivityCreated($N)", SAVE_INSTANCE_STATE);
     }
 
     MethodSpec.Builder createOnCreateViewMethodBuilder(TypeElement fragmentElement) {
@@ -244,8 +262,31 @@ public class FragmentCreator extends BaseCreator {
             return CodeBlock.builder().build();
         }
         return CodeBlock.builder()
-                .add("$N = $N.findViewById(",  viewByIdElement.getSimpleName(),VIEW)
+                .add("$N = $N.findViewById(", viewByIdElement.getSimpleName(), VIEW)
                 .add(AndroidResHelp.id(aViewById.value(), aViewById.resName(), viewByIdElement.getSimpleName().toString(), CONTEXT_FROM, DEF_PACKAGE))
+                .addStatement(")")
+                .build();
+    }
+
+    CodeBlock createFindFragmentByCode(Element element) {
+        final FragmentBy aFragmentBy = element.getAnnotation(FragmentBy.class);
+        if (aFragmentBy == null) {
+            return CodeBlock.builder().build();
+        }
+        if (aFragmentBy.id() != 0) {
+            return CodeBlock.builder()
+                    .add("$N = ($T)$N.getChildFragmentManager().findFragmentById(", element.getSimpleName(), element.asType(), CONTEXT_FROM)
+                    .add(AndroidResHelp.id(aFragmentBy.id(), aFragmentBy.resName(), element.getSimpleName().toString(), CONTEXT_FROM, DEF_PACKAGE))
+                    .addStatement(")")
+                    .build();
+        } else if (!aFragmentBy.tag().isEmpty()) {
+            return CodeBlock.builder()
+                    .addStatement("$N = ($T)$N.getChildFragmentManager().findFragmentByTag($N)", element.getSimpleName(), element.asType(), CONTEXT_FROM, aFragmentBy.tag())
+                    .build();
+        }
+        return CodeBlock.builder()
+                .add("$N = ($T)$N.getChildFragmentManager().findFragmentById(", element.getSimpleName(), element.asType(), CONTEXT_FROM)
+                .add(AndroidResHelp.id(aFragmentBy.id(), aFragmentBy.resName(), element.getSimpleName().toString(), CONTEXT_FROM, DEF_PACKAGE))
                 .addStatement(")")
                 .build();
     }
@@ -280,7 +321,7 @@ public class FragmentCreator extends BaseCreator {
     CodeBlock createDaggerInjectCode(TypeElement fragmentElement) {
         final CodeBlock.Builder code = CodeBlock.builder();
         if (isSubFragment(fragmentElement)) {
-            code.addStatement("Dagger_$N.builder().$N(new $T(this)).build().inject(this)", fragmentElement.getSimpleName(), toModelCase(AndroidClass.CONTEXT_MODULE_NAME), AndroidClass.CONTEXT_MODULE);
+            code.addStatement("Dagger_$N.builder().$N(new $T(this)).build().inject(this)", fragmentElement.getSimpleName(), toModelCase(AndroidClass.CONTEXT_MODULE_NAME), mainProcessor.contextModule);
         } else {
             code.addStatement("Dagger_$N.create().inject(this)", fragmentElement.getSimpleName());
         }

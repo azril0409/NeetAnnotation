@@ -15,17 +15,18 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.tools.Diagnostic;
 
 import library.neetoffice.com.neetannotation.InjectEntity;
 import library.neetoffice.com.neetannotation.NDagger;
-import library.neetoffice.com.neetannotation.Subject;
+import library.neetoffice.com.neetannotation.Published;
 
 public class DaggerCreator extends BaseCreator {
     static final String MODULES = "modules";
+    private final MainProcessor mainProcessor;
 
     public DaggerCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
+        mainProcessor = processor;
     }
 
     @Override
@@ -51,14 +52,17 @@ public class DaggerCreator extends BaseCreator {
                 }
             }
         }
+        boolean addviewModelProvider = false;
         if (isSubActivity(daggerElement) || isSubFragment(daggerElement) || isSubAndroidViewModel(daggerElement) || isSubService(daggerElement)) {
-            ab.addMember(MODULES, "$L", AndroidClass.CONTEXT_MODULE + ".class")
+            addviewModelProvider = true;
+            ab.addMember(MODULES, "$L", mainProcessor.contextModule + ".class")
                     .addMember(MODULES, "$L", modulesValue);
         } else if (haveActivityParameterInConstructor || haveApplicationParameterInConstructor || haveContextParameterInConstructor) {
-            ab.addMember(MODULES, "$L", AndroidClass.CONTEXT_MODULE + ".class")
+            addviewModelProvider = true;
+            ab.addMember(MODULES, "$L", mainProcessor.contextModule + ".class")
                     .addMember(MODULES, "$L", modulesValue);
         } else {
-            ab.addMember("modules", "{$L}", modulesValue);
+            ab.addMember(MODULES, "{$L}", modulesValue);
         }
         final String interfaceName = "_" + daggerElement.getSimpleName();
         final TypeSpec.Builder tb = TypeSpec.interfaceBuilder(interfaceName)
@@ -68,10 +72,13 @@ public class DaggerCreator extends BaseCreator {
         tb.addMethod(createInjectMethod(daggerElement));
 
         for (Element element : daggerElement.getEnclosedElements()) {
-            if (element.getAnnotation(Subject.class) != null &&
+            if (element.getAnnotation(Published.class) != null &&
                     element.getAnnotation(InjectEntity.class) != null) {
                 tb.addMethod(createGetEntity(element));
             }
+        }
+        if (addviewModelProvider) {
+            //tb.addMethod(createViewModelProviderMethod(daggerElement));
         }
         writeTo(getPackageName(daggerElement), tb.build());
     }
@@ -84,13 +91,20 @@ public class DaggerCreator extends BaseCreator {
                 .build();
     }
 
+    MethodSpec createViewModelProviderMethod(TypeElement daggerElement) {
+        return MethodSpec.methodBuilder("viewModelProvider")
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                .returns(AndroidClass.ViewModelProvider)
+                .build();
+    }
+
     private MethodSpec createGetEntity(Element subjectElement) {
         final Object aNamedValue = findAnnotationValue(subjectElement, DaggerClass.Named, "value");
-        final Element entityElement = processor.interactorCreator.interactElements.get(subjectElement.asType().toString());
+        final Element entityElement = mainProcessor.interactorCreator.interactElements.get(subjectElement.asType().toString());
         final TypeName entityType;
         if (entityElement == null) {
             final String typeString = subjectElement.asType().toString();
-            entityType = ClassName.bestGuess(typeString.substring(0, typeString.length() - processor.interactorCreator.INTERACTOR.length()));
+            entityType = ClassName.bestGuess(typeString.substring(0, typeString.length() - mainProcessor.interactorCreator.INTERACTOR.length()));
         } else {
             entityType = getClassName(entityElement.asType());
         }
@@ -106,8 +120,8 @@ public class DaggerCreator extends BaseCreator {
         return getEntity.build();
     }
 
-    void createContextModule() {
-        final TypeSpec.Builder contextModuleBuilder = TypeSpec.classBuilder(AndroidClass.CONTEXT_MODULE)
+    void createContextModule(String packageName) {
+        final TypeSpec.Builder contextModuleBuilder = TypeSpec.classBuilder(ClassName.get(packageName, AndroidClass.CONTEXT_MODULE_NAME))
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addAnnotation(DaggerClass.Module);
         contextModuleBuilder.addField(FieldSpec.
@@ -134,10 +148,22 @@ public class DaggerCreator extends BaseCreator {
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(AndroidClass.Context, "context")
                 .addStatement("this.context = context")
+                .beginControlFlow("if(context instanceof $T)", AndroidClass.Application)
+                .addStatement("this.application = ($T)context", AndroidClass.Application)
+                .nextControlFlow("else")
                 .addStatement("this.application = null")
+                .endControlFlow()
+                .beginControlFlow("if(context instanceof $T)", AndroidClass.Activity)
+                .addStatement("this.activity = ($T)context", AndroidClass.Activity)
+                .nextControlFlow("else")
                 .addStatement("this.activity = null")
+                .endControlFlow()
                 .addStatement("this.fragment = null")
+                .beginControlFlow("if(context instanceof $T)", AndroidClass.Service)
+                .addStatement("this.service = ($T)context", AndroidClass.Service)
+                .nextControlFlow("else")
                 .addStatement("this.service = null")
+                .endControlFlow()
                 .build());
         contextModuleBuilder.addMethod(MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
@@ -206,6 +232,6 @@ public class DaggerCreator extends BaseCreator {
                 .returns(AndroidClass.Service)
                 .addStatement("return service")
                 .build());
-        writeTo("com.neetoffice.neetannotation", contextModuleBuilder.build());
+        writeTo(packageName, contextModuleBuilder.build());
     }
 }

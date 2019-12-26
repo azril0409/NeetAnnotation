@@ -18,7 +18,6 @@ import javax.lang.model.element.VariableElement;
 
 import library.neetoffice.com.neetannotation.AfterAnnotation;
 import library.neetoffice.com.neetannotation.NView;
-import library.neetoffice.com.neetannotation.Noproguard;
 import library.neetoffice.com.neetannotation.ViewById;
 
 public class ViewCreator extends BaseCreator {
@@ -30,9 +29,11 @@ public class ViewCreator extends BaseCreator {
     final ResourcesHelp resourcesHelp;
     final ListenerHelp listenerHelp;
     final SubscribeHelp subscribeHelp;
+    private final SecondProcessor mainProcessor;
 
-    public ViewCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
+    public ViewCreator(SecondProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
+        mainProcessor = processor;
         resourcesHelp = new ResourcesHelp();
         listenerHelp = new ListenerHelp(this);
         subscribeHelp = new SubscribeHelp(this);
@@ -57,7 +58,7 @@ public class ViewCreator extends BaseCreator {
         //======================================================
 
         final TypeSpec.Builder tb = TypeSpec.classBuilder(className)
-                .addAnnotation(Noproguard.class)
+                .addAnnotation(AndroidClass.Keep)
                 .superclass(getClassName(viewElement.asType()))
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
@@ -180,7 +181,7 @@ public class ViewCreator extends BaseCreator {
     CodeBlock createDaggerInjectCode(TypeElement viewElement) {
         final CodeBlock.Builder code = CodeBlock.builder();
         if (isInstanceOf(viewElement.asType(), AndroidClass.View)) {
-            code.addStatement("Dagger_$N.builder().$N(new $T($N)).build().inject(this)", viewElement.getSimpleName(), toModelCase(AndroidClass.CONTEXT_MODULE_NAME), AndroidClass.CONTEXT_MODULE, CONTEXT);
+            code.addStatement("Dagger_$N.builder().$N(new $T($N)).build().inject(this)", viewElement.getSimpleName(), toModelCase(AndroidClass.CONTEXT_MODULE_NAME),mainProcessor.contextModule , CONTEXT);
         } else {
             code.addStatement("Dagger_$N.create().inject(this)", viewElement.getSimpleName());
         }

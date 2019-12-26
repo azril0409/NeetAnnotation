@@ -11,7 +11,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.inject.Named;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -20,28 +20,63 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 
 import library.neetoffice.com.neetannotation.Subscribe;
-import library.neetoffice.com.neetannotation.ViewModelKey;
+import library.neetoffice.com.neetannotation.Subscribes;
 import library.neetoffice.com.neetannotation.ViewModelOf;
 
 public class SubscribeHelp {
+    private static final String EVENY_NEXT = "next";
+    private static final String EVENY_ERROR = "error";
+    private static final String EVENY_COMPLETED = "completed";
+    private static final String CompositeDisposable_NAME = "f_disposable";
+
     static class SubscribeElement {
-        final Element element;
-        Object viewModel;
+        Element element;
+        String viewModel;
         String key = "";
         String subjectName = "";
-        String named = "";
+        String eventType;
 
-        SubscribeElement(Element element) {
-            this.element = element;
+        static SubscribeElement createInstanceByElement(Element element) {
+            SubscribeElement subscribeElement = new SubscribeElement();
+            subscribeElement.eventType = EVENY_NEXT;
+            subscribeElement.element = element;
+            return subscribeElement;
+        }
+
+        static SubscribeElement createInstanceByCompletedElement(Element errElement) {
+            SubscribeElement subscribeElement = new SubscribeElement();
+            subscribeElement.eventType = EVENY_COMPLETED;
+            subscribeElement.element = errElement;
+            return subscribeElement;
+        }
+    }
+
+    static class SubscribeGroup {
+        String mapKey;
+        String viewModeFieldName;
+        String viewModel;
+        String viewModelKey;
+        String subjectName;
+        ArrayList<SubscribeElement> nexts = new ArrayList<>();
+        ArrayList<SubscribeElement> completeds = new ArrayList<>();
+
+        SubscribeGroup(String mapKey, String viewModeFieldName, String viewModel, String viewModelKey, String subjectName) {
+            this.mapKey = mapKey;
+            this.viewModeFieldName = viewModeFieldName;
+            this.viewModel = viewModel;
+            this.viewModelKey = viewModelKey;
+            this.subjectName = subjectName;
         }
     }
 
     static class ViewModelOfElement {
         final Element element;
-        String key = "";
+        final String key;
 
-        ViewModelOfElement(Element element) {
+
+        ViewModelOfElement(Element element, String key) {
             this.element = element;
+            this.key = key;
         }
 
         ClassName getProcessorType(BaseCreator creator) {
@@ -61,9 +96,8 @@ public class SubscribeHelp {
 
     static class Builder {
         private final BaseCreator creator;
-        private final HashMap<String, List<SubscribeElement>> subscribeMap = new HashMap<>();
+        private final HashMap<String, HashMap<String, SubscribeGroup>> subscribeMap = new HashMap<>();
         private final HashMap<String, ViewModelOfElement> viewModelOfMap = new HashMap<>();
-        private final List<String> disposableFieldNames = new ArrayList<>();
 
         Builder(BaseCreator creator) {
             this.creator = creator;
@@ -74,47 +108,151 @@ public class SubscribeHelp {
         }
 
         private String mapKey(SubscribeElement subscribeElement) {
-            return subscribeElement.key + "_" + subscribeElement.viewModel.toString();
+            return subscribeElement.key + "_" + subscribeElement.viewModel;
         }
 
         private String mapKey(ViewModelOfElement viewModelOfElement) {
             return viewModelOfElement.key + "_" + ClassName.get(viewModelOfElement.element.asType()).toString();
         }
 
+        private String viewModelName(SubscribeElement subscribeElement) {
+            final String[] strings = subscribeElement.viewModel.split("\\.");
+            return subscribeElement.key + "_" + strings[strings.length - 1];
+        }
+
         public void parseElement(Element element) {
             if (element.getAnnotation(Subscribe.class) != null) {
-                final SubscribeElement subscribeElement = new SubscribeElement(element);
-                subscribeElement.viewModel = creator.findAnnotationValue(element, Subscribe.class, "viewmode");
-                final Object named = creator.findAnnotationValue(element, DaggerClass.Named, "value");
-                subscribeElement.named = named != null ? named.toString() : element.getSimpleName().toString();
-                final Object subscribe_key = creator.findAnnotationValue(element, Subscribe.class, "subjectName");
-                subscribeElement.subjectName = subscribe_key != null ? subscribe_key.toString() : "";
-                if(element.getAnnotation(ViewModelKey.class) != null){
-                    final Object viewModelKey = creator.findAnnotationValue(element, ViewModelKey.class,"value");
-                    subscribeElement.key = viewModelKey != null ? viewModelKey.toString() : "";
+                AnnotationMirror aSubscribe = null;
+                for (AnnotationMirror annotationMirror : element.getAnnotationMirrors()) {
+                    if (creator.getClassName(annotationMirror.getAnnotationType()).equals(ClassName.get(Subscribe.class))) {
+                        aSubscribe = annotationMirror;
+                        break;
+                    }
                 }
-                if (subscribeElement.viewModel != null) {
-                    final String key = mapKey(subscribeElement);
-                    if (subscribeMap.containsKey(key)) {
-                        subscribeMap.get(key).add(subscribeElement);
+                final String name = getSubscribeMethodName(element);
+                if (aSubscribe != null) {
+                    final Object viewmode = creator.findAnnotationValue(aSubscribe, "viewmode");
+                    final String key = (String) creator.findAnnotationValue(aSubscribe, "key");
+                    if (key == null) {
+                        parseSubscribe(viewmode.toString(), "", name, element);
                     } else {
-                        final List<SubscribeElement> list = new ArrayList<>();
-                        list.add(subscribeElement);
-                        subscribeMap.put(key, list);
+                        parseSubscribe(viewmode.toString(), key, name, element);
                     }
                 }
             }
+            if (element.getAnnotation(Subscribes.class) != null) {
+                parseSubscribes(element);
+            }
+
             if (element.getAnnotation(ViewModelOf.class) != null) {
-                final Object v;
-                if(element.getAnnotation(ViewModelKey.class)!=null){
-                    v = creator.findAnnotationValue(element, ViewModelKey.class, "value");
-                }else {
-                    v = null;
-                }
-                final ViewModelOfElement viewModelOfElement = new ViewModelOfElement(element);
-                viewModelOfElement.key = v != null ? v.toString() : "";
+                final Object v = creator.findAnnotationValue(element, ViewModelOf.class, "value");
+                final ViewModelOfElement viewModelOfElement = new ViewModelOfElement(element, v != null ? v.toString() : "");
                 final String key = mapKey(viewModelOfElement);
                 viewModelOfMap.put(key, viewModelOfElement);
+            }
+        }
+
+        private void parseSubscribes(Element element) throws RuntimeException {
+            AnnotationMirror aSubscribes = null;
+            for (AnnotationMirror annotationMirror : element.getAnnotationMirrors()) {
+                if (creator.getClassName(annotationMirror.getAnnotationType()).equals(ClassName.get(Subscribes.class))) {
+                    aSubscribes = annotationMirror;
+                    break;
+                }
+            }
+            final String name = getSubscribeMethodName(element);
+            final StringBuilder stringBuilder = new StringBuilder();
+            if (aSubscribes != null) {
+                final String aaSubscribesValue = creator.findAnnotationValue(aSubscribes, "value").toString();
+                stringBuilder.append("aaSubscribesValue:");
+                stringBuilder.append(aaSubscribesValue);
+                stringBuilder.append("\n");
+                final String[] annotationArray = aaSubscribesValue.split("@library.neetoffice.com.neetannotation.Subscribe");
+                for (String annotation : annotationArray) {
+                    if (annotation.contains("viewmode=")) {
+                        final String viewmode = annotation.split("viewmode=")[1].split(".class")[0];
+                        try {
+                            final String key = annotation.split("key=\"")[1].split("\"")[0];
+                            parseSubscribe(viewmode, key, name, element);
+                        } catch (Exception e) {
+                            parseSubscribe(viewmode, "", name, element);
+                        }
+                    }
+                }
+            }
+        }
+
+        private String getSubscribeMethodName(Element element) {
+            final String name;
+            final AnnotationMirror named = AnnotationHelp.findAnnotationMirror(element, DaggerClass.Named);
+            if (named == null) {
+                name = element.getSimpleName().toString();
+            } else {
+                final String value = (String) AnnotationHelp.findAnnotationValue(named, "value");
+                if (value.equals("null")) {
+                    name = element.getSimpleName().toString();
+                } else {
+                    name = value;
+                }
+            }
+            return name;
+        }
+
+        private void parseSubscribe(String viewModel, String key, String subjectName, Element element) {
+            if (element instanceof ExecutableElement) {
+                final ExecutableElement method = (ExecutableElement) element;
+                if (method.getParameters().isEmpty()) {
+                    final SubscribeElement subscribeElement = SubscribeElement.createInstanceByCompletedElement(element);
+                    subscribeElement.viewModel = viewModel;
+                    subscribeElement.subjectName = subjectName;
+                    subscribeElement.key = key;
+                    parseSubscribeElement(subscribeElement);
+                } else {
+                    final SubscribeElement subscribeElement = SubscribeElement.createInstanceByElement(element);
+                    subscribeElement.viewModel = viewModel;
+                    subscribeElement.subjectName = subjectName;
+                    subscribeElement.key = key;
+                    parseSubscribeElement(subscribeElement);
+                }
+            } else {
+                final SubscribeElement subscribeElement = SubscribeElement.createInstanceByElement(element);
+                subscribeElement.viewModel = viewModel;
+                subscribeElement.subjectName = subjectName;
+                subscribeElement.key = key;
+                parseSubscribeElement(subscribeElement);
+            }
+        }
+
+        private void parseSubscribeElement(SubscribeElement subscribeElement) {
+            final Element element = subscribeElement.element;
+            String disposableFieldName = getDisposableFieldName(subscribeElement);
+            if (subscribeElement.viewModel != null) {
+                final String key = mapKey(subscribeElement);
+                if (subscribeMap.containsKey(key)) {
+                    final HashMap<String, SubscribeGroup> map = subscribeMap.get(key);
+                    final SubscribeGroup subscribeGroup;
+                    if (map.containsKey(disposableFieldName)) {
+                        subscribeGroup = map.get(disposableFieldName);
+                    } else {
+                        subscribeGroup = new SubscribeGroup(key, viewModelName(subscribeElement), subscribeElement.viewModel, subscribeElement.key, subscribeElement.subjectName);
+                        map.put(disposableFieldName, subscribeGroup);
+                    }
+                    if (EVENY_NEXT.equals(subscribeElement.eventType)) {
+                        subscribeGroup.nexts.add(subscribeElement);
+                    } else if (EVENY_COMPLETED.equals(subscribeElement.eventType)) {
+                        subscribeGroup.completeds.add(subscribeElement);
+                    }
+                } else {
+                    final HashMap<String, SubscribeGroup> map = new HashMap<>();
+                    subscribeMap.put(key, map);
+                    final SubscribeGroup subscribeGroup = new SubscribeGroup(key, viewModelName(subscribeElement), subscribeElement.viewModel, subscribeElement.key, subscribeElement.subjectName);
+                    map.put(disposableFieldName, subscribeGroup);
+                    if (EVENY_NEXT.equals(subscribeElement.eventType)) {
+                        subscribeGroup.nexts.add(subscribeElement);
+                    } else if (EVENY_COMPLETED.equals(subscribeElement.eventType)) {
+                        subscribeGroup.completeds.add(subscribeElement);
+                    }
+                }
             }
         }
 
@@ -130,111 +268,177 @@ public class SubscribeHelp {
             final ClassName typeName = viewModelOf.getProcessorType(creator);
             final String key = viewModelOf.key;
             return CodeBlock.builder()
-                    .add("this.$N = ",viewModelOf.element.getSimpleName())
-                    .add(ViewModelHelp.viewModelProvidersOf(context_from,key,typeName))
+                    .add("this.$N = ", viewModelOf.element.getSimpleName())
+                    .add(ViewModelHelp.viewModelProvidersOf(context_from, key, typeName))
                     .addStatement("")
                     .build();
         }
 
-        private boolean isViewModeFieldinTypeElement(SubscribeElement element) {
-            return viewModelOfMap.containsKey(element.key + "_" + element.viewModel.toString());
+        private boolean isViewModeFieldinSubscribeGroup(SubscribeGroup group) {
+            return viewModelOfMap.containsKey(group.mapKey);
         }
 
-        private ViewModelOfElement getViewModelOfElement(SubscribeElement element) {
-            return viewModelOfMap.get(element.key + "_" + element.viewModel.toString());
+        private ViewModelOfElement getViewModelOfSubscribeGroup(SubscribeGroup group) {
+            return viewModelOfMap.get(group.mapKey);
         }
 
         String getDisposableFieldName(SubscribeElement subscribeElement) {
             final Element element = subscribeElement.element;
-            final String elementName = element.getSimpleName().toString();
+            final String mName = viewModelName(subscribeElement) + subscribeElement.subjectName;
+            final String fName = viewModelName(subscribeElement) + subscribeElement.subjectName;
             if (element.asType() instanceof DeclaredType) {
-                return String.format("m%s%s_Disposable", elementName.toUpperCase().charAt(0), elementName.substring(1));
+                return String.format("m%s%s_Disposable", mName.toUpperCase().charAt(0), mName.substring(1));
             } else if (element.asType() instanceof ExecutableType) {
-                return String.format("f%s%s_Disposable", elementName.toUpperCase().charAt(0), elementName.substring(1));
+                return String.format("f%s%s_Disposable", fName.toUpperCase().charAt(0), fName.substring(1));
             }
             return "";
         }
 
         void addDisposableFieldInType(TypeSpec.Builder tb) {
-            for (List<SubscribeElement> subscribeElements : subscribeMap.values()) {
-                for (SubscribeElement subscribeElement : subscribeElements) {
-                    tb.addField(createDisposable(subscribeElement));
-                }
-            }
+            tb.addField(FieldSpec.builder(RxJavaClass.CompositeDisposable, CompositeDisposable_NAME, Modifier.PRIVATE)
+                    .initializer("new $T()", RxJavaClass.CompositeDisposable).build());
         }
 
-        private FieldSpec createDisposable(SubscribeElement subscribeElement) {
-            final String fieldName = getDisposableFieldName(subscribeElement);
-            if (fieldName.isEmpty()) {
-                return null;
-            }
-            disposableFieldNames.add(fieldName);
-            return FieldSpec.builder(RxJavaClass.Disposable, fieldName, Modifier.PRIVATE).build();
-        }
 
-        private CodeBlock createSubscribeToViewMode(SubscribeElement subscribeElement, String thisClassName, TypeName viewModelType, String viewModelName, String disposableFieldName) {
+        private CodeBlock createSubscribeToViewMode(SubscribeGroup subscribeGroup, String thisClassName, TypeName viewModelType, String viewModelName) {
             final CodeBlock.Builder cb = CodeBlock.builder();
-            final Element element = subscribeElement.element;
-            if (element.asType() instanceof DeclaredType) {
-                final DeclaredType declaredType = (DeclaredType) element.asType();
-                final String subjectName = subscribeElement.subjectName;
-                cb.add("$N = (($T)$N).<$T>findSubjectByName($S)", disposableFieldName, viewModelType, viewModelName, declaredType, subjectName);
-                cb.add(ReactiveXHelp.subscribeConsumer(ClassName.get(declaredType), "t",
-                        CodeBlock.builder().addStatement("$N.this.$N = t", thisClassName, element.getSimpleName()).build()));
-            } else if (element instanceof ExecutableElement) {
-                final ExecutableElement method = (ExecutableElement) element;
-                final String subjectName = subscribeElement.subjectName;
-                final List<? extends VariableElement> parameters = method.getParameters();
-                final TypeName parameterType;
-                if (parameters.size() > 0) {
-                    parameterType = creator.getClassName(parameters.get(0).asType());
+            cb.add("$N.add((($T)$N).$N.subject()", CompositeDisposable_NAME, viewModelType, viewModelName, subscribeGroup.subjectName);
+            final CodeBlock nextCodeBlock;
+            final CodeBlock errorCodeBlock;
+            final CodeBlock completedCodeBlock;
+            final CodeBlock.Builder nextAccept = CodeBlock.builder();
+            final CodeBlock.Builder errorAccept = CodeBlock.builder();
+            for (SubscribeElement subscribeElement : subscribeGroup.nexts) {
+                final Element element = subscribeElement.element;
+                if (element.asType() instanceof DeclaredType) {
+                    TypeName elementType = creator.getClassName(element.asType());
+                    nextAccept.beginControlFlow("if(t instanceof $T)", elementType)
+                            .addStatement("$N.this.$N = t", thisClassName, element.getSimpleName())
+                            .endControlFlow("\n");
                 } else {
-                    parameterType = ClassName.get(Object.class);
+                    try {
+                        final ExecutableElement method = (ExecutableElement) element;
+                        final List<? extends VariableElement> parameters = method.getParameters();
+                        for (VariableElement parameter : parameters) {
+                            final TypeName elementType = creator.getClassName(parameter.asType());
+                            if (creator.isInstanceOf(parameter.asType(), ClassName.get(Throwable.class))) {
+                                errorAccept.beginControlFlow("if(t instanceof $T)", elementType);
+                                final Iterator<? extends VariableElement> iterator = parameters.iterator();
+                                errorAccept.add("$N.this.$N(", thisClassName, element.getSimpleName());
+                                while (iterator.hasNext()) {
+                                    final VariableElement p = iterator.next();
+                                    final TypeName pType = creator.getClassName(p.asType());
+                                    if (creator.getClassName(parameter.asType()).equals(pType)) {
+                                        errorAccept.add("($T)t", pType);
+                                    } else {
+                                        errorAccept.add(AnnotationHelp.addNullCode(parameter));
+                                    }
+                                    if (iterator.hasNext()) {
+                                        errorAccept.add(",");
+                                    }
+                                }
+                                errorAccept.addStatement(")");
+                                errorAccept.endControlFlow();
+                            } else {
+                                nextAccept.beginControlFlow("if(t instanceof $T)", elementType);
+                                final Iterator<? extends VariableElement> iterator = parameters.iterator();
+                                nextAccept.add("$N.this.$N(", thisClassName, element.getSimpleName());
+                                while (iterator.hasNext()) {
+                                    final VariableElement p = iterator.next();
+                                    final TypeName pType = creator.getClassName(p.asType());
+                                    if (creator.getClassName(parameter.asType()).equals(pType)) {
+                                        nextAccept.add("($T)t", pType);
+                                    } else {
+                                        nextAccept.add(AnnotationHelp.addNullCode(parameter));
+                                    }
+                                    if (iterator.hasNext()) {
+                                        nextAccept.add(",");
+                                    }
+                                }
+                                nextAccept.addStatement(")");
+                                nextAccept.endControlFlow();
+                            }
+                        }
+                    } catch (Exception e) {
+                        cb.addStatement("//" + e.toString());
+                    }
                 }
+            }
+            for (SubscribeElement subscribeElement : subscribeGroup.completeds) {
+                final Element element = subscribeElement.element;
+                final ExecutableElement method = (ExecutableElement) element;
+                final List<? extends VariableElement> parameters = method.getParameters();
                 final Iterator<? extends VariableElement> iterator = parameters.iterator();
                 final StringBuffer parameterString = new StringBuffer();
                 while (iterator.hasNext()) {
                     final VariableElement parameter = iterator.next();
-                    if (creator.getClassName(parameter.asType()).equals(parameterType)) {
-                        parameterString.append("t");
-                    } else {
-                        parameterString.append(AnnotationHelp.addNullCode(parameter));
-                    }
+                    parameterString.append(AnnotationHelp.addNullCode(parameter));
                     if (iterator.hasNext()) {
                         parameterString.append(",");
                     }
                 }
-                cb.add("$N = (($T)$N).<$T>findSubjectByName($S)", disposableFieldName, viewModelType, viewModelName, parameterType, subjectName);
-                cb.add(ReactiveXHelp.subscribeConsumer(parameterType, "t",
-                        CodeBlock.builder().addStatement("$N.this.$N($N)", thisClassName, element.getSimpleName(), parameterString.toString()).build()));
+                nextAccept.addStatement("$N.this.$N($N)", thisClassName, element.getSimpleName(), parameterString.toString());
             }
+            nextAccept.add(errorAccept.build());
+            nextCodeBlock = ReactiveXHelp.newConsumer(ClassName.get(Object.class), "t", nextAccept.build());
+            errorCodeBlock = ReactiveXHelp.newConsumer(ClassName.get(Throwable.class), "t", errorAccept.build());
+            completedCodeBlock = CodeBlock.builder().add("$T.EMPTY_ACTION", RxJavaClass.Functions).build();
+
+            cb.add(".subscribe(")
+                    .add(nextCodeBlock)
+                    .add(",")
+                    .add(errorCodeBlock)
+                    .add(",")
+                    .add(completedCodeBlock)
+                    .addStatement("))");
             return cb.build();
         }
 
         CodeBlock createCodeSubscribeInOnCreate(String thisClassName, String context_from) {
             final CodeBlock.Builder cb = CodeBlock.builder();
             final HashMap<String, String> localViewModelNames = new HashMap<>();
-            for (List<SubscribeElement> subscribeElements : subscribeMap.values()) {
-                for (SubscribeElement subscribeElement : subscribeElements) {
-                    if (isViewModeFieldinTypeElement(subscribeElement)) {
-                        final ViewModelOfElement viewModelOf = getViewModelOfElement(subscribeElement);
+            for (HashMap<String, SubscribeGroup> subscribeGroups : subscribeMap.values()) {
+                for (SubscribeGroup subscribeGroup : subscribeGroups.values()) {
+                    if (isViewModeFieldinSubscribeGroup(subscribeGroup)) {
+                        final ViewModelOfElement viewModelOf = getViewModelOfSubscribeGroup(subscribeGroup);
                         final ClassName typeName = viewModelOf.getProcessorType(creator);
                         final String viewModelName = viewModelOf.element.getSimpleName().toString();
-                        final String disposableFieldName = getDisposableFieldName(subscribeElement);
-                        cb.add(createSubscribeToViewMode(subscribeElement, thisClassName, typeName, viewModelName, disposableFieldName));
+                        cb.add(createSubscribeToViewMode(subscribeGroup, thisClassName, typeName, viewModelName));
                     } else {
-                        final ClassName typeName = ClassName.bestGuess(subscribeElement.viewModel.toString() + "_");
-                        if (!localViewModelNames.containsKey(mapKey(subscribeElement))) {
-                            final String localViewModelName = "lm" + typeName.simpleName();
-                            cb.add("$T $N = ",typeName, localViewModelName);
-                            cb.add(ViewModelHelp.viewModelProvidersOf(context_from,subscribeElement.key,typeName));
-                            localViewModelNames.put(mapKey(subscribeElement), localViewModelName);
-                            final String disposableFieldName = getDisposableFieldName(subscribeElement);
-                            cb.add(createSubscribeToViewMode(subscribeElement, thisClassName, typeName, localViewModelName, disposableFieldName));
+                        final ClassName typeName = ClassName.bestGuess(subscribeGroup.viewModel + "_");
+                        if (!localViewModelNames.containsKey(subscribeGroup.mapKey)) {
+                            final String localViewModelName = "lm" + subscribeGroup.viewModelKey + typeName.simpleName();
+                            cb.add("$T $N = ", typeName, localViewModelName);
+                            cb.add(ViewModelHelp.viewModelProvidersOf(context_from, subscribeGroup.viewModelKey, typeName));
+                            cb.addStatement("");
+                            localViewModelNames.put(subscribeGroup.mapKey, localViewModelName);
+                            cb.add(createSubscribeToViewMode(subscribeGroup, thisClassName, typeName, localViewModelName));
                         } else {
-                            final String localViewModelName = localViewModelNames.get(mapKey(subscribeElement));
-                            final String disposableFieldName = getDisposableFieldName(subscribeElement);
-                            cb.add(createSubscribeToViewMode(subscribeElement, thisClassName, typeName, localViewModelName, disposableFieldName));
+                            final String localViewModelName = localViewModelNames.get(subscribeGroup.mapKey);
+                            cb.add(createSubscribeToViewMode(subscribeGroup, thisClassName, typeName, localViewModelName));
+                        }
+                    }
+                }
+            }
+            return cb.build();
+        }
+
+        CodeBlock createAddLifecycle(String context_from) {
+            final CodeBlock.Builder cb = CodeBlock.builder();
+            for (ViewModelOfElement viewModelOf : viewModelOfMap.values()) {
+                final ClassName typeName = viewModelOf.getProcessorType(creator);
+                cb.add(CodeBlock.builder().addStatement("getLifecycle().addObserver(($T)$N)", typeName, viewModelOf.element.getSimpleName()).build());
+            }
+            final HashMap<String, String> localViewModelNames = new HashMap<>();
+            for (HashMap<String, SubscribeGroup> subscribeGroups : subscribeMap.values()) {
+                for (SubscribeGroup subscribeGroup : subscribeGroups.values()) {
+                    if (isViewModeFieldinSubscribeGroup(subscribeGroup)) {
+                    } else {
+                        final ClassName typeName = ClassName.bestGuess(subscribeGroup.viewModel + "_");
+                        if (!localViewModelNames.containsKey(subscribeGroup.mapKey)) {
+                            final String localViewModelName = "lm" + subscribeGroup.viewModelKey + typeName.simpleName();
+                            localViewModelNames.put(subscribeGroup.mapKey, localViewModelName);
+                            cb.add(CodeBlock.builder().addStatement("getLifecycle().addObserver(($T)$N)", typeName, localViewModelName).build());
                         }
                     }
                 }
@@ -244,9 +448,7 @@ public class SubscribeHelp {
 
         CodeBlock createDispose() {
             CodeBlock.Builder code = CodeBlock.builder();
-            for (String fieldName : disposableFieldNames) {
-                code.addStatement("$N.dispose()", fieldName);
-            }
+            code.addStatement("$N.clear()", CompositeDisposable_NAME);
             return code.build();
         }
     }

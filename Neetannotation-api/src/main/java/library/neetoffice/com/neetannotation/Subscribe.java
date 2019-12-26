@@ -12,12 +12,12 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 @Retention(SOURCE)
 public @interface Subscribe {
     /**
-     * @return the Class of items observed and emitted by the Subject
+     * @return the Class of items observed and emitted by the Published
      */
     Class<?> viewmode();
 
     /**
      * @return this key for ViewModelProviders of key
      */
-    String subjectName() default "";
+    String key() default "";
 }

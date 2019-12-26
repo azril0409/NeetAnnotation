@@ -18,6 +18,7 @@ import library.neetoffice.com.neetannotation.AfterTextChange;
 import library.neetoffice.com.neetannotation.BeforeTextChange;
 import library.neetoffice.com.neetannotation.CheckedChange;
 import library.neetoffice.com.neetannotation.Click;
+import library.neetoffice.com.neetannotation.FocusChange;
 import library.neetoffice.com.neetannotation.ItemClick;
 import library.neetoffice.com.neetannotation.ItemLongClick;
 import library.neetoffice.com.neetannotation.ItemSelect;
@@ -70,7 +71,7 @@ public class ListenerHelp {
         private final HashMap<String, ElementBundle> textChangeElements = new HashMap<>();
         private final HashMap<String, ElementBundle> beforeTextChangeElements = new HashMap<>();
         private final HashMap<String, ElementBundle> afterTextChangeElements = new HashMap<>();
-
+        private final HashMap<String, ElementBundle> focusChangElements = new HashMap<>();
 
         public Builder(BaseCreator creator, String className, String findView_from, String context_from, String defPackage) {
             this.creator = creator;
@@ -133,7 +134,10 @@ public class ListenerHelp {
                 final AfterTextChange aAfterTextChange = element.getAnnotation(AfterTextChange.class);
                 addElementsMap(element, aAfterTextChange.value(), aAfterTextChange.resName(), "AfterTextChanged", afterTextChangeElements);
             }
-
+            if (element.getAnnotation(FocusChange.class) != null) {
+                final FocusChange aFocusChange = element.getAnnotation(FocusChange.class);
+                addElementsMap(element, aFocusChange.value(), aFocusChange.resName(), "FocusChanged", focusChangElements);
+            }
         }
 
         private void addElementsMap(Element element, int[] rids, String[] resNames, String end, HashMap<String, ElementBundle> elements) {
@@ -166,6 +170,7 @@ public class ListenerHelp {
             cb.add(addItemSelect());
             cb.add(addCheckedChange());
             cb.add(addTextChange());
+            cb.add(addFocusChang());
             return cb.build();
         }
 
@@ -192,6 +197,7 @@ public class ListenerHelp {
             getIdCodes.putAll(getIdCodeMap(textChangeElements));
             getIdCodes.putAll(getIdCodeMap(beforeTextChangeElements));
             getIdCodes.putAll(getIdCodeMap(afterTextChangeElements));
+            getIdCodes.putAll(getIdCodeMap(focusChangElements));
             final CodeBlock.Builder cb = CodeBlock.builder();
             for (Map.Entry<String, CodeBlock> entry : getIdCodes.entrySet()) {
                 cb.add("final $T $N = $N.findViewById(", AndroidClass.View, entry.getKey(), findView_from)
@@ -468,7 +474,7 @@ public class ListenerHelp {
                         .beginControlFlow("@$T\npublic void onItemSelected($T<?> parent, $T view, int position, long id)", Override.class, AndroidClass.AdapterView, AndroidClass.View)
                         .add(code.build())
                         .endControlFlow()
-                        .beginControlFlow("void onNothingSelected($T<?> parent)", AndroidClass.AdapterView)
+                        .beginControlFlow("public void onNothingSelected($T<?> parent)", AndroidClass.AdapterView)
                         .endControlFlow()
                         .endControlFlow(")");
 
@@ -503,7 +509,7 @@ public class ListenerHelp {
                 }
                 code.addStatement(")");
                 final CodeBlock.Builder callMethod = CodeBlock.builder()
-                        .add("setOnCheckedChangeListener (")
+                        .add("setOnCheckedChangeListener(")
                         .beginControlFlow("new $T()", AndroidClass.CompoundButton_OnCheckedChangeListener)
                         .beginControlFlow("@$T\npublic void onCheckedChanged($T view,boolean isChecked)", Override.class, AndroidClass.CompoundButton)
                         .add(code.build())
@@ -571,7 +577,7 @@ public class ListenerHelp {
                             }
                         } else if (creator.getClassName(parameter.asType()).equals(ClassName.get(String.class))) {
                             code.add("s.toString()");
-                        } else if (creator.getClassName(parameter.asType()).equals(ClassName.get("android.text", "Editable"))) {
+                        } else if (creator.isInstanceOf(parameter.asType(),AndroidClass.Editable)) {
                             code.add("s");
                         } else {
                             code.add(AnnotationHelp.addNullCode(parameter));
@@ -599,6 +605,8 @@ public class ListenerHelp {
                             } else {
                                 code.add("($T)$N", parameter.asType(), entry.getKey());
                             }
+                        } else if (creator.isInstanceOf(parameter.asType(),AndroidClass.Editable)) {
+                            code.add("s");
                         } else if (countText < 2 && creator.getClassName(parameter.asType()).equals(ClassName.get(String.class))) {
                             if (parameter.getAnnotation(TextChange.Before.class) != null) {
                                 code.add("old");
@@ -657,6 +665,44 @@ public class ListenerHelp {
             }
             return cb.build();
         }
+
+        private CodeBlock addFocusChang() {
+            final CodeBlock.Builder cb = CodeBlock.builder();
+            for (Map.Entry<String, ElementBundle> entry : focusChangElements.entrySet()) {
+                final ExecutableElement method = (ExecutableElement) entry.getValue().element;
+                final Iterator<? extends VariableElement> parameters = method.getParameters().iterator();
+                final CodeBlock.Builder code = CodeBlock.builder()
+                        .add("$N.this.$N(", className, method.getSimpleName());
+                while (parameters.hasNext()) {
+                    final VariableElement parameter = parameters.next();
+                    if (creator.isInstanceOf(parameter.asType(), AndroidClass.View)) {
+                        if (AndroidClass.View.equals(ClassName.get(parameter.asType()))) {
+                            code.add("$N", "view");
+                        } else {
+                            code.add("($T)$N", parameter.asType(), "view");
+                        }
+                    } else if (creator.getClassName(parameter.asType()).equals(ClassName.get(Boolean.class))) {
+                        code.add("hasFocus");
+                    } else {
+                        code.add(AnnotationHelp.addNullCode(parameter));
+                    }
+                    if (parameters.hasNext()) {
+                        code.add(",");
+                    }
+                }
+                code.addStatement(")");
+                final CodeBlock.Builder callMethod = CodeBlock.builder()
+                        .add("setOnFocusChangeListener(")
+                        .beginControlFlow("new $T()", AndroidClass.View_OnFocusChangeListener)
+                        .beginControlFlow("@$T\npublic void onFocusChange($T view,boolean hasFocus)",Override.class,AndroidClass.View)
+                        .add(code.build())
+                        .endControlFlow()
+                        .endControlFlow(")");
+                cb.add(addInstanceOfCode(entry.getKey(), AndroidClass.View, callMethod.build()));
+
+            }
+            return cb.build();
+        }
     }
 
     private static CodeBlock.Builder createAddTextChangedListener() {
@@ -691,7 +737,7 @@ public class ListenerHelp {
         final Iterator<? extends VariableElement> iterator = method.getParameters().iterator();
         final CodeBlock.Builder code = CodeBlock.builder();
         if (creator.getClassName(method.getReturnType()).equals(ClassName.get(Boolean.class))) {
-            code.add("$N = $N|$N.this.$N(",RETURNS, RETURNS, className, method.getSimpleName());
+            code.add("$N = $N|$N.this.$N(", RETURNS, RETURNS, className, method.getSimpleName());
         } else {
             code.add("$N.this.$N(", className, method.getSimpleName());
         }
@@ -760,7 +806,7 @@ public class ListenerHelp {
         final CodeBlock.Builder code = CodeBlock.builder();
         code.beginControlFlow("if(event.getAction()==MotionEvent.ACTION_DOWN)");
         if (creator.getClassName(method.getReturnType()).equals(ClassName.get(Boolean.class))) {
-            code.add("$N = $N|$N.this.$N(", RETURNS, RETURNS,className, method.getSimpleName());
+            code.add("$N = $N|$N.this.$N(", RETURNS, RETURNS, className, method.getSimpleName());
         } else {
             code.add("$N.this.$N(", className, method.getSimpleName());
         }
@@ -792,7 +838,7 @@ public class ListenerHelp {
         final CodeBlock.Builder code = CodeBlock.builder();
         code.beginControlFlow("if(event.getAction()==MotionEvent.ACTION_MOVE)");
         if (creator.getClassName(method.getReturnType()).equals(ClassName.get(Boolean.class))) {
-            code.add("$N = $N|$N.this.$N(", RETURNS, RETURNS,className, method.getSimpleName());
+            code.add("$N = $N|$N.this.$N(", RETURNS, RETURNS, className, method.getSimpleName());
         } else {
             code.add("$N.this.$N(", className, method.getSimpleName());
         }
@@ -851,7 +897,7 @@ public class ListenerHelp {
     private static String parseMethodName(Name name, String end) {
         String string = name.toString();
         if (string.toLowerCase().startsWith("on")) {
-            string = string.substring(2);
+            string = String.valueOf(string.charAt(2)).toLowerCase()+string.substring(3);
         }
         if (string.toLowerCase().endsWith(end.toLowerCase())) {
             string = string.substring(0, string.length() - end.length());

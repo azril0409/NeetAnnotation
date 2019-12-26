@@ -51,7 +51,6 @@ public class HandleHelp {
                 return;
             }
             if (element.getAnnotation(ThreadOn.class) != null) {
-
                 final ExecutableElement e = (ExecutableElement) element;
                 final ThreadOn aThreadOn = e.getAnnotation(ThreadOn.class);
                 final CodeBlock.Builder cb = CodeBlock.builder();
@@ -60,18 +59,17 @@ public class HandleHelp {
                     if (aThreadOn.delayMillis() > 0) {
                         cb.add(ReactiveXHelp.delay(aThreadOn.delayMillis()));
                     }
-                    cb.add(ReactiveXHelp.subscribeOnMain());
+                    cb.add(ReactiveXHelp.observeOnMain());
                 }else if(aThreadOn.value() == ThreadOn.Mode.Background){
                     if (aThreadOn.delayMillis() > 0) {
                         cb.add(ReactiveXHelp.delay(aThreadOn.delayMillis()));
                     }
-                    cb.add(ReactiveXHelp.subscribeOnThread());
+                    cb.add(ReactiveXHelp.observeOnThread());
                 }
-                cb.add(".subscribe(new $T(){",RxJavaClass.Observer);
-                cb.add("@Override public void onSubscribe($T d){}",RxJavaClass.Disposable);
-                cb.add("@Override public void onNext($T o){}",ClassName.get(Object.class));
-                cb.add("@Override public void onError($T t){}",ClassName.get(Throwable.class));
-                cb.add("@Override public void onComplete(){");
+                cb.add(".subscribe($T.emptyConsumer()",RxJavaClass.Functions);
+                cb.add(",$T.emptyConsumer()",RxJavaClass.Functions);
+                cb.beginControlFlow(",new $T()",RxJavaClass.Action);
+                cb.beginControlFlow("@$T public void run() throws $T",Override.class,Exception.class);
                 cb.add("$N.super.$N(",className,e.getSimpleName());
                 final Iterator<? extends VariableElement> iterator = e.getParameters().iterator();
                 while (iterator.hasNext()){
@@ -82,7 +80,9 @@ public class HandleHelp {
                     }
                 }
                 cb.addStatement(")");
-                cb.addStatement("}})");
+                cb.endControlFlow();
+                cb.endControlFlow();
+                cb.addStatement(")");
                 handleElements.add(new HandleElement(e,cb.build()));
             }
         }

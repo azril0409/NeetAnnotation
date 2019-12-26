@@ -1,19 +1,22 @@
 package library.neetoffice.com.neetannotation.processor;
 
+import com.squareup.javapoet.AnnotationSpec;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
+import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
-import javax.inject.Named;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -24,7 +27,7 @@ import javax.lang.model.element.VariableElement;
 import library.neetoffice.com.neetannotation.AfterAnnotation;
 import library.neetoffice.com.neetannotation.InjectEntity;
 import library.neetoffice.com.neetannotation.NViewModel;
-import library.neetoffice.com.neetannotation.Subject;
+import library.neetoffice.com.neetannotation.Published;
 
 public class ViewModelCreator extends BaseCreator {
     static final String FIND_SUBJECT_BY_NAME = "findSubjectByName";
@@ -35,9 +38,11 @@ public class ViewModelCreator extends BaseCreator {
     static final String CONSTRUCTOR_ACTIVITY_PARAMETER = "activity";
     static final String CONSTRUCTOR_CONTEXT_PARAMETER = "context";
     static final TypeVariableName SUBJECT_PARAMETERIZED_TYPE_NAME = TypeVariableName.get("T");
+    private final MainProcessor mainProcessor;
 
     public ViewModelCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
+        this.mainProcessor = processor;
     }
 
     @Override
@@ -53,9 +58,9 @@ public class ViewModelCreator extends BaseCreator {
 
         final TypeSpec.Builder tb = TypeSpec.classBuilder(className)
                 .superclass(getClassName(viewModelElement.asType()))
+                .addSuperinterface(AndroidClass.LifecycleObserver)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
-        final MethodSpec.Builder findSubjectByName = createFindSubjectByNameMethodBuilder();
 
         final CodeBlock.Builder init = CodeBlock.builder();
         final CodeBlock.Builder afterAnnotationCode = CodeBlock.builder();
@@ -67,13 +72,9 @@ public class ViewModelCreator extends BaseCreator {
         for (TypeElement viewModel : viewModelElements) {
             final List<? extends Element> enclosedElements = viewModel.getEnclosedElements();
             for (Element enclosedElement : enclosedElements) {
-                if (enclosedElement.getAnnotation(Subject.class) != null) {
-                    //final FieldSpec subjectField = createSubjectField(enclosedElement);
-                    //tb.addField(subjectField);
-                    final CodeBlock instanceInteractor = createInstanceCode(viewModelElement, (VariableElement) enclosedElement, haveDagger);
+                if (enclosedElement.getAnnotation(Published.class) != null) {
+                    final CodeBlock instanceInteractor = createInstanceCode(viewModelElement, enclosedElement, haveDagger);
                     init.add(instanceInteractor);
-                    final CodeBlock findSubjectByNameCode = createFindSubjectByNameCode(enclosedElement);
-                    findSubjectByName.addCode(findSubjectByNameCode);
                 }
                 afterAnnotationCode.add(createAfterAnnotationCode(enclosedElement));
             }
@@ -89,88 +90,49 @@ public class ViewModelCreator extends BaseCreator {
                 haveConstructor = true;
             }
         }
-        findSubjectByName.endControlFlow();
+        //findSubjectByName.endControlFlow();
         if (!haveConstructor) {
             tb.addMethod(MethodSpec.constructorBuilder()
                     .addModifiers(Modifier.PUBLIC)
                     .addCode(init.build())
                     .build());
         }
-        tb.addMethod(findSubjectByName.build());
         writeTo(getPackageName(viewModelElement), tb.build());
     }
 
-    MethodSpec.Builder createFindSubjectByNameMethodBuilder() {
-        return MethodSpec.methodBuilder(FIND_SUBJECT_BY_NAME)
-                .addTypeVariable(SUBJECT_PARAMETERIZED_TYPE_NAME)
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(String.class, FIND_SUBJECT_BY_NAME_PARAMETER_NAME)
-                .returns(RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME))
-                .beginControlFlow("switch ($N)", FIND_SUBJECT_BY_NAME_PARAMETER_NAME)
-                .addStatement("default: return $T.create()", RxJavaClass.PublishSubject);
-    }
-
-    /*FieldSpec createSubjectField(Element interactor) {
-        final String interactorName = interactor.asType().toString();
-        final Element entityElement = processor.interactorCreator.interactElements.get(interactorName);
-        final TypeName entityType;
-        if (entityElement == null) {
-            entityType = ClassName.bestGuess(interactorName.substring(0, interactorName.length() - processor.interactorCreator.PRESENTER.length()));
-        } else {
-            entityType = getClassName(entityElement.asType());
-        }
-        final String fieldName = interactor.getSimpleName().toString() + _SUBJECT;
-        final TypeName subjectTypeName = RxJavaClass.Subject(entityType);
-        final FieldSpec.Builder fb = FieldSpec.builder(subjectTypeName, fieldName, Modifier.PUBLIC)
-                .initializer("$T.create()", RxJavaClass.PublishSubject);
-        return fb.build();
-    }*/
-
-    CodeBlock createInstanceCode(TypeElement viewModelElement, VariableElement interactElement, boolean haveDagger) {
+    CodeBlock createInstanceCode(TypeElement viewModelElement, Element interactElement, boolean haveDagger) {
         final boolean isSubAndroidViewModel = isSubAndroidViewModel(viewModelElement);
         final String daggerMethodName = DaggerHelp.findNameFromDagger(this, interactElement);
-        final InteractorCreator.InteractBuild interactBuild = processor.interactorCreator.interactBuilds.get(interactElement.asType().toString());
+        final InteractorCreator.InteractBuild interactBuild = mainProcessor.interactorCreator.interactBuilds.get(interactElement.asType().toString());
         final TypeName implementType;
         if (interactBuild == null) {
-            final String implementTypeString = interactElement.asType().toString();
-            implementType = ClassName.bestGuess(implementTypeString + "_");
+            final String typeName = getClassName(interactElement.asType()).toString();
+            if (isContextInteractor(typeName)) {
+                implementType = ClassName.bestGuess(mainProcessor.contextPackageName + "." + typeName + "_");
+            } else {
+                implementType = ClassName.bestGuess(typeName + "_");
+            }
         } else {
-            implementType = ClassName.get(interactBuild.packageName, interactBuild.implementClassName);
+            if (interactBuild.implementClassName.startsWith(interactBuild.packageName)) {
+                implementType = ClassName.bestGuess(interactBuild.implementClassName);
+            } else {
+                implementType = ClassName.get(interactBuild.packageName, interactBuild.implementClassName);
+            }
         }
 
         final InjectEntity aInjectEntity = interactElement.getAnnotation(InjectEntity.class);
         if (aInjectEntity == null || !haveDagger) {
             return CodeBlock.builder()
-                    .add("$N = new $T(", interactElement.getSimpleName(), implementType)
-                    .add(addNullCode(implementType))
-                    .addStatement(")")
-                    .build();
-        }
-        if (isSubAndroidViewModel) {
-            return CodeBlock.builder()
-                    .add("$N = new $T(", interactElement.getSimpleName(), implementType)
-                    .add("$N.$N()", DAGGER_NAME, daggerMethodName)
-                    .addStatement(")")
+                    .addStatement("$N = $T.newInstance()", interactElement.getSimpleName(), implementType)
                     .build();
         }
         return CodeBlock.builder()
-                .addStatement("$N = new $T($N.$N())", interactElement.getSimpleName(), implementType, DAGGER_NAME, daggerMethodName)
+                .addStatement("$N = $T.newInstance($N.$N())", interactElement.getSimpleName(), implementType, DAGGER_NAME, daggerMethodName)
                 .build();
     }
 
-    CodeBlock createFindSubjectByNameCode(Element interactElement) {
-        final CodeBlock.Builder code = CodeBlock.builder();
-        final Subject aSubject= interactElement.getAnnotation(Subject.class);
-        final String name = aSubject.name();
-        if(!name.isEmpty()){
-            code.addStatement("case $S: return ($T) $N.$N()", name, RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.SUBJECT).build();
-            if(!interactElement.getSimpleName().equals(name)){
-                code.addStatement("case $S: return ($T) $N.$N()", interactElement.getSimpleName(), RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.SUBJECT).build();
-            }
-        }else {
-            code.addStatement("case $S: return ($T) $N.$N()", interactElement.getSimpleName(), RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.SUBJECT).build();
-        }
-        return code.build();
+    private boolean isContextInteractor(String typeName) {
+        return !typeName.contains(".");
     }
 
     private CodeBlock createDaggerCode(TypeElement viewModelElement) {
@@ -178,7 +140,7 @@ public class ViewModelCreator extends BaseCreator {
         code.add("_$N $N = ", viewModelElement.getSimpleName(), DAGGER_NAME);
         final boolean isSubAndroidViewModel = isSubAndroidViewModel(viewModelElement);
         if (isSubAndroidViewModel) {
-            code.addStatement("Dagger_$N.builder().$N(new $T($N)).build()", viewModelElement.getSimpleName(), toModelCase(AndroidClass.CONTEXT_MODULE_NAME), AndroidClass.CONTEXT_MODULE, CONSTRUCTOR_APPLICATION_PARAMETER);
+            code.addStatement("Dagger_$N.builder().$N(new $T($N)).build()", viewModelElement.getSimpleName(), toModelCase(AndroidClass.CONTEXT_MODULE_NAME), mainProcessor.contextModule, CONSTRUCTOR_APPLICATION_PARAMETER);
         } else {
             code.addStatement("Dagger_$N.create()", viewModelElement.getSimpleName());
         }
@@ -239,5 +201,61 @@ public class ViewModelCreator extends BaseCreator {
                 .add(parameters.build())
                 .addStatement(")")
                 .build();
+    }
+
+
+    @Deprecated
+    MethodSpec.Builder createFindSubjectByNameMethodBuilder() {
+        return MethodSpec.methodBuilder(FIND_SUBJECT_BY_NAME)
+                .addTypeVariable(SUBJECT_PARAMETERIZED_TYPE_NAME)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addParameter(String.class, FIND_SUBJECT_BY_NAME_PARAMETER_NAME)
+                .returns(RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME))
+                .beginControlFlow("switch ($N)", FIND_SUBJECT_BY_NAME_PARAMETER_NAME)
+                .addStatement("default: return $T.create()", RxJavaClass.BehaviorSubject);
+    }
+
+    @Deprecated
+    CodeBlock createFindSubjectByNameCode(Element interactElement) {
+        final CodeBlock.Builder code = CodeBlock.builder();
+        final Published aSubject = interactElement.getAnnotation(Published.class);
+        final String name = interactElement.getSimpleName().toString();
+        if (!name.isEmpty()) {
+            code.addStatement("case $S: return ($T) $N.$N()", name, RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.SUBJECT).build();
+            if (!interactElement.getSimpleName().equals(name)) {
+                code.addStatement("case $S: return ($T) $N.$N()", interactElement.getSimpleName(), RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.SUBJECT).build();
+            }
+        } else {
+            code.addStatement("case $S: return ($T) $N.$N()", interactElement.getSimpleName(), RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.SUBJECT).build();
+        }
+        return code.build();
+    }
+
+    public void createContextModule(String packageName) {
+
+        final TypeSpec.Builder tb = TypeSpec.classBuilder("AndroidApplicationModel")
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
+
+        final FieldSpec applicationField = FieldSpec.builder(AndroidClass.Application, "mApplication", Modifier.PRIVATE).build();
+
+        final MethodSpec constructor = MethodSpec.constructorBuilder()
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(ParameterSpec.builder(AndroidClass.Application, "application").addAnnotation(AndroidClass.NonNull).build())
+                .addStatement("mApplication = application")
+                .build();
+
+        final MethodSpec getApplication = MethodSpec.methodBuilder("getApplication")
+                .addModifiers(Modifier.PUBLIC)
+                .addTypeVariable(TypeVariableName.get("T", AndroidClass.Application))
+                .returns(TypeVariableName.get("T"))
+                .addStatement("return (T) mApplication")
+                .build();
+
+        tb.addField(applicationField);
+        tb.addMethod(constructor);
+        tb.addMethod(getApplication);
+
+        writeTo(packageName, tb.build());
+
     }
 }

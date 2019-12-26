@@ -4,24 +4,20 @@ import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.tools.Diagnostic;
 
 import library.neetoffice.com.neetannotation.AfterAnnotation;
 import library.neetoffice.com.neetannotation.FragmentBy;
 import library.neetoffice.com.neetannotation.NActivity;
-import library.neetoffice.com.neetannotation.Noproguard;
 import library.neetoffice.com.neetannotation.ViewById;
 
 public class ActivityCreator extends BaseCreator {
@@ -42,9 +38,11 @@ public class ActivityCreator extends BaseCreator {
     final MenuHelp menuHelp;
     final ActivityResultHelp activityResultHelp;
     final HandleHelp handleHelp;
+    private final SecondProcessor mainProcessor;
 
-    public ActivityCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
+    public ActivityCreator(SecondProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
+        mainProcessor = processor;
         resourcesHelp = new ResourcesHelp();
         listenerHelp = new ListenerHelp(this);
         extraHelp = new ExtraHelp(this);
@@ -69,7 +67,7 @@ public class ActivityCreator extends BaseCreator {
         activityElements.add(activityElement);
         //======================================================
         final ListenerHelp.Builder listenerBuilder = listenerHelp.builder(className, CONTEXT_FROM, CONTEXT_FROM, DEF_PACKAGE);
-        final ExtraHelp.Builder extraBuilder = extraHelp.builder(GET_BUNDEL_METHOD);
+        final ExtraHelp.Builder extraBuilder = extraHelp.builder(GET_BUNDEL_METHOD, SAVE_INSTANCE_STATE);
         final SubscribeHelp.Builder subscribeBuilder = subscribeHelp.builder();
         final MenuHelp.Builder menuBuilder = menuHelp.builder(CONTEXT_FROM, DEF_PACKAGE);
         final ActivityResultHelp.Builder activityResultBuilder = activityResultHelp.builder(REQUEST_CODE, RESULT_CODE, DATA);
@@ -77,7 +75,7 @@ public class ActivityCreator extends BaseCreator {
         //======================================================
 
         final TypeSpec.Builder tb = TypeSpec.classBuilder(className)
-                .addAnnotation(Noproguard.class)
+                .addAnnotation(AndroidClass.Keep)
                 .superclass(getClassName(activityElement.asType()))
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
@@ -121,6 +119,7 @@ public class ActivityCreator extends BaseCreator {
         onCreateMethodBuilder.addCode(listenerBuilder.createListenerCode());
         onCreateMethodBuilder.addCode(subscribeBuilder.createAddViewModelOfCode(CONTEXT_FROM));
         onCreateMethodBuilder.addCode(subscribeBuilder.createCodeSubscribeInOnCreate(className, CONTEXT_FROM));
+        onCreateMethodBuilder.addCode(subscribeBuilder.createAddLifecycle(CONTEXT_FROM));
         if (haveDagger) {
             onCreateMethodBuilder.addCode(createDaggerInjectCode(activityElement));
         }
@@ -140,14 +139,15 @@ public class ActivityCreator extends BaseCreator {
         onDestroyMethodBuilder.addCode(subscribeBuilder.createDispose());
         onDestroyMethodBuilder.addStatement("super.onDestroy()");
         //
-        tb.addType(extraBuilder.createNewIntent(packageName, className));
+        tb.addType(extraBuilder.createActivityIntentBuilder(packageName, className));
         tb.addMethod(onCreateMethodBuilder.build());
         tb.addMethod(onSaveInstanceStateMethodBuilder.build());
         tb.addMethod(onActivityResultMethodBuilder.build());
         tb.addMethod(onCreateOptionsMenuBuilder.build());
         tb.addMethod(onOptionsItemSelectedBuilder.build());
         tb.addMethod(onDestroyMethodBuilder.build());
-        for(MethodSpec methodSpec : handleHelpBuilder.createMotheds()){
+
+        for (MethodSpec methodSpec : handleHelpBuilder.createMotheds()) {
             tb.addMethod(methodSpec);
         }
         writeTo(packageName, tb.build());
@@ -234,18 +234,22 @@ public class ActivityCreator extends BaseCreator {
         if (aFragmentBy == null) {
             return CodeBlock.builder().build();
         }
-        if(aFragmentBy.id() != 0){
+        if (aFragmentBy.id() != 0) {
             return CodeBlock.builder()
-                    .add("$N = $N.getSupportFragmentManager().findFragmentById(",element.getSimpleName(), CONTEXT_FROM)
+                    .add("$N = ($T)$N.getSupportFragmentManager().findFragmentById(", element.getSimpleName(), element.asType(), CONTEXT_FROM)
                     .add(AndroidResHelp.id(aFragmentBy.id(), aFragmentBy.resName(), element.getSimpleName().toString(), CONTEXT_FROM, DEF_PACKAGE))
                     .addStatement(")")
                     .build();
-        }else if(!aFragmentBy.tag().isEmpty()){
+        } else if (!aFragmentBy.tag().isEmpty()) {
             return CodeBlock.builder()
-                    .addStatement("$N = $N.getSupportFragmentManager().findFragmentByTag($N)",element.getSimpleName(), CONTEXT_FROM,aFragmentBy.tag())
+                    .addStatement("$N = ($T)$N.getSupportFragmentManager().findFragmentByTag($N)", element.getSimpleName(), element.asType(), CONTEXT_FROM, aFragmentBy.tag())
                     .build();
         }
-        return CodeBlock.builder().build();
+        return CodeBlock.builder()
+                .add("$N = ($T)$N.getSupportFragmentManager().findFragmentById(", element.getSimpleName(), element.asType(), CONTEXT_FROM)
+                .add(AndroidResHelp.id(aFragmentBy.id(), aFragmentBy.resName(), element.getSimpleName().toString(), CONTEXT_FROM, DEF_PACKAGE))
+                .addStatement(")")
+                .build();
     }
 
     CodeBlock createAfterAnnotationCode(Element afterAnnotationElement) {
@@ -276,7 +280,7 @@ public class ActivityCreator extends BaseCreator {
         final CodeBlock.Builder code = CodeBlock.builder();
         final boolean isSubActivity = isSubActivity(activityElement);
         if (isSubActivity) {
-            code.addStatement("Dagger_$N.builder().$N(new $T(this)).build().inject(this)", activityElement.getSimpleName(), toModelCase(AndroidClass.CONTEXT_MODULE_NAME), AndroidClass.CONTEXT_MODULE);
+            code.addStatement("Dagger_$N.builder().$N(new $T(this)).build().inject(this)", activityElement.getSimpleName(), toModelCase(AndroidClass.CONTEXT_MODULE_NAME), mainProcessor.contextModule);
         } else {
             code.addStatement("Dagger_$N.create().inject(this)", activityElement.getSimpleName());
         }

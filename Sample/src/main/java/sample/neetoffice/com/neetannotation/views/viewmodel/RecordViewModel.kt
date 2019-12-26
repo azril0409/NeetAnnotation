@@ -7,21 +7,25 @@ import library.neetoffice.com.neetdao.Dao
 import sample.neetoffice.com.neetannotation.models.Record
 import sample.neetoffice.com.neetannotation.models.RecordInteractor
 import sample.neetoffice.com.neetannotation.modules.RecordModule
+import text.sss.support.IntegerInteractor
+import text.sss.support.ThrowableInteractor
 import javax.inject.Inject
-import javax.inject.Named
 
 @NViewModel
 @NDagger(modules = [RecordModule::class])
 open class RecordViewModel(application: Application) : AndroidViewModel(application) {
     @Inject
     lateinit var dao: Dao<Record>
-    @Subject(name = "A")
+    @Published
     @InjectEntity
-    lateinit var recordPresenter: RecordInteractor
+    lateinit var onRecord: RecordInteractor
+    @Published
+    lateinit var value: IntegerInteractor
+    @Published
+    lateinit var onError: ThrowableInteractor
 
     @AfterAnnotation
     fun onAfterAnnotation(){
-
     }
 
     fun load() = dao.list()

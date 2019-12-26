@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -25,10 +26,10 @@ import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 
 public abstract class BaseCreator {
-    final MainProcessor processor;
+    final AbstractProcessor processor;
     final ProcessingEnvironment processingEnv;
 
-    public BaseCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
+    public BaseCreator(AbstractProcessor processor, ProcessingEnvironment processingEnv) {
         this.processor = processor;
         this.processingEnv = processingEnv;
     }
@@ -116,6 +117,22 @@ public abstract class BaseCreator {
             } else if ("boolean".equals(typeName.toString())) {
                 return CodeBlock.builder().add("false").build();
             }
+        } else if ("java.lang.Character".equals(typeName.toString())) {
+            return CodeBlock.builder().add("(char)0").build();
+        } else if ("java.lang.Byte".equals(typeName.toString())) {
+            return CodeBlock.builder().add("(byte)0").build();
+        } else if ("java.lang.Short".equals(typeName.toString())) {
+            return CodeBlock.builder().add("(short)0").build();
+        } else if ("java.lang.Integer".equals(typeName.toString())) {
+            return CodeBlock.builder().add("(int)0").build();
+        } else if ("java.lang.Long".equals(typeName.toString())) {
+            return CodeBlock.builder().add("(long)0").build();
+        } else if ("java.lang.Float".equals(typeName.toString())) {
+            return CodeBlock.builder().add("(float)0").build();
+        } else if ("java.lang.Double".equals(typeName.toString())) {
+            return CodeBlock.builder().add("(double)0").build();
+        } else if ("java.lang.Boolean".equals(typeName.toString())) {
+            return CodeBlock.builder().add("false").build();
         }
         return CodeBlock.builder().add("null").build();
     }
@@ -135,6 +152,7 @@ public abstract class BaseCreator {
     boolean isSubAndroidViewModel(TypeElement element) {
         return isInstanceOf(element, AndroidClass.AndroidViewModel);
     }
+
     boolean isSubService(TypeElement element) {
         return isInstanceOf(element, AndroidClass.Service);
     }

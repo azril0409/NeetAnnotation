@@ -41,19 +41,21 @@ public class ExtraHelp {
         this.creator = creator;
     }
 
-    public Builder builder(String getBundleMethod) {
-        return new Builder(creator, getBundleMethod);
+    public Builder builder(String getBundleMethod, String getSaveInstanceBundleMethod) {
+        return new Builder(creator, getBundleMethod, getSaveInstanceBundleMethod);
     }
 
     public static class Builder {
         private final BaseCreator creator;
         private final String getBundleMethod;
+        private final String getSaveInstanceBundleMethod;
         private final ArrayList<Element> extraElements = new ArrayList<>();
         private final ArrayList<Element> saveInstanceElements = new ArrayList<>();
 
-        public Builder(BaseCreator creator, String getBundleMethod) {
+        public Builder(BaseCreator creator, String getBundleMethod, String getSaveInstanceBundleMethod) {
             this.creator = creator;
             this.getBundleMethod = getBundleMethod;
+            this.getSaveInstanceBundleMethod = getSaveInstanceBundleMethod;
         }
 
         private String getExtraKey(Element element) {
@@ -126,13 +128,13 @@ public class ExtraHelp {
             } else if (isCollection(extraElement.asType())) {
                 final DeclaredType declaredType = (DeclaredType) extraElement.asType();
                 if (ClassName.get(declaredType.getTypeArguments().get(0)).equals(ClassName.get(Integer.class))) {
-                    code.addStatement("$N.putIntegerArrayList($S,new $T<$T>($N))", bundleName, key, ArrayList.class,Integer.class, varName);
+                    code.addStatement("$N.putIntegerArrayList($S,new $T<$T>($N))", bundleName, key, ArrayList.class, Integer.class, varName);
                 } else if (ClassName.get(declaredType.getTypeArguments().get(0)).equals(ClassName.get(CharSequence.class))) {
-                    code.addStatement("$N.putCharSequenceArrayList($S,new $T<$T>($N))", bundleName, key, ArrayList.class,CharSequence.class, varName);
+                    code.addStatement("$N.putCharSequenceArrayList($S,new $T<$T>($N))", bundleName, key, ArrayList.class, CharSequence.class, varName);
                 } else if (ClassName.get(declaredType.getTypeArguments().get(0)).equals(ClassName.get(String.class))) {
-                    code.addStatement("$N.putStringArrayList($S,new $T<$T>($N))", bundleName, key, ArrayList.class,String.class, varName);
+                    code.addStatement("$N.putStringArrayList($S,new $T<$T>($N))", bundleName, key, ArrayList.class, String.class, varName);
                 } else {
-                    code.addStatement("$N.putParcelableArrayList($S,new $T<$T>($N))", bundleName, key, ArrayList.class,declaredType.getTypeArguments().get(0), varName);
+                    code.addStatement("$N.putParcelableArrayList($S,new $T<$T>($N))", bundleName, key, ArrayList.class, declaredType.getTypeArguments().get(0), varName);
                 }
             } else if (isParcelable(extraElement.asType())) {
                 code.addStatement("$N.putParcelable($S,$N)", bundleName, key, varName);
@@ -190,20 +192,19 @@ public class ExtraHelp {
         CodeBlock createGetExtra(String savedInstanceStateName) {
             final CodeBlock.Builder code = CodeBlock.builder();
             for (Element element : extraElements) {
-                code.add(createGetExtra(element));
+                code.add(createGetExtra(getExtraKey(element), element,getBundleMethod));
             }
             if (!saveInstanceElements.isEmpty()) {
                 code.beginControlFlow("if($N != null)", savedInstanceStateName);
                 for (Element element : saveInstanceElements) {
-                    code.add(createGetExtra(element));
+                    code.add(createGetExtra(getSaveInstanceKey(element), element,getSaveInstanceBundleMethod));
                 }
                 code.endControlFlow();
             }
             return code.build();
         }
 
-        private CodeBlock createGetExtra(Element element) {
-            final String key = getExtraKey(element);
+        private CodeBlock createGetExtra(String key, Element element, String getBundleMethod) {
             final TypeMirror variableType = element.asType();
             final CodeBlock.Builder cb = CodeBlock.builder().add("$N = ", element.getSimpleName());
             if ("char".equals(variableType.toString())) {
@@ -286,7 +287,7 @@ public class ExtraHelp {
             return mb.build();
         }
 
-        TypeSpec createNewIntent(String packageName, String className) {
+        TypeSpec createActivityIntentBuilder(String packageName, String className) {
             final String intentBuilderName = "IntentBuilder";
             final TypeName typeName = ClassName.get(packageName, className, intentBuilderName);
             final TypeSpec.Builder intentBuilder = TypeSpec.classBuilder(intentBuilderName)

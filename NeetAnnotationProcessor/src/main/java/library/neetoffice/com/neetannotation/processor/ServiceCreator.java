@@ -19,8 +19,8 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
-import javax.tools.Diagnostic;
 
+import library.neetoffice.com.neetannotation.AfterAnnotation;
 import library.neetoffice.com.neetannotation.DefaultBoolean;
 import library.neetoffice.com.neetannotation.DefaultByte;
 import library.neetoffice.com.neetannotation.DefaultChar;
@@ -30,7 +30,6 @@ import library.neetoffice.com.neetannotation.DefaultInt;
 import library.neetoffice.com.neetannotation.DefaultLong;
 import library.neetoffice.com.neetannotation.DefaultShort;
 import library.neetoffice.com.neetannotation.NService;
-import library.neetoffice.com.neetannotation.Noproguard;
 import library.neetoffice.com.neetannotation.StartAction;
 
 public class ServiceCreator extends BaseCreator {
@@ -41,9 +40,11 @@ public class ServiceCreator extends BaseCreator {
     private static final String INTENT_BUILDER = "IntentBuilder";
 
     private final ExtraHelp extraHelp;
+    private final SecondProcessor mainProcessor;
 
-    public ServiceCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
+    public ServiceCreator(SecondProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
+        mainProcessor = processor;
         extraHelp = new ExtraHelp(this);
     }
 
@@ -63,19 +64,21 @@ public class ServiceCreator extends BaseCreator {
         final List<VariableElement> extras = new ArrayList<>();
         //======================================================
         final TypeSpec.Builder tb = TypeSpec.classBuilder(className)
-                .addAnnotation(Noproguard.class)
+                .addAnnotation(AndroidClass.Keep)
                 .superclass(getClassName(serviceElement.asType()))
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
         final MethodSpec.Builder onCreateMethodBuilder = createOnCreateMethodBuilder();
         final MethodSpec.Builder onStartCommandMethodBuilder = createOnStartCommandMethodBuilder();
-        final TypeSpec.Builder intentBuilder = createIntentBuilder();
+        final TypeSpec.Builder intentBuilder = createIntentBuilder(className);
 
         final boolean haveDagger = DaggerHelp.process(serviceElement);
+        final CodeBlock.Builder afterAnnotationCode = CodeBlock.builder();
 
         for (TypeElement superActivityElement : serviceElements) {
             final List<? extends Element> enclosedElements = superActivityElement.getEnclosedElements();
             for (Element element : enclosedElements) {
+                afterAnnotationCode.add(createAfterAnnotationCode(element));
                 onStartCommandMethodBuilder.addCode(createStartActionCode(element));
                 if (element.getAnnotation(StartAction.class) != null) {
                     final List<? extends VariableElement> parameters = ((ExecutableElement) element).getParameters();
@@ -90,6 +93,7 @@ public class ServiceCreator extends BaseCreator {
         if (haveDagger) {
             onCreateMethodBuilder.addCode(createDaggerInjectCode(serviceElement));
         }
+        onCreateMethodBuilder.addCode(afterAnnotationCode.build());
         //
         onStartCommandMethodBuilder.addStatement("return $N", RETURN_VALUE);
         //
@@ -113,6 +117,17 @@ public class ServiceCreator extends BaseCreator {
                 .addAnnotation(Override.class)
                 .returns(void.class)
                 .addStatement("super.onCreate()");
+    }
+
+
+    CodeBlock createAfterAnnotationCode(Element afterAnnotationElement) {
+        final AfterAnnotation aAfterAnnotation = afterAnnotationElement.getAnnotation(AfterAnnotation.class);
+        if (aAfterAnnotation == null) {
+            return CodeBlock.builder().build();
+        }
+        return CodeBlock.builder()
+                .addStatement("$N()", afterAnnotationElement.getSimpleName())
+                .build();
     }
 
     MethodSpec.Builder createOnStartCommandMethodBuilder() {
@@ -245,14 +260,14 @@ public class ServiceCreator extends BaseCreator {
         final CodeBlock.Builder code = CodeBlock.builder();
         final boolean isSubService = isSubService(serviceElement);
         if (isSubService) {
-            code.addStatement("Dagger_$N.builder().$N(new $T(this)).build().inject(this)", serviceElement.getSimpleName(), toModelCase(AndroidClass.CONTEXT_MODULE_NAME), AndroidClass.CONTEXT_MODULE);
+            code.addStatement("Dagger_$N.builder().$N(new $T(this)).build().inject(this)", serviceElement.getSimpleName(), toModelCase(AndroidClass.CONTEXT_MODULE_NAME), mainProcessor.contextModule);
         } else {
             code.addStatement("Dagger_$N.create().inject(this)", serviceElement.getSimpleName());
         }
         return code.build();
     }
 
-    TypeSpec.Builder createIntentBuilder() {
+    TypeSpec.Builder createIntentBuilder(String className) {
         final TypeSpec.Builder intentBuilder = TypeSpec.classBuilder(INTENT_BUILDER)
                 .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
         intentBuilder.addField(FieldSpec.builder(AndroidClass.Context, CONTEXT)
@@ -270,6 +285,7 @@ public class ServiceCreator extends BaseCreator {
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(AndroidClass.Context, CONTEXT)
                 .addStatement("this.$N = $N", CONTEXT, CONTEXT)
+                .addStatement("intent.setClass($N, $N.class)", CONTEXT, className)
                 .build());
         return intentBuilder;
     }
@@ -279,7 +295,7 @@ public class ServiceCreator extends BaseCreator {
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(getClassName(extra.asType()), extra.getSimpleName().toString())
                 .returns(returnType);
-        mb.addCode(extraHelp.builder(BUNDLE).createPutExtraCode(extra, BUNDLE, getExtraKey(extra), extra.getSimpleName().toString()));
+        mb.addCode(extraHelp.builder(BUNDLE, BUNDLE).createPutExtraCode(extra, BUNDLE, getExtraKey(extra), extra.getSimpleName().toString()));
         mb.addStatement("return this");
         return mb.build();
     }

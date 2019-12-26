@@ -31,12 +31,34 @@ public class ReactiveXHelp {
     public static CodeBlock subscribeConsumer(TypeName parameterizedType, String parameterized, CodeBlock accept) {
         return CodeBlock.builder()
                 .beginControlFlow(".subscribe(new $T()", RxJavaClass.Consumer(parameterizedType))
-                .beginControlFlow("@$T\npublic void accept($T $N) throws Exception", Override.class, parameterizedType, parameterized)
+                .beginControlFlow("@$T\npublic void accept($T $N) throws $T", Override.class, parameterizedType, parameterized,Exception.class)
                 .add(accept)
                 .endControlFlow()
                 .endControlFlow(")")
                 .build();
     }
+
+    public static CodeBlock newConsumer(TypeName parameterizedType, String parameterized, CodeBlock accept){
+        return CodeBlock.builder()
+                .beginControlFlow("new $T()",RxJavaClass.Consumer(parameterizedType))
+                .beginControlFlow("@$T\npublic void accept($T $N) throws $T", Override.class, parameterizedType, parameterized,Exception.class)
+                .add(accept)
+                .endControlFlow()
+                .endControlFlow()
+                .build();
+    }
+
+    public static CodeBlock newAction(CodeBlock accept){
+        return CodeBlock.builder()
+                .beginControlFlow("new $T()",RxJavaClass.Action)
+                .beginControlFlow("@$T\npublic void run() throws $T", Override.class, Exception.class)
+                .add(accept)
+                .endControlFlow()
+                .endControlFlow()
+                .build();
+    }
+
+
 
     public static CodeBlock just(String parameterName) {
         return CodeBlock.builder().add("$T.just($N)", RxJavaClass.Observable, parameterName).build();
@@ -45,7 +67,7 @@ public class ReactiveXHelp {
     public static CodeBlock map(TypeName parameterType, TypeName entityType, String entityName, CodeBlock apply) {
         return CodeBlock.builder()
                 .beginControlFlow(".map(new $T()", RxJavaClass.Function(parameterType, entityType))
-                .beginControlFlow("@$T\npublic $T apply($T $N) throws Exception", Override.class, entityType, parameterType, entityName)
+                .beginControlFlow("@$T\npublic $T apply($T $N) throws $T", Override.class, entityType, parameterType, entityName,Exception.class)
                 .add(apply)
                 .endControlFlow()
                 .add("})")

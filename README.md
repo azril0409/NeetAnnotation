@@ -1,16 +1,15 @@
 # NeetAnnotation
-Annotation for Android
-All most to neet implementation
-Lifecycle:
-https://developer.android.com/jetpack/androidx/releases/lifecycle
-Dagger2:
-https://github.com/google/dagger
-Rxjava2:
-https://github.com/ReactiveX/RxJava
-
-example:
-pro
-app.gradle
+Annotation for Android<br>
+All most to neet implementation<br>
+Lifecycle:<br>
+https://developer.android.com/jetpack/androidx/releases/lifecycle<br>
+Dagger2:<br>
+https://github.com/google/dagger<br>
+Rxjava2:<br>
+https://github.com/ReactiveX/RxJava<br>
+<br>
+example:<br>
+app.gradle<br>
 ```
 repositories {
   maven { url 'https://dl.bintray.com/azril0409/maven/' }

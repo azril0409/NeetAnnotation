@@ -34,7 +34,7 @@ dependencies {
     kapt "com.google.dagger:dagger-compiler:2.25"
     kapt "com.google.dagger:dagger-android-processor:2.25"
     implementation project(':Neetannotation-api')
-    kapt project(':NeetAnnotationProcessor')
+    kapt project(':NeetAnnotation-compiler')
     implementation 'io.reactivex.rxjava2:rxjava:2.1.14'
     implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
     implementation 'io.reactivex.rxjava2:rxkotlin:2.2.0'

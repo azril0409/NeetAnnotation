@@ -1,1 +1,1 @@
-include ':Sample', ':Neetannotation-api', ':NeetAnnotationProcessor', ':Feature'
+include ':Sample', ':Neetannotation-api', ':NeetAnnotation-compiler', ':Feature'

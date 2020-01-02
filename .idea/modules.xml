@@ -4,7 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Feature/Feature.iml" filepath="$PROJECT_DIR$/Feature/Feature.iml" />
       <module fileurl="file://$PROJECT_DIR$/NeetAnnotation.iml" filepath="$PROJECT_DIR$/NeetAnnotation.iml" />
-      <module fileurl="file://$PROJECT_DIR$/NeetAnnotationProcessor/NeetAnnotationProcessor.iml" filepath="$PROJECT_DIR$/NeetAnnotationProcessor/NeetAnnotationProcessor.iml" />
+      <module fileurl="file://$PROJECT_DIR$/NeetAnnotation-compiler/NeetAnnotation-compiler.iml" filepath="$PROJECT_DIR$/NeetAnnotation-compiler/NeetAnnotation-compiler.iml" />
       <module fileurl="file://$PROJECT_DIR$/Neetannotation-api/Neetannotation-api.iml" filepath="$PROJECT_DIR$/Neetannotation-api/Neetannotation-api.iml" />
       <module fileurl="file://$PROJECT_DIR$/Sample/Sample.iml" filepath="$PROJECT_DIR$/Sample/Sample.iml" />
     </modules>

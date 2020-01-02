@@ -9,7 +9,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/Feature" />
-            <option value="$PROJECT_DIR$/NeetAnnotationProcessor" />
+            <option value="$PROJECT_DIR$/NeetAnnotation-compiler" />
             <option value="$PROJECT_DIR$/Neetannotation-api" />
             <option value="$PROJECT_DIR$/Sample" />
           </set>

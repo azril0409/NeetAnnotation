@@ -2,10 +2,17 @@ apply plugin: 'java-library'
 
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation 'com.google.dagger:dagger:2.25'
-    implementation "io.reactivex.rxjava2:rxjava:2.1.14"
-    implementation "io.reactivex.rxjava2:rxandroid:2.0.2"
-    implementation "io.reactivex.rxjava2:rxkotlin:2.2.0"
+    implementation 'androidx.lifecycle:lifecycle-extensions:+'
+    implementation 'androidx.lifecycle:lifecycle-viewmodel:+'
+    implementation 'androidx.lifecycle:lifecycle-livedata:+'
+    implementation 'androidx.lifecycle:lifecycle-runtime:+'
+    implementation 'androidx.lifecycle:lifecycle-common-java8:+'
+    implementation 'androidx.lifecycle:lifecycle-reactivestreams:+'
+    implementation 'com.google.dagger:dagger:+'
+    implementation 'com.google.dagger:dagger-android-support:+'
+    implementation "io.reactivex.rxjava2:rxjava:+"
+    implementation "io.reactivex.rxjava2:rxandroid:+"
+    implementation "io.reactivex.rxjava2:rxkotlin:+"
 }
 
 sourceCompatibility = "1.8"
@@ -26,3 +33,7 @@ task makeAar(type: Copy) {
     rename("Neetannotation-api.jar", libname)
 }
 makeAar.dependsOn(clearAar, "build")
+
+apply from: rootProject.file('Neetannotation-api/publish.gradle')
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'

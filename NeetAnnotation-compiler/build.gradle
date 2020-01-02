@@ -1,9 +1,12 @@
 apply plugin: 'java-library'
 dependencies {
-    api 'com.google.auto.service:auto-service:1.0-rc2'
-    api 'com.squareup:javapoet:1.8.0'
     api project(':Neetannotation-api')
     api fileTree(include: ['*.jar'], dir: 'libs')
+    api 'com.google.auto.service:auto-service:1.0-rc2'
+    api 'com.squareup:javapoet:1.8.0'
+    api "com.google.dagger:dagger-compiler:+"
+    api "com.google.dagger:dagger-android-processor:+"
+    api "androidx.lifecycle:lifecycle-compiler:+"
 }
 
 sourceCompatibility = "1.8"
@@ -24,3 +27,8 @@ task makeAar(type: Copy) {
     rename("NeetAnnotationProcessor.jar", libname)
 }
 makeAar.dependsOn(clearAar, "build")
+
+
+apply from: rootProject.file('Neetannotation-compiler/publish.gradle')
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
+apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'

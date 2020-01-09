@@ -1,7 +1,7 @@
 ext {
     publishedGroupId = 'com.neetoffice.annotation'
-    artifact = 'neetannotion-api'
-    libraryName = 'neetannotion-api'
+    artifact = 'Neetannotation-api'
+    libraryName = 'Neetannotation-api'
     libraryDescription = ''
     siteUrl = 'https://github.com/azril0409/NeetAnnotation'
     gitUrl = 'https://github.com/azril0409/NeetAnnotation.git'
@@ -13,7 +13,7 @@ ext {
 
     libraryVersion = '1.0.0'
     bintrayRepo = 'maven'
-    bintrayName = 'neetannotion-api'
+    bintrayName = 'Neetannotation-api'
     libraryDescription = ''
     allLicenses = ["Apache-2.0"]
 }

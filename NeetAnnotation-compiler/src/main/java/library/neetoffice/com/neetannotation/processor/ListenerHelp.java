@@ -215,7 +215,10 @@ public class ListenerHelp {
                         .add(callMethod)
                         .endControlFlow().build();
             } else {
-                return cb.add("$N.", viewName).add(callMethod).build();
+                return cb.beginControlFlow("if($N != null)", viewName)
+                        .add("$N.", viewName)
+                        .add(callMethod)
+                        .endControlFlow().build();
             }
         }
 
@@ -577,7 +580,7 @@ public class ListenerHelp {
                             }
                         } else if (creator.getClassName(parameter.asType()).equals(ClassName.get(String.class))) {
                             code.add("s.toString()");
-                        } else if (creator.isInstanceOf(parameter.asType(),AndroidClass.Editable)) {
+                        } else if (creator.isInstanceOf(parameter.asType(), AndroidClass.Editable)) {
                             code.add("s");
                         } else {
                             code.add(AnnotationHelp.addNullCode(parameter));
@@ -605,7 +608,7 @@ public class ListenerHelp {
                             } else {
                                 code.add("($T)$N", parameter.asType(), entry.getKey());
                             }
-                        } else if (creator.isInstanceOf(parameter.asType(),AndroidClass.Editable)) {
+                        } else if (creator.isInstanceOf(parameter.asType(), AndroidClass.Editable)) {
                             code.add("s");
                         } else if (countText < 2 && creator.getClassName(parameter.asType()).equals(ClassName.get(String.class))) {
                             if (parameter.getAnnotation(TextChange.Before.class) != null) {
@@ -694,7 +697,7 @@ public class ListenerHelp {
                 final CodeBlock.Builder callMethod = CodeBlock.builder()
                         .add("setOnFocusChangeListener(")
                         .beginControlFlow("new $T()", AndroidClass.View_OnFocusChangeListener)
-                        .beginControlFlow("@$T\npublic void onFocusChange($T view,boolean hasFocus)",Override.class,AndroidClass.View)
+                        .beginControlFlow("@$T\npublic void onFocusChange($T view,boolean hasFocus)", Override.class, AndroidClass.View)
                         .add(code.build())
                         .endControlFlow()
                         .endControlFlow(")");
@@ -897,7 +900,7 @@ public class ListenerHelp {
     private static String parseMethodName(Name name, String end) {
         String string = name.toString();
         if (string.toLowerCase().startsWith("on")) {
-            string = String.valueOf(string.charAt(2)).toLowerCase()+string.substring(3);
+            string = String.valueOf(string.charAt(2)).toLowerCase() + string.substring(3);
         }
         if (string.toLowerCase().endsWith(end.toLowerCase())) {
             string = string.substring(0, string.length() - end.length());

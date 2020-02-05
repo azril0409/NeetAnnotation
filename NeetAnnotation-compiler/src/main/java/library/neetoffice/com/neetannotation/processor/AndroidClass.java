@@ -3,10 +3,8 @@ package library.neetoffice.com.neetannotation.processor;
 import com.squareup.javapoet.ClassName;
 
 public class AndroidClass {
-    //public static final String CONTEXT_MODULE_PACKAGE = "com.neetoffice.neetannotation";
     public static final String CONTEXT_MODULE_NAME = "ContextModule";
     public static final String SYSTEM_MODULE_NAME = "SystemModule";
-    //public static final ClassName CONTEXT_MODULE = ClassName.get(CONTEXT_MODULE_PACKAGE, CONTEXT_MODULE_NAME);
     public static final ClassName Application = ClassName.get("android.app", "Application");
     public static final ClassName Activity = ClassName.get("android.app", "Activity");
     public static final ClassName AndroidViewModel = ClassName.get("androidx.lifecycle", "AndroidViewModel");

@@ -427,7 +427,7 @@ public class SubscribeHelp {
             final CodeBlock.Builder cb = CodeBlock.builder();
             for (ViewModelOfElement viewModelOf : viewModelOfMap.values()) {
                 final ClassName typeName = viewModelOf.getProcessorType(creator);
-                cb.add(CodeBlock.builder().addStatement("getLifecycle().addObserver(($T)$N)", typeName, viewModelOf.element.getSimpleName()).build());
+                cb.add(CodeBlock.builder().addStatement("$N.getLifecycle().addObserver(($T)$N)",context_from, typeName, viewModelOf.element.getSimpleName()).build());
             }
             final HashMap<String, String> localViewModelNames = new HashMap<>();
             for (HashMap<String, SubscribeGroup> subscribeGroups : subscribeMap.values()) {

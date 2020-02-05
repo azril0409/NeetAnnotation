@@ -232,7 +232,6 @@ public class ViewModelCreator extends BaseCreator {
     }
 
     public void createContextModule(String packageName) {
-
         final TypeSpec.Builder tb = TypeSpec.classBuilder("AndroidApplicationModel")
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
@@ -256,6 +255,5 @@ public class ViewModelCreator extends BaseCreator {
         tb.addMethod(getApplication);
 
         writeTo(packageName, tb.build());
-
     }
 }

@@ -37,6 +37,7 @@ public class MainProcessor extends AbstractProcessor {
     ViewModelCreator viewModelCreator;
     String contextPackageName = "com.neetoffice.neetannotation";
     ClassName contextModule;
+    ClassName systemModule;
 
     @Override
     public SourceVersion getSupportedSourceVersion() {
@@ -58,6 +59,7 @@ public class MainProcessor extends AbstractProcessor {
             contextPackageName = packageName + ".support";
         }
         contextModule = ClassName.get(contextPackageName, AndroidClass.CONTEXT_MODULE_NAME);
+        systemModule = ClassName.get(contextPackageName, AndroidClass.SYSTEM_MODULE_NAME);
     }
 
     @Override
@@ -65,6 +67,7 @@ public class MainProcessor extends AbstractProcessor {
         interactorCreator.createContextModule(contextPackageName);
         daggerCreator.createContextModule(contextPackageName);
         viewModelCreator.createContextModule(contextPackageName);
+        daggerCreator.createSystemModule(contextPackageName);
 
         final Set<? extends Element> interacts = roundEnv.getElementsAnnotatedWith(Interactor.class);
         for (Element interact : interacts) {

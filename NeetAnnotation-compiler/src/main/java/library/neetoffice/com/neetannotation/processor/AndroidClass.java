@@ -5,6 +5,7 @@ import com.squareup.javapoet.ClassName;
 public class AndroidClass {
     //public static final String CONTEXT_MODULE_PACKAGE = "com.neetoffice.neetannotation";
     public static final String CONTEXT_MODULE_NAME = "ContextModule";
+    public static final String SYSTEM_MODULE_NAME = "SystemModule";
     //public static final ClassName CONTEXT_MODULE = ClassName.get(CONTEXT_MODULE_PACKAGE, CONTEXT_MODULE_NAME);
     public static final ClassName Application = ClassName.get("android.app", "Application");
     public static final ClassName Activity = ClassName.get("android.app", "Activity");
@@ -49,4 +50,35 @@ public class AndroidClass {
     public static final ClassName View_OnFocusChangeListener = ClassName.get("android.view", "View", "OnFocusChangeListener");
     public static final ClassName ViewGroup = ClassName.get("android.view", "ViewGroup");
     public static final ClassName ViewGroup_LayoutParams = ClassName.get("android.view", "ViewGroup", "LayoutParams");
+
+
+    public static final ClassName WindowManager = ClassName.get("android.view", "WindowManager");
+    public static final ClassName ActivityManager = ClassName.get("android.app", "ActivityManager");
+    public static final ClassName PowerManager = ClassName.get("android.os", "PowerManager");
+    public static final ClassName AlarmManager = ClassName.get("android.app", "AlarmManager");
+    public static final ClassName NotificationManager = ClassName.get("android.app", "NotificationManager");
+    public static final ClassName KeyguardManager = ClassName.get("android.app", "KeyguardManager");
+    public static final ClassName LocationManager = ClassName.get("android.location", "LocationManager");
+    public static final ClassName SearchManager = ClassName.get("android.app", "SearchManager");
+    public static final ClassName SensorManager = ClassName.get("android.hardware", "SensorManager");
+    public static final ClassName StorageManager = ClassName.get("android.os.storage", "StorageManager");
+    public static final ClassName Vibrator = ClassName.get("android.os", "Vibrator");
+    public static final ClassName ConnectivityManager = ClassName.get("android.net", "ConnectivityManager");
+    public static final ClassName WifiManager = ClassName.get("android.net.wifi", "WifiManager");
+    public static final ClassName AudioManager = ClassName.get("android.media", "AudioManager");
+    public static final ClassName MediaRouter = ClassName.get("android.media", "MediaRouter");
+    public static final ClassName TelephonyManager = ClassName.get("android.telephony", "TelephonyManager");
+    public static final ClassName SubscriptionManager = ClassName.get("android.telephony", "SubscriptionManager");
+    public static final ClassName CarrierConfigManager = ClassName.get("android.telephony", "CarrierConfigManager");
+    public static final ClassName InputMethodManager = ClassName.get("android.view.inputmethod", "InputMethodManager");
+    public static final ClassName UiModeManager = ClassName.get("android.app", "UiModeManager");
+    public static final ClassName DownloadManager = ClassName.get("android.app", "DownloadManager");
+    public static final ClassName BatteryManager = ClassName.get("android.os", "BatteryManager");
+    public static final ClassName JobScheduler = ClassName.get("android.app.job", "JobScheduler");
+    public static final ClassName NetworkStatsManager = ClassName.get("android.app.usage", "NetworkStatsManager");
+    public static final ClassName HardwarePropertiesManager = ClassName.get("android.os", "HardwarePropertiesManager");
+    public static final ClassName NfcManager = ClassName.get("android.nfc", "NfcManager");
+    public static final ClassName BluetoothManager = ClassName.get("android.bluetooth", "BluetoothManager");
+    public static final ClassName UsbManager = ClassName.get("android.hardware.usb", "UsbManager");
+
 }

@@ -56,10 +56,12 @@ public class DaggerCreator extends BaseCreator {
         if (isSubActivity(daggerElement) || isSubFragment(daggerElement) || isSubAndroidViewModel(daggerElement) || isSubService(daggerElement)) {
             addviewModelProvider = true;
             ab.addMember(MODULES, "$L", mainProcessor.contextModule + ".class")
+                    .addMember(MODULES, "$L", mainProcessor.systemModule + ".class")
                     .addMember(MODULES, "$L", modulesValue);
         } else if (haveActivityParameterInConstructor || haveApplicationParameterInConstructor || haveContextParameterInConstructor) {
             addviewModelProvider = true;
             ab.addMember(MODULES, "$L", mainProcessor.contextModule + ".class")
+                    .addMember(MODULES, "$L", mainProcessor.systemModule + ".class")
                     .addMember(MODULES, "$L", modulesValue);
         } else {
             ab.addMember(MODULES, "{$L}", modulesValue);
@@ -232,6 +234,245 @@ public class DaggerCreator extends BaseCreator {
                 .returns(AndroidClass.Service)
                 .addStatement("return service")
                 .build());
+        writeTo(packageName, contextModuleBuilder.build());
+    }
+
+    void createSystemModule(String packageName) {
+        final TypeSpec.Builder contextModuleBuilder = TypeSpec.classBuilder(ClassName.get(packageName, AndroidClass.SYSTEM_MODULE_NAME))
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .addAnnotation(DaggerClass.Module);
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("window")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.WindowManager)
+                .addStatement("return ($T)context.getSystemService(Context.WINDOW_SERVICE)", AndroidClass.WindowManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("layout_inflater")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.LayoutInflater)
+                .addStatement("return ($T)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE)", AndroidClass.LayoutInflater)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("activity")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.ActivityManager)
+                .addStatement("return ($T)context.getSystemService(Context.ACTIVITY_SERVICE)", AndroidClass.ActivityManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("power")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.PowerManager)
+                .addStatement("return ($T)context.getSystemService(Context.POWER_SERVICE)", AndroidClass.PowerManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("alarm")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.AlarmManager)
+                .addStatement("return ($T)context.getSystemService(Context.ALARM_SERVICE)", AndroidClass.AlarmManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("notification")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.NotificationManager)
+                .addStatement("return ($T)context.getSystemService(Context.NOTIFICATION_SERVICE)", AndroidClass.NotificationManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("keyguard")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.KeyguardManager)
+                .addStatement("return ($T)context.getSystemService(Context.KEYGUARD_SERVICE)", AndroidClass.KeyguardManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("location")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.LocationManager)
+                .addStatement("return ($T)context.getSystemService(Context.LOCATION_SERVICE)", AndroidClass.LocationManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("search")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.SearchManager)
+                .addStatement("return ($T)context.getSystemService(Context.SEARCH_SERVICE)", AndroidClass.SearchManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("sensor")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.SensorManager)
+                .addStatement("return ($T)context.getSystemService(Context.SENSOR_SERVICE)", AndroidClass.SensorManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("storage")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.StorageManager)
+                .addStatement("return ($T)context.getSystemService(Context.STORAGE_SERVICE)", AndroidClass.StorageManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("vibrator")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.Vibrator)
+                .addStatement("return ($T)context.getSystemService(Context.VIBRATOR_SERVICE)", AndroidClass.Vibrator)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("connectivity")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.ConnectivityManager)
+                .addStatement("return ($T)context.getSystemService(Context.CONNECTIVITY_SERVICE)", AndroidClass.ConnectivityManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("wifi")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.WifiManager)
+                .addStatement("return ($T)context.getSystemService(Context.WIFI_SERVICE)", AndroidClass.WifiManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("audio")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.AudioManager)
+                .addStatement("return ($T)context.getSystemService(Context.AUDIO_SERVICE)", AndroidClass.AudioManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("media_router")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.MediaRouter)
+                .addStatement("return ($T)context.getSystemService(Context.MEDIA_ROUTER_SERVICE)", AndroidClass.MediaRouter)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("phone")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.TelephonyManager)
+                .addStatement("return ($T)context.getSystemService(Context.TELEPHONY_SERVICE)", AndroidClass.TelephonyManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("telephony_subscription_service")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.SubscriptionManager)
+                .addStatement("return ($T)context.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE)", AndroidClass.SubscriptionManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("carrier_config")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.CarrierConfigManager)
+                .addStatement("return ($T)context.getSystemService(Context.CARRIER_CONFIG_SERVICE)", AndroidClass.CarrierConfigManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("input_method")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.InputMethodManager)
+                .addStatement("return ($T)context.getSystemService(Context.INPUT_METHOD_SERVICE)", AndroidClass.InputMethodManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("uimode")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.UiModeManager)
+                .addStatement("return ($T)context.getSystemService(Context.UI_MODE_SERVICE)", AndroidClass.UiModeManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("download")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.DownloadManager)
+                .addStatement("return ($T)context.getSystemService(Context.DOWNLOAD_SERVICE)", AndroidClass.DownloadManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("batterymanager")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.BatteryManager)
+                .addStatement("return ($T)context.getSystemService(Context.BATTERY_SERVICE)", AndroidClass.BatteryManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("jobscheduler")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.JobScheduler)
+                .addStatement("return ($T)context.getSystemService(Context.JOB_SCHEDULER_SERVICE)", AndroidClass.JobScheduler)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("netstats")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.NetworkStatsManager)
+                .addStatement("return ($T)context.getSystemService(Context.NETWORK_STATS_SERVICE)", AndroidClass.NetworkStatsManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("hardware_properties")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.HardwarePropertiesManager)
+                .addStatement("return ($T)context.getSystemService(Context.HARDWARE_PROPERTIES_SERVICE)", AndroidClass.HardwarePropertiesManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("nfc")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.NfcManager)
+                .addStatement("return ($T)context.getSystemService(Context.NFC_SERVICE)", AndroidClass.NfcManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("bluetooth")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.BluetoothManager)
+                .addStatement("return ($T)context.getSystemService(Context.BLUETOOTH_SERVICE)", AndroidClass.BluetoothManager)
+                .build());
+
+        contextModuleBuilder.addMethod(MethodSpec.methodBuilder("usb")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Context, "context")
+                .addAnnotation(DaggerClass.Provides)
+                .returns(AndroidClass.UsbManager)
+                .addStatement("return ($T)context.getSystemService(Context.USB_SERVICE)", AndroidClass.UsbManager)
+                .build());
+
         writeTo(packageName, contextModuleBuilder.build());
     }
 }

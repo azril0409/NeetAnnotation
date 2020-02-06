@@ -29,4 +29,11 @@ dependencies{
   implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
   implementation 'io.reactivex.rxjava2:rxkotlin:2.4.0'
 }
+
+kapt {
+    correctErrorTypes = true
+    arguments {
+        arg("packageName", "_YOUR MODEL PACKAGE NAME_.extensions")
+    }
+}
 ```

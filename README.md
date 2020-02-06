@@ -11,6 +11,8 @@ https://github.com/ReactiveX/RxJava<br>
 example:<br>
 app.gradle<br>
 ```
+apply plugin: 'kotlin-kapt'
+
 dependencies{
   implementation 'com.neetoffice.annotation:Neetannotation-api:1.0.1'
   kapt 'com.neetoffice.annotation:NeetAnnotation-compiler:1.0.1'

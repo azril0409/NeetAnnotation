@@ -107,7 +107,7 @@ public class FragmentCreator extends BaseCreator {
                 findViewByIdCode.add(createFindViewByIdCode(element));
                 findFragmentByCode.add(createFindFragmentByCode(element));
                 afterAnnotationCode.add(createAfterAnnotationCode(element));
-                resCode.add(resourcesHelp.bindResourcesAnnotation(element, CONTEXT_FROM, DEF_PACKAGE));
+                resCode.add(resourcesHelp.bindResourcesAnnotation(element, ACTIVITY, DEF_PACKAGE));
                 extraBuilder.parseElement(element);
                 listenerBuilder.parseElement(element);
                 subscribeBuilder.parseElement(element);

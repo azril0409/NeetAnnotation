@@ -14,8 +14,8 @@ app.gradle<br>
 apply plugin: 'kotlin-kapt'
 
 dependencies{
-  implementation 'com.neetoffice.annotation:Neetannotation-api:1.0.2'
-  kapt 'com.neetoffice.annotation:NeetAnnotation-compiler:1.0.2'
+  implementation 'com.neetoffice.annotation:Neetannotation-api:1.0.3'
+  kapt 'com.neetoffice.annotation:NeetAnnotation-compiler:1.0.3'
   implementation 'androidx.lifecycle:lifecycle-extensions:2.0.0'
   implementation 'androidx.lifecycle:lifecycle-viewmodel:2.0.0'
   implementation 'androidx.lifecycle:lifecycle-livedata:2.0.0'

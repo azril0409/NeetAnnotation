@@ -20,6 +20,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
 
+import library.neetoffice.com.neetannotation.ActivityResult;
 import library.neetoffice.com.neetannotation.DefaultBoolean;
 import library.neetoffice.com.neetannotation.DefaultByte;
 import library.neetoffice.com.neetannotation.DefaultChar;
@@ -32,9 +33,9 @@ import library.neetoffice.com.neetannotation.Extra;
 import library.neetoffice.com.neetannotation.SaveInstance;
 
 public class ExtraHelp {
-    private static final String BUNDLE = "bundle";
-    private static final String CONTEXT = "context";
-    private static final String INTENT = "intent";
+    static final String BUNDLE = "bundle";
+    static final String CONTEXT = "context";
+    static final String INTENT = "intent";
     private final BaseCreator creator;
 
     public ExtraHelp(BaseCreator creator) {
@@ -61,10 +62,10 @@ public class ExtraHelp {
         private String getExtraKey(Element element) {
             final Extra aExtra = element.getAnnotation(Extra.class);
             final String key;
-            if (aExtra.value().isEmpty()) {
-                key = "_" + element.getSimpleName().toString().toUpperCase();
-            } else {
+            if (aExtra != null && !aExtra.value().isEmpty()) {
                 key = aExtra.value();
+            } else {
+                key = "_" + element.getSimpleName().toString().toUpperCase();
             }
             return key;
         }
@@ -136,6 +137,8 @@ public class ExtraHelp {
                 } else {
                     code.addStatement("$N.putParcelableArrayList($S,new $T<$T>($N))", bundleName, key, ArrayList.class, declaredType.getTypeArguments().get(0), varName);
                 }
+            } else if (ClassName.get(String.class).toString().equals(extraTypeString)) {
+                code.addStatement("$N.putString($S,$N)", bundleName, key, varName);
             } else if (isParcelable(extraElement.asType())) {
                 code.addStatement("$N.putParcelable($S,$N)", bundleName, key, varName);
             } else if (isSerializable(extraElement.asType())) {
@@ -163,8 +166,6 @@ public class ExtraHelp {
                     code.addStatement("$N.putBoolean($S,$N)", bundleName, key, varName);
                 } else if (ClassName.get(CharSequence.class).toString().equals(extraTypeString)) {
                     code.addStatement("$N.putCharSequence($S,$N)", bundleName, key, varName);
-                } else if (ClassName.get(String.class).toString().equals(extraTypeString)) {
-                    code.addStatement("$N.putString($S,$N)", bundleName, key, varName);
                 }
             }
             return code.build();
@@ -192,12 +193,12 @@ public class ExtraHelp {
         CodeBlock createGetExtra(String savedInstanceStateName) {
             final CodeBlock.Builder code = CodeBlock.builder();
             for (Element element : extraElements) {
-                code.add(createGetExtra(getExtraKey(element), element,getBundleMethod));
+                code.add(createGetExtra(getExtraKey(element), element, getBundleMethod));
             }
             if (!saveInstanceElements.isEmpty()) {
                 code.beginControlFlow("if($N != null)", savedInstanceStateName);
                 for (Element element : saveInstanceElements) {
-                    code.add(createGetExtra(getSaveInstanceKey(element), element,getSaveInstanceBundleMethod));
+                    code.add(createGetExtra(getSaveInstanceKey(element), element, getSaveInstanceBundleMethod));
                 }
                 code.endControlFlow();
             }
@@ -328,8 +329,8 @@ public class ExtraHelp {
             intentBuilder.addMethod(MethodSpec.methodBuilder("build")
                     .addModifiers(Modifier.PUBLIC)
                     .returns(AndroidClass.Intent)
-                    .addStatement("intent.putExtras(bundle)")
-                    .addStatement("return intent")
+                    .addStatement("$N.putExtras($N)", INTENT, BUNDLE)
+                    .addStatement("return $N", INTENT)
                     .build());
             intentBuilder.addMethod(MethodSpec.methodBuilder("startActivity")
                     .addModifiers(Modifier.PUBLIC)

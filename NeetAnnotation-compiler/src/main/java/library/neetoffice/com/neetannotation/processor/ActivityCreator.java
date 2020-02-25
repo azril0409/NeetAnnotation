@@ -140,6 +140,7 @@ public class ActivityCreator extends BaseCreator {
         onDestroyMethodBuilder.addStatement("super.onDestroy()");
         //
         tb.addType(extraBuilder.createActivityIntentBuilder(packageName, className));
+        tb.addType(activityResultBuilder.createActivityIntentBuilder(packageName,className));
         tb.addMethod(onCreateMethodBuilder.build());
         tb.addMethod(onSaveInstanceStateMethodBuilder.build());
         tb.addMethod(onActivityResultMethodBuilder.build());

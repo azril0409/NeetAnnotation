@@ -1,5 +1,7 @@
 package sample.neetoffice.com.neetannotation.views.activies
 
+import android.app.Activity
+import android.content.Intent
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -23,7 +25,7 @@ open class MainActivity : AppCompatActivity() {
     @Extra
     lateinit var list: ArrayList<Record>
     @ViewModelOf
-    lateinit var recordViewModel:RecordViewModel
+    lateinit var recordViewModel: RecordViewModel
 
     @AfterAnnotation
     fun onAfter() {
@@ -38,7 +40,6 @@ open class MainActivity : AppCompatActivity() {
         var record = Record(Calendar.getInstance().time)
         //record.id = viewModel.insert(record).toInt()
         adapter.add(record)
-
     }
 
     @ItemLongClick(R.id.listView)
@@ -51,7 +52,7 @@ open class MainActivity : AppCompatActivity() {
     fun onFocusChange(hasFocus: Boolean) {
     }
 
-    @Subscribes(Subscribe(viewmode = RecordViewModel::class,key = "test"))
+    @Subscribes(Subscribe(viewmode = RecordViewModel::class, key = "test"))
     @Named("onRecord")
     fun onRecord2(record: Record) {
 
@@ -59,7 +60,10 @@ open class MainActivity : AppCompatActivity() {
 
     @Subscribe(viewmode = RecordViewModel::class)
     fun onError() {
+    }
 
+    @ActivityResult(200)
+    fun onResult(@ActivityResult.Extra("aaaa") name: String,@ActivityResult.Extra("aaaa") secndNane: String) {
 
     }
 }

@@ -1,13 +1,24 @@
 package library.neetoffice.com.neetannotation.processor;
 
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
+import com.squareup.javapoet.FieldSpec;
+import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.TypeName;
+import com.squareup.javapoet.TypeSpec;
 
+import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Modifier;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import library.neetoffice.com.neetannotation.ActivityResult;
@@ -19,27 +30,32 @@ import library.neetoffice.com.neetannotation.DefaultFloat;
 import library.neetoffice.com.neetannotation.DefaultInt;
 import library.neetoffice.com.neetannotation.DefaultLong;
 import library.neetoffice.com.neetannotation.DefaultShort;
+import library.neetoffice.com.neetannotation.Extra;
 
 public class ActivityResultHelp {
     private final BaseCreator creator;
+    private final ExtraHelp extraHelp;
 
     public ActivityResultHelp(BaseCreator creator) {
         this.creator = creator;
+        this.extraHelp = new ExtraHelp(creator);
     }
 
     public Builder builder(String requestCodeName, String resultCodeName, String intentDataName) {
-        return new Builder(creator, requestCodeName, resultCodeName, intentDataName);
+        return new Builder(creator, extraHelp.builder("", ""), requestCodeName, resultCodeName, intentDataName);
     }
 
     public static class Builder {
         private final BaseCreator creator;
+        private final ExtraHelp.Builder extraHelp;
         private final String requestCodeName;
         private final String resultCodeName;
         private final String intentDataName;
         private final ArrayList<Element> elements = new ArrayList<>();
 
-        public Builder(BaseCreator creator, String requestCodeName, String resultCodeName, String intentDataName) {
+        public Builder(BaseCreator creator, ExtraHelp.Builder extraHelp, String requestCodeName, String resultCodeName, String intentDataName) {
             this.creator = creator;
+            this.extraHelp = extraHelp;
             this.requestCodeName = requestCodeName;
             this.resultCodeName = resultCodeName;
             this.intentDataName = intentDataName;
@@ -162,6 +178,89 @@ public class ActivityResultHelp {
                 return parameter.getSimpleName().toString();
             }
             return aExtra.value();
+        }
+
+        TypeSpec createActivityIntentBuilder(String packageName, String className) {
+            final String activityResultName = "ActivityResult";
+            final String activityName = "activity";
+            final TypeName typeName = ClassName.get(packageName, className, activityResultName);
+            final TypeSpec.Builder activityResult = TypeSpec.classBuilder(activityResultName)
+                    .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
+            activityResult.addField(FieldSpec.builder(AndroidClass.Activity, activityName)
+                    .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
+                    .build());
+            activityResult.addField(FieldSpec.builder(AndroidClass.Intent, ExtraHelp.INTENT)
+                    .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
+                    .initializer("new $T()", AndroidClass.Intent)
+                    .build());
+            activityResult.addField(FieldSpec.builder(AndroidClass.Bundle, ExtraHelp.BUNDLE)
+                    .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
+                    .initializer("new $T()", AndroidClass.Bundle)
+                    .build());
+            activityResult.addMethod(MethodSpec.constructorBuilder()
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(AndroidClass.Activity, activityName)
+                    .addStatement("this.$N = $N", activityName, activityName)
+                    .build());
+
+            activityResult.addMethod(MethodSpec.methodBuilder("setData")
+                    .addParameter(AndroidClass.Uri, "uri")
+                    .returns(typeName)
+                    .addStatement("$N.setData(uri)", ExtraHelp.INTENT)
+                    .addStatement("return this")
+                    .build());
+
+
+            for (Element extraElement : elements) {
+                if (extraElement instanceof ExecutableElement) {
+                    final MethodSpec.Builder mb = MethodSpec.methodBuilder(extraElement.getSimpleName().toString())
+                            .addModifiers(Modifier.PUBLIC)
+                            .returns(typeName);
+                    final Iterator<? extends VariableElement> parameters = ((ExecutableElement) extraElement).getParameters().iterator();
+                    while (parameters.hasNext()) {
+                        final VariableElement variableElement = parameters.next();
+                        final ParameterSpec parameter = ParameterSpec.get(variableElement);
+                        mb.addParameter(parameter.type, parameter.name);
+                        mb.addCode(extraHelp.createPutExtraCode(variableElement, ExtraHelp.BUNDLE, getExtraKey(variableElement), parameter.name));
+                    }
+                    mb.addStatement("return this");
+                    activityResult.addMethod(mb.build());
+                }
+            }
+
+            activityResult.addMethod(MethodSpec.methodBuilder("build")
+                    .addModifiers(Modifier.PUBLIC)
+                    .returns(AndroidClass.Intent)
+                    .addStatement("$N.putExtras($N)", ExtraHelp.INTENT, ExtraHelp.BUNDLE)
+                    .addStatement("return $N", ExtraHelp.INTENT)
+                    .build());
+
+            activityResult.addMethod(MethodSpec.methodBuilder("result")
+                    .addParameter(int.class, "resultCode")
+                    .addStatement("$N.setResult(resultCode,build())", activityName)
+                    .build());
+
+
+            activityResult.addMethod(MethodSpec.methodBuilder("resultOk")
+                    .addStatement("$N.setResult($T.RESULT_OK,build())", activityName, AndroidClass.Activity)
+                    .build());
+
+            activityResult.addMethod(MethodSpec.methodBuilder("resultCancel")
+                    .addStatement("$N.setResult($T.RESULT_CANCELED,build())", activityName, AndroidClass.Activity)
+                    .build());
+
+            return activityResult.build();
+        }
+
+        String getExtraKey(Element element) {
+            final ActivityResult.Extra arExtra = element.getAnnotation(ActivityResult.Extra.class);
+            final String key;
+            if (arExtra != null && !arExtra.value().isEmpty()) {
+                key = arExtra.value();
+            } else {
+                key = "_" + element.getSimpleName().toString().toUpperCase();
+            }
+            return key;
         }
     }
 }

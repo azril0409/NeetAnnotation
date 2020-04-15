@@ -7,9 +7,11 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -339,6 +341,69 @@ public class SubscribeHelp {
                                 }
                                 errorAccept.addStatement(")");
                                 errorAccept.endControlFlow();
+                            } else  if (creator.isInstanceOf(parameter.asType(), ClassName.get(List.class))){
+                                nextAccept.beginControlFlow("if(t instanceof $T)", List.class);
+                                final Iterator<? extends VariableElement> iterator = parameters.iterator();
+                                nextAccept.beginControlFlow("try");
+                                nextAccept.add("$N.this.$N(", thisClassName, element.getSimpleName());
+                                while (iterator.hasNext()) {
+                                    final VariableElement p = iterator.next();
+                                    final TypeName pType = creator.getClassName(p.asType());
+                                    if (creator.getClassName(parameter.asType()).equals(pType)) {
+                                        nextAccept.add("($T)t", pType);
+                                    } else {
+                                        nextAccept.add(AnnotationHelp.addNullCode(parameter));
+                                    }
+                                    if (iterator.hasNext()) {
+                                        nextAccept.add(",");
+                                    }
+                                }
+                                nextAccept.addStatement(")");
+                                nextAccept.nextControlFlow("catch ($T e)",ClassCastException.class);
+                                nextAccept.endControlFlow();
+                                nextAccept.endControlFlow();
+                            } else  if (creator.isInstanceOf(parameter.asType(), ClassName.get(Set.class))){
+                                nextAccept.beginControlFlow("if(t instanceof $T)", Set.class);
+                                final Iterator<? extends VariableElement> iterator = parameters.iterator();
+                                nextAccept.beginControlFlow("try");
+                                nextAccept.add("$N.this.$N(", thisClassName, element.getSimpleName());
+                                while (iterator.hasNext()) {
+                                    final VariableElement p = iterator.next();
+                                    final TypeName pType = creator.getClassName(p.asType());
+                                    if (creator.getClassName(parameter.asType()).equals(pType)) {
+                                        nextAccept.add("($T)t", pType);
+                                    } else {
+                                        nextAccept.add(AnnotationHelp.addNullCode(parameter));
+                                    }
+                                    if (iterator.hasNext()) {
+                                        nextAccept.add(",");
+                                    }
+                                }
+                                nextAccept.addStatement(")");
+                                nextAccept.nextControlFlow("catch ($T e)",ClassCastException.class);
+                                nextAccept.endControlFlow();
+                                nextAccept.endControlFlow();
+                            } else  if (creator.isInstanceOf(parameter.asType(), ClassName.get(Collection.class))){
+                                nextAccept.beginControlFlow("if(t instanceof $T)", Collection.class);
+                                final Iterator<? extends VariableElement> iterator = parameters.iterator();
+                                nextAccept.beginControlFlow("try");
+                                nextAccept.add("$N.this.$N(", thisClassName, element.getSimpleName());
+                                while (iterator.hasNext()) {
+                                    final VariableElement p = iterator.next();
+                                    final TypeName pType = creator.getClassName(p.asType());
+                                    if (creator.getClassName(parameter.asType()).equals(pType)) {
+                                        nextAccept.add("($T)t", pType);
+                                    } else {
+                                        nextAccept.add(AnnotationHelp.addNullCode(parameter));
+                                    }
+                                    if (iterator.hasNext()) {
+                                        nextAccept.add(",");
+                                    }
+                                }
+                                nextAccept.addStatement(")");
+                                nextAccept.nextControlFlow("catch ($T e)",ClassCastException.class);
+                                nextAccept.endControlFlow();
+                                nextAccept.endControlFlow();
                             } else {
                                 nextAccept.beginControlFlow("if(t instanceof $T)", elementType);
                                 final Iterator<? extends VariableElement> iterator = parameters.iterator();

@@ -10,16 +10,21 @@ import sample.neetoffice.com.neetannotation.views.viewmodel.RecordViewModel
 import javax.inject.Named
 
 @NFragment(R.layout.activity_main)
-open class MainFragment: Fragment() {
+open class MainFragment : Fragment() {
     @ViewById(R.id.listView)
     lateinit var listView: ListView
     @Extra
-    lateinit var list:ArrayList<Record>
+    lateinit var list: ArrayList<Record>
 
 
-    @Subscribes(Subscribe(viewmode = RecordViewModel::class,key = "test"))
+    @Subscribes(Subscribe(viewmode = RecordViewModel::class, key = "test"))
     @Named("onRecord")
     fun onRecord2(record: Record) {
+
+    }
+
+    @Subscribe(viewmode = RecordViewModel::class)
+    fun onRecords(list: List<Record>) {
 
     }
 }

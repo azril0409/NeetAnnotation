@@ -15,12 +15,14 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
 import library.neetoffice.com.neetannotation.Interactor;
+import library.neetoffice.com.neetannotation.ListInteractor;
 import library.neetoffice.com.neetannotation.NActivity;
 import library.neetoffice.com.neetannotation.NDagger;
 import library.neetoffice.com.neetannotation.NFragment;
 import library.neetoffice.com.neetannotation.NService;
 import library.neetoffice.com.neetannotation.NView;
 import library.neetoffice.com.neetannotation.NViewModel;
+import library.neetoffice.com.neetannotation.SetInteractor;
 
 @SupportedAnnotationTypes({
         "library.neetoffice.com.neetannotation.Interactor",
@@ -33,6 +35,8 @@ public class MainProcessor extends AbstractProcessor {
     private static final String LIBRARY = "library";
     private static final String PACKAGE_NAME = "packageName";
     InteractorCreator interactorCreator;
+    ListInteractorCreator listInteractorCreator;
+    SetInteractorCreator setInteractorCreator;
     DaggerCreator daggerCreator;
     ViewModelCreator viewModelCreator;
     String contextPackageName = "com.neetoffice.neetannotation";
@@ -48,6 +52,8 @@ public class MainProcessor extends AbstractProcessor {
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
         interactorCreator = new InteractorCreator(this, processingEnv);
+        listInteractorCreator = new ListInteractorCreator(this, processingEnv);
+        setInteractorCreator = new SetInteractorCreator(this, processingEnv);
         daggerCreator = new DaggerCreator(this, processingEnv);
         viewModelCreator = new ViewModelCreator(this, processingEnv);
         final Map<String, String> options = processingEnv.getOptions();
@@ -73,6 +79,15 @@ public class MainProcessor extends AbstractProcessor {
         for (Element interact : interacts) {
             interactorCreator.process((TypeElement) interact, roundEnv);
         }
+        final Set<? extends Element> listInteracts = roundEnv.getElementsAnnotatedWith(ListInteractor.class);
+        for (Element interact : listInteracts) {
+            listInteractorCreator.process((TypeElement) interact, roundEnv);
+        }
+        final Set<? extends Element> setInteracts = roundEnv.getElementsAnnotatedWith(SetInteractor.class);
+        for (Element interact : setInteracts) {
+            setInteractorCreator.process((TypeElement) interact, roundEnv);
+        }
+
         final Set<? extends Element> nDaggers = roundEnv.getElementsAnnotatedWith(NDagger.class);
         for (Element nDagger : nDaggers) {
             daggerCreator.process((TypeElement) nDagger, roundEnv);

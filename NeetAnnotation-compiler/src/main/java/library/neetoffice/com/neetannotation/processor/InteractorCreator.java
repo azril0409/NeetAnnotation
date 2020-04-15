@@ -218,8 +218,6 @@ public class InteractorCreator extends BaseCreator {
         final MethodSpec subject = createSubjectMethod(entityType);
         final MethodSpec update = createUpdateMethod(entityType);
         final MethodSpec accept = createAcceptMethod(entityType);
-        //final MethodSpec onNext = createOnNextMethod(entityType);
-        //final MethodSpec onError = createOnErrorMethod();
         final MethodSpec.Builder subscribe_0 = MethodSpec.methodBuilder(SUBSCRIBE)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)

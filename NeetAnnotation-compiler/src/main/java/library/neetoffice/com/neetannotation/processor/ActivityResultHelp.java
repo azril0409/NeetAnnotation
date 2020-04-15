@@ -101,7 +101,7 @@ public class ActivityResultHelp {
                         parameterCode.add(creator.addNullCode(parameterType));
                     }
                 } else {
-                    final String key = getKey(parameter);
+                    final String key = getExtraKey(parameter);
                     if ("char".equals(parameterType.toString())) {
                         final DefaultChar aDefaultChar = parameter.getAnnotation(DefaultChar.class);
                         if (aDefaultChar != null) {
@@ -172,6 +172,7 @@ public class ActivityResultHelp {
             return code.build();
         }
 
+        /*
         String getKey(VariableElement parameter) {
             final ActivityResult.Extra aExtra = parameter.getAnnotation(ActivityResult.Extra.class);
             if (aExtra.value().isEmpty()) {
@@ -179,6 +180,7 @@ public class ActivityResultHelp {
             }
             return aExtra.value();
         }
+        */
 
         TypeSpec createActivityIntentBuilder(String packageName, String className) {
             final String activityResultName = "ActivityResult";

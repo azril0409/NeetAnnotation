@@ -61,6 +61,5 @@ kapt {
     correctErrorTypes = true
     arguments {
         arg("packageName","text.sss")
-        arg("apply", "application")
     }
 }

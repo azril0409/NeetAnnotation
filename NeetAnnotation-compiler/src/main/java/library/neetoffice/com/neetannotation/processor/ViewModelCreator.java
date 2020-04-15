@@ -105,8 +105,8 @@ public class ViewModelCreator extends BaseCreator {
         final boolean isSubAndroidViewModel = isSubAndroidViewModel(viewModelElement);
         final String daggerMethodName = DaggerHelp.findNameFromDagger(this, interactElement);
         final InteractorCreator.InteractBuild interactBuild = mainProcessor.interactorCreator.interactBuilds.get(interactElement.asType().toString());
-        final ListInteractorCreator.InteractBuild listinteractBuild = mainProcessor.listInteractorCreator.interactBuilds.get(interactElement.asType().toString());
-        final SetInteractorCreator.InteractBuild setinteractBuild = mainProcessor.setInteractorCreator.interactBuilds.get(interactElement.asType().toString());
+        final ListInteractorCreator.InteractBuild listInteractBuild = mainProcessor.listInteractorCreator.interactBuilds.get(interactElement.asType().toString());
+        final SetInteractorCreator.InteractBuild setInteractBuild = mainProcessor.setInteractorCreator.interactBuilds.get(interactElement.asType().toString());
         final TypeName implementType;
         if (interactBuild != null) {
             if (interactBuild.implementClassName.startsWith(interactBuild.packageName)) {
@@ -114,17 +114,17 @@ public class ViewModelCreator extends BaseCreator {
             } else {
                 implementType = ClassName.get(interactBuild.packageName, interactBuild.implementClassName);
             }
-        } else if (listinteractBuild != null) {
-            if (listinteractBuild.implementClassName.startsWith(listinteractBuild.packageName)) {
-                implementType = ClassName.bestGuess(listinteractBuild.implementClassName);
+        } else if (listInteractBuild != null) {
+            if (listInteractBuild.implementClassName.startsWith(listInteractBuild.packageName)) {
+                implementType = ClassName.bestGuess(listInteractBuild.implementClassName);
             } else {
-                implementType = ClassName.get(listinteractBuild.packageName, listinteractBuild.implementClassName);
+                implementType = ClassName.get(listInteractBuild.packageName, listInteractBuild.implementClassName);
             }
-        } else if (setinteractBuild != null) {
-            if (setinteractBuild.implementClassName.startsWith(setinteractBuild.packageName)) {
-                implementType = ClassName.bestGuess(setinteractBuild.implementClassName);
+        } else if (setInteractBuild != null) {
+            if (setInteractBuild.implementClassName.startsWith(setInteractBuild.packageName)) {
+                implementType = ClassName.bestGuess(setInteractBuild.implementClassName);
             } else {
-                implementType = ClassName.get(setinteractBuild.packageName, setinteractBuild.implementClassName);
+                implementType = ClassName.get(setInteractBuild.packageName, setInteractBuild.implementClassName);
             }
         } else {
             final String typeName = getClassName(interactElement.asType()).toString();

@@ -159,7 +159,6 @@ public class SetInteractorCreator extends BaseCreator {
                 .addParameter(RxJavaClass.Observer(listType), "observer")
                 .returns(void.class);
         tb.addMethod(subscribe_5.build());
-
         writeTo(packageName, tb.build());
         interactBuilds.put(interfaceClassName.toString(), interactBuild);
         interactBuilds.put(interfaceName, interactBuild);

@@ -26,6 +26,7 @@ import javax.lang.model.element.VariableElement;
 
 import library.neetoffice.com.neetannotation.AfterAnnotation;
 import library.neetoffice.com.neetannotation.InjectEntity;
+import library.neetoffice.com.neetannotation.ListInteractor;
 import library.neetoffice.com.neetannotation.NViewModel;
 import library.neetoffice.com.neetannotation.Published;
 
@@ -104,19 +105,33 @@ public class ViewModelCreator extends BaseCreator {
         final boolean isSubAndroidViewModel = isSubAndroidViewModel(viewModelElement);
         final String daggerMethodName = DaggerHelp.findNameFromDagger(this, interactElement);
         final InteractorCreator.InteractBuild interactBuild = mainProcessor.interactorCreator.interactBuilds.get(interactElement.asType().toString());
+        final ListInteractorCreator.InteractBuild listinteractBuild = mainProcessor.listInteractorCreator.interactBuilds.get(interactElement.asType().toString());
+        final SetInteractorCreator.InteractBuild setinteractBuild = mainProcessor.setInteractorCreator.interactBuilds.get(interactElement.asType().toString());
         final TypeName implementType;
-        if (interactBuild == null) {
+        if (interactBuild != null) {
+            if (interactBuild.implementClassName.startsWith(interactBuild.packageName)) {
+                implementType = ClassName.bestGuess(interactBuild.implementClassName);
+            } else {
+                implementType = ClassName.get(interactBuild.packageName, interactBuild.implementClassName);
+            }
+        } else if (listinteractBuild != null) {
+            if (listinteractBuild.implementClassName.startsWith(listinteractBuild.packageName)) {
+                implementType = ClassName.bestGuess(listinteractBuild.implementClassName);
+            } else {
+                implementType = ClassName.get(listinteractBuild.packageName, listinteractBuild.implementClassName);
+            }
+        } else if (setinteractBuild != null) {
+            if (setinteractBuild.implementClassName.startsWith(setinteractBuild.packageName)) {
+                implementType = ClassName.bestGuess(setinteractBuild.implementClassName);
+            } else {
+                implementType = ClassName.get(setinteractBuild.packageName, setinteractBuild.implementClassName);
+            }
+        } else {
             final String typeName = getClassName(interactElement.asType()).toString();
             if (isContextInteractor(typeName)) {
                 implementType = ClassName.bestGuess(mainProcessor.contextPackageName + "." + typeName + "_");
             } else {
                 implementType = ClassName.bestGuess(typeName + "_");
-            }
-        } else {
-            if (interactBuild.implementClassName.startsWith(interactBuild.packageName)) {
-                implementType = ClassName.bestGuess(interactBuild.implementClassName);
-            } else {
-                implementType = ClassName.get(interactBuild.packageName, interactBuild.implementClassName);
             }
         }
 

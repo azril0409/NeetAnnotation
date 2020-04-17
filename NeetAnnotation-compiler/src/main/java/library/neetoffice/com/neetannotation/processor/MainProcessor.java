@@ -17,6 +17,7 @@ import javax.lang.model.element.TypeElement;
 import library.neetoffice.com.neetannotation.Interactor;
 import library.neetoffice.com.neetannotation.ListInteractor;
 import library.neetoffice.com.neetannotation.NActivity;
+import library.neetoffice.com.neetannotation.NApplication;
 import library.neetoffice.com.neetannotation.NDagger;
 import library.neetoffice.com.neetannotation.NFragment;
 import library.neetoffice.com.neetannotation.NService;
@@ -34,9 +35,11 @@ public class MainProcessor extends AbstractProcessor {
     private static final String APPLICATION = "application";
     private static final String LIBRARY = "library";
     private static final String PACKAGE_NAME = "packageName";
+    ContextInteractorCreator contextInteractorCreator;
     InteractorCreator interactorCreator;
     ListInteractorCreator listInteractorCreator;
     SetInteractorCreator setInteractorCreator;
+    ViewModelStoreOwnerCreator viewModelStoreOwnerCreator;
     DaggerCreator daggerCreator;
     ViewModelCreator viewModelCreator;
     String contextPackageName = "com.neetoffice.neetannotation";
@@ -51,9 +54,11 @@ public class MainProcessor extends AbstractProcessor {
     @Override
     public synchronized void init(ProcessingEnvironment processingEnv) {
         super.init(processingEnv);
+        contextInteractorCreator = new ContextInteractorCreator(this, processingEnv);
         interactorCreator = new InteractorCreator(this, processingEnv);
         listInteractorCreator = new ListInteractorCreator(this, processingEnv);
         setInteractorCreator = new SetInteractorCreator(this, processingEnv);
+        viewModelStoreOwnerCreator = new ViewModelStoreOwnerCreator(this, processingEnv);
         daggerCreator = new DaggerCreator(this, processingEnv);
         viewModelCreator = new ViewModelCreator(this, processingEnv);
         final Map<String, String> options = processingEnv.getOptions();
@@ -70,11 +75,17 @@ public class MainProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnv) {
-        interactorCreator.createContextModule(contextPackageName);
+        contextInteractorCreator.createModule(contextPackageName);
         daggerCreator.createContextModule(contextPackageName);
         viewModelCreator.createContextModule(contextPackageName);
         daggerCreator.createSystemModule(contextPackageName);
+        viewModelStoreOwnerCreator.createSimpleViewModelStoreOwner(contextPackageName);
+        viewModelStoreOwnerCreator.createApplaction(contextPackageName);
 
+        final Set<? extends Element> applications = roundEnv.getElementsAnnotatedWith(NApplication.class);
+        for (Element application : applications) {
+            viewModelStoreOwnerCreator.process((TypeElement) application, roundEnv);
+        }
         final Set<? extends Element> interacts = roundEnv.getElementsAnnotatedWith(Interactor.class);
         for (Element interact : interacts) {
             interactorCreator.process((TypeElement) interact, roundEnv);

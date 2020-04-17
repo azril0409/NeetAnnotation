@@ -125,9 +125,7 @@ public class ViewCreator extends BaseCreator {
         initMethodBuilder.addCode(findViewByIdCode.build());
         initMethodBuilder.addCode(listenerBuilder.createListenerCode());
         if (subscribeBuilder.hasElement()) {
-            initMethodBuilder.beginControlFlow("if($N instanceof $T)", CONTEXT, AndroidClass.FragmentActivity);
-            initMethodBuilder.addCode(subscribeBuilder.createAddViewModelOfCode("(FragmentActivity)" + CONTEXT));
-            initMethodBuilder.endControlFlow();
+            initMethodBuilder.addCode(subscribeBuilder.createAddViewModelOfCode(CONTEXT));
         }
         if (haveDagger) {
             initMethodBuilder.addCode(createDaggerInjectCode(viewElement));

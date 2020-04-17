@@ -470,17 +470,18 @@ public class SubscribeHelp {
                         final String viewModelName = viewModelOf.element.getSimpleName().toString();
                         cb.add(createSubscribeToViewMode(subscribeGroup, thisClassName, typeName, viewModelName));
                     } else {
-                        final ClassName typeName = ClassName.bestGuess(subscribeGroup.viewModel + "_");
+                        final ClassName typeName = ClassName.bestGuess(subscribeGroup.viewModel);
+                        final ClassName typeName_ = ClassName.bestGuess(subscribeGroup.viewModel + "_");
                         if (!localViewModelNames.containsKey(subscribeGroup.mapKey)) {
                             final String localViewModelName = "lm" + subscribeGroup.viewModelKey + typeName.simpleName();
                             cb.add("$T $N = ", typeName, localViewModelName);
-                            cb.add(ViewModelHelp.viewModelProvidersOf(context_from, subscribeGroup.viewModelKey, typeName));
+                            cb.add(ViewModelHelp.viewModelProvidersOf(context_from, subscribeGroup.viewModelKey, typeName_));
                             cb.addStatement("");
                             localViewModelNames.put(subscribeGroup.mapKey, localViewModelName);
                             cb.add(createSubscribeToViewMode(subscribeGroup, thisClassName, typeName, localViewModelName));
                         } else {
                             final String localViewModelName = localViewModelNames.get(subscribeGroup.mapKey);
-                            cb.add(createSubscribeToViewMode(subscribeGroup, thisClassName, typeName, localViewModelName));
+                            cb.add(createSubscribeToViewMode(subscribeGroup, thisClassName, typeName_, localViewModelName));
                         }
                     }
                 }
@@ -499,11 +500,12 @@ public class SubscribeHelp {
                 for (SubscribeGroup subscribeGroup : subscribeGroups.values()) {
                     if (isViewModeFieldinSubscribeGroup(subscribeGroup)) {
                     } else {
-                        final ClassName typeName = ClassName.bestGuess(subscribeGroup.viewModel + "_");
+                        final ClassName typeName = ClassName.bestGuess(subscribeGroup.viewModel);
+                        final ClassName typeName_ = ClassName.bestGuess(subscribeGroup.viewModel + "_");
                         if (!localViewModelNames.containsKey(subscribeGroup.mapKey)) {
                             final String localViewModelName = "lm" + subscribeGroup.viewModelKey + typeName.simpleName();
                             localViewModelNames.put(subscribeGroup.mapKey, localViewModelName);
-                            cb.add(CodeBlock.builder().addStatement("$N.getLifecycle().addObserver(($T)$N)", context_from, typeName, localViewModelName).build());
+                            cb.add(CodeBlock.builder().addStatement("$N.getLifecycle().addObserver(($T)$N)", context_from, typeName_, localViewModelName).build());
                         }
                     }
                 }

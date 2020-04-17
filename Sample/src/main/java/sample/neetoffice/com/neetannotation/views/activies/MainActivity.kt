@@ -1,7 +1,10 @@
 package sample.neetoffice.com.neetannotation.views.activies
 
 import android.app.Activity
+import android.app.Application
+import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -22,13 +25,13 @@ open class MainActivity : AppCompatActivity() {
     lateinit var listView: ListView
     @Inject
     lateinit var adapter: RecordAdapter
-    @Extra
-    lateinit var list: ArrayList<Record>
     @ViewModelOf
     lateinit var recordViewModel: RecordViewModel
 
     @AfterAnnotation
     fun onAfter() {
+        Log.d("TAG","$recordViewModel")
+        Log.d("TAG","${recordViewModel.getApplication<Application>()}")
         listView.adapter = adapter
         var toolbar: Toolbar
 

@@ -11,7 +11,11 @@ public class AndroidClass {
     public static final ClassName LifecycleObserver = ClassName.get("androidx.lifecycle", "LifecycleObserver");
     public static final ClassName ViewModelProviders = ClassName.get("androidx.lifecycle", "ViewModelProviders");
     public static final ClassName ViewModelProvider = ClassName.get("androidx.lifecycle", "ViewModelProvider");
-    public static final ClassName Factory = ClassName.get("androidx.lifecycle", "ViewModelProvider","Factory");
+    public static final ClassName ViewModelStoreOwner = ClassName.get("androidx.lifecycle", "ViewModelStoreOwner");
+    public static final ClassName ViewModelStore = ClassName.get("androidx.lifecycle", "ViewModelStore");
+    public static final ClassName HasDefaultViewModelProviderFactory = ClassName.get("androidx.lifecycle", "HasDefaultViewModelProviderFactory");
+    public static final ClassName Factory = ClassName.get("androidx.lifecycle", "ViewModelProvider", "Factory");
+    public static final ClassName AndroidViewModelFactory = ClassName.get("androidx.lifecycle", "ViewModelProvider", "AndroidViewModelFactory");
     public static final ClassName AdapterView = ClassName.get("android.widget", "AdapterView");
     public static final ClassName AdapterView_OnItemClickListener = ClassName.get("android.widget", "AdapterView", "OnItemClickListener");
     public static final ClassName AdapterView_OnItemLongClickListener = ClassName.get("android.widget", "AdapterView", "OnItemLongClickListener");
@@ -21,7 +25,7 @@ public class AndroidClass {
     public static final ClassName CompoundButton = ClassName.get("android.widget", "CompoundButton");
     public static final ClassName CompoundButton_OnCheckedChangeListener = ClassName.get("android.widget", "CompoundButton", "OnCheckedChangeListener");
     public static final ClassName Context = ClassName.get("android.content", "Context");
-    public static final ClassName Editable = ClassName.get("android.text","Editable");
+    public static final ClassName Editable = ClassName.get("android.text", "Editable");
     public static final ClassName FragmentActivity = ClassName.get("androidx.fragment.app", "FragmentActivity");
     public static final ClassName Fragment = ClassName.get("androidx.fragment.app", "Fragment");
     public static final ClassName Intent = ClassName.get("android.content", "Intent");
@@ -39,7 +43,7 @@ public class AndroidClass {
     public static final ClassName Toolbar_x = ClassName.get("androidx.appcompat.widget", "Toolbar");
     public static final ClassName RequiresApi = ClassName.get("androidx.annotation", "RequiresApi");
     public static final ClassName Keep = ClassName.get("androidx.annotation", "Keep");
-    public static final ClassName NonNull = ClassName.get("androidx.annotation","NonNull");
+    public static final ClassName NonNull = ClassName.get("androidx.annotation", "NonNull");
     public static final ClassName Uri = ClassName.get("android.net", "Uri");
     public static final ClassName View = ClassName.get("android.view", "View");
     public static final ClassName View_OnClickListener = ClassName.get("android.view", "View", "OnClickListener");
@@ -48,7 +52,6 @@ public class AndroidClass {
     public static final ClassName View_OnFocusChangeListener = ClassName.get("android.view", "View", "OnFocusChangeListener");
     public static final ClassName ViewGroup = ClassName.get("android.view", "ViewGroup");
     public static final ClassName ViewGroup_LayoutParams = ClassName.get("android.view", "ViewGroup", "LayoutParams");
-
 
     public static final ClassName WindowManager = ClassName.get("android.view", "WindowManager");
     public static final ClassName ActivityManager = ClassName.get("android.app", "ActivityManager");

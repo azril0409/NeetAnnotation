@@ -33,6 +33,7 @@ import library.neetoffice.com.neetannotation.Published;
 public class ViewModelCreator extends BaseCreator {
     static final String FIND_SUBJECT_BY_NAME = "findSubjectByName";
     static final String FIND_SUBJECT_BY_NAME_PARAMETER_NAME = "name";
+    static final String VIEW_MODEL_STORE_OWNER = "viewModelStoreOwner";
     static final String _SUBJECT = "_Subject";
     static final String DAGGER_NAME = "dagger";
     static final String CONSTRUCTOR_APPLICATION_PARAMETER = "application";
@@ -52,6 +53,8 @@ public class ViewModelCreator extends BaseCreator {
         if (isAabstract) {
             return;
         }
+        final NViewModel aNViewModel = viewModelElement.getAnnotation(NViewModel.class);
+        boolean isSingle = aNViewModel.isSingle();
         final boolean haveDagger = DaggerHelp.process(viewModelElement);
         final String className = viewModelElement.getSimpleName() + "_";
         final List<TypeElement> viewModelElements = findSuperElements(viewModelElement, roundEnv, NViewModel.class);
@@ -62,6 +65,8 @@ public class ViewModelCreator extends BaseCreator {
                 .addSuperinterface(AndroidClass.LifecycleObserver)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
+        final FieldSpec.Builder viewModelStoreOwner = FieldSpec.builder(ClassName.get(mainProcessor.contextPackageName, ViewModelStoreOwnerCreator.CLASS_NAME), VIEW_MODEL_STORE_OWNER, Modifier.PRIVATE, Modifier.STATIC);
+        tb.addField(viewModelStoreOwner.build());
 
         final CodeBlock.Builder init = CodeBlock.builder();
         final CodeBlock.Builder afterAnnotationCode = CodeBlock.builder();
@@ -91,13 +96,72 @@ public class ViewModelCreator extends BaseCreator {
                 haveConstructor = true;
             }
         }
-        //findSubjectByName.endControlFlow();
         if (!haveConstructor) {
             tb.addMethod(MethodSpec.constructorBuilder()
                     .addModifiers(Modifier.PUBLIC)
                     .addCode(init.build())
                     .build());
         }
+
+
+        final MethodSpec.Builder getInstance = MethodSpec.methodBuilder("getInstance")
+                .returns(getClassName(viewModelElement.asType()))
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
+        if (isSingle) {
+            getInstance.addParameter(AndroidClass.Context, "context")
+                    .addStatement("final $T application = context.getApplicationContext()", AndroidClass.Context)
+                    .beginControlFlow("if(application instanceof $T)", AndroidClass.ViewModelStoreOwner)
+                    .addStatement("return new $T(($T)application).get($T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, getClassName(viewModelElement.asType()))
+                    .endControlFlow()
+                    .beginControlFlow("if($N == null)", VIEW_MODEL_STORE_OWNER)
+                    .addStatement("$N = new $T(($T)application)", VIEW_MODEL_STORE_OWNER, ClassName.get(mainProcessor.contextPackageName, ViewModelStoreOwnerCreator.CLASS_NAME), AndroidClass.Application)
+                    .endControlFlow()
+                    .addStatement("return new $T($N).get($T.class)", AndroidClass.ViewModelProvider, VIEW_MODEL_STORE_OWNER, getClassName(viewModelElement.asType()));
+        } else {
+            getInstance.addParameter(Object.class, "owner")
+                    .beginControlFlow("if(owner instanceof $T)", AndroidClass.ViewModelStoreOwner)
+                    .addStatement("return new $T(($T)owner).get($T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, getClassName(viewModelElement.asType()))
+                    .endControlFlow()
+                    .beginControlFlow("if($N == null & owner instanceof $T)", VIEW_MODEL_STORE_OWNER, AndroidClass.Application)
+                    .addStatement("$N = new $T(($T)owner)", VIEW_MODEL_STORE_OWNER, ClassName.get(mainProcessor.contextPackageName, ViewModelStoreOwnerCreator.CLASS_NAME), AndroidClass.Application)
+                    .endControlFlow()
+                    .beginControlFlow("if($N != null)", VIEW_MODEL_STORE_OWNER)
+                    .addStatement("return new $T($N).get($T.class)", AndroidClass.ViewModelProvider, VIEW_MODEL_STORE_OWNER, getClassName(viewModelElement.asType()))
+                    .endControlFlow()
+                    .addStatement("throw new RuntimeException(\"Cannot get instance by \" + owner)");
+        }
+        tb.addMethod(getInstance.build());
+
+        final MethodSpec.Builder getInstanceBykey = MethodSpec.methodBuilder("getInstance")
+                .addParameter(String.class, "key")
+                .returns(getClassName(viewModelElement.asType()))
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
+        if (isSingle) {
+            getInstanceBykey.addParameter(AndroidClass.Context, "context")
+                    .addStatement("final $T application = context.getApplicationContext()", AndroidClass.Context)
+                    .beginControlFlow("if(application instanceof $T)", AndroidClass.ViewModelStoreOwner)
+                    .addStatement("return new $T(($T)application).get(key,$T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, getClassName(viewModelElement.asType()))
+                    .endControlFlow()
+                    .beginControlFlow("if($N == null)", VIEW_MODEL_STORE_OWNER)
+                    .addStatement("$N = new $T(($T)application)", VIEW_MODEL_STORE_OWNER, ClassName.get(mainProcessor.contextPackageName, ViewModelStoreOwnerCreator.CLASS_NAME), AndroidClass.Application)
+                    .endControlFlow()
+                    .addStatement("return new $T($N).get(key,$T.class)", AndroidClass.ViewModelProvider, VIEW_MODEL_STORE_OWNER, getClassName(viewModelElement.asType()));
+        } else {
+            getInstanceBykey.addParameter(Object.class, "owner")
+                    .beginControlFlow("if(owner instanceof $T)", AndroidClass.ViewModelStoreOwner)
+                    .addStatement("return new $T(($T)owner).get(key,$T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, getClassName(viewModelElement.asType()))
+                    .endControlFlow()
+                    .beginControlFlow("if($N == null & owner instanceof $T)", VIEW_MODEL_STORE_OWNER, AndroidClass.Application)
+                    .addStatement("$N = new $T(($T)owner)", VIEW_MODEL_STORE_OWNER, ClassName.get(mainProcessor.contextPackageName, ViewModelStoreOwnerCreator.CLASS_NAME), AndroidClass.Application)
+                    .endControlFlow()
+                    .beginControlFlow("if($N != null)", VIEW_MODEL_STORE_OWNER)
+                    .addStatement("return new $T($N).get(key,$T.class)", AndroidClass.ViewModelProvider, VIEW_MODEL_STORE_OWNER, getClassName(viewModelElement.asType()))
+                    .endControlFlow()
+                    .addStatement("throw new RuntimeException(\"Cannot get instance by \" + owner)");
+        }
+
+        tb.addMethod(getInstanceBykey.build());
+
         writeTo(getPackageName(viewModelElement), tb.build());
     }
 

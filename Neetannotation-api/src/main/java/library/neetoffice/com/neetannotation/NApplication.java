@@ -8,6 +8,5 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 @Retention(SOURCE)
 @Target(TYPE)
-public @interface NViewModel {
-    boolean isSingle() default false;
+public @interface NApplication {
 }

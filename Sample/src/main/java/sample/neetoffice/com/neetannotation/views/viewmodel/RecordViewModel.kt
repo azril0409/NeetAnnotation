@@ -12,7 +12,7 @@ import text.sss.support.IntegerInteractor
 import text.sss.support.ThrowableInteractor
 import javax.inject.Inject
 
-@NViewModel(isSingle = true)
+@NViewModel(isSingle = false)
 @NDagger(modules = [RecordModule::class])
 open class RecordViewModel(application: Application) : AndroidViewModel(application) {
     @Inject

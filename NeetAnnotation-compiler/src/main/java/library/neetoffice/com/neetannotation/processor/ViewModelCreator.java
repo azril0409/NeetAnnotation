@@ -111,22 +111,22 @@ public class ViewModelCreator extends BaseCreator {
             getInstance.addParameter(AndroidClass.Context, "context")
                     .addStatement("final $T application = context.getApplicationContext()", AndroidClass.Context)
                     .beginControlFlow("if(application instanceof $T)", AndroidClass.ViewModelStoreOwner)
-                    .addStatement("return new $T(($T)application).get($T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, getClassName(viewModelElement.asType()))
+                    .addStatement("return new $T(($T)application).get($T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
                     .endControlFlow()
                     .beginControlFlow("if($N == null)", VIEW_MODEL_STORE_OWNER)
                     .addStatement("$N = new $T(($T)application)", VIEW_MODEL_STORE_OWNER, ClassName.get(mainProcessor.contextPackageName, ViewModelStoreOwnerCreator.CLASS_NAME), AndroidClass.Application)
                     .endControlFlow()
-                    .addStatement("return new $T($N).get($T.class)", AndroidClass.ViewModelProvider, VIEW_MODEL_STORE_OWNER, getClassName(viewModelElement.asType()));
+                    .addStatement("return new $T($N).get($T.class)", AndroidClass.ViewModelProvider, VIEW_MODEL_STORE_OWNER, ClassName.get(getPackageName(viewModelElement), className));
         } else {
             getInstance.addParameter(Object.class, "owner")
                     .beginControlFlow("if(owner instanceof $T)", AndroidClass.ViewModelStoreOwner)
-                    .addStatement("return new $T(($T)owner).get($T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, getClassName(viewModelElement.asType()))
+                    .addStatement("return new $T(($T)owner).get($T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
                     .endControlFlow()
                     .beginControlFlow("if($N == null & owner instanceof $T)", VIEW_MODEL_STORE_OWNER, AndroidClass.Application)
                     .addStatement("$N = new $T(($T)owner)", VIEW_MODEL_STORE_OWNER, ClassName.get(mainProcessor.contextPackageName, ViewModelStoreOwnerCreator.CLASS_NAME), AndroidClass.Application)
                     .endControlFlow()
                     .beginControlFlow("if($N != null)", VIEW_MODEL_STORE_OWNER)
-                    .addStatement("return new $T($N).get($T.class)", AndroidClass.ViewModelProvider, VIEW_MODEL_STORE_OWNER, getClassName(viewModelElement.asType()))
+                    .addStatement("return new $T($N).get($T.class)", AndroidClass.ViewModelProvider, VIEW_MODEL_STORE_OWNER, ClassName.get(getPackageName(viewModelElement), className))
                     .endControlFlow()
                     .addStatement("throw new RuntimeException(\"Cannot get instance by \" + owner)");
         }
@@ -140,22 +140,22 @@ public class ViewModelCreator extends BaseCreator {
             getInstanceBykey.addParameter(AndroidClass.Context, "context")
                     .addStatement("final $T application = context.getApplicationContext()", AndroidClass.Context)
                     .beginControlFlow("if(application instanceof $T)", AndroidClass.ViewModelStoreOwner)
-                    .addStatement("return new $T(($T)application).get(key,$T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, getClassName(viewModelElement.asType()))
+                    .addStatement("return new $T(($T)application).get(key,$T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
                     .endControlFlow()
                     .beginControlFlow("if($N == null)", VIEW_MODEL_STORE_OWNER)
                     .addStatement("$N = new $T(($T)application)", VIEW_MODEL_STORE_OWNER, ClassName.get(mainProcessor.contextPackageName, ViewModelStoreOwnerCreator.CLASS_NAME), AndroidClass.Application)
                     .endControlFlow()
-                    .addStatement("return new $T($N).get(key,$T.class)", AndroidClass.ViewModelProvider, VIEW_MODEL_STORE_OWNER, getClassName(viewModelElement.asType()));
+                    .addStatement("return new $T($N).get(key,$T.class)", AndroidClass.ViewModelProvider, VIEW_MODEL_STORE_OWNER, ClassName.get(getPackageName(viewModelElement), className));
         } else {
             getInstanceBykey.addParameter(Object.class, "owner")
                     .beginControlFlow("if(owner instanceof $T)", AndroidClass.ViewModelStoreOwner)
-                    .addStatement("return new $T(($T)owner).get(key,$T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, getClassName(viewModelElement.asType()))
+                    .addStatement("return new $T(($T)owner).get(key,$T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
                     .endControlFlow()
                     .beginControlFlow("if($N == null & owner instanceof $T)", VIEW_MODEL_STORE_OWNER, AndroidClass.Application)
                     .addStatement("$N = new $T(($T)owner)", VIEW_MODEL_STORE_OWNER, ClassName.get(mainProcessor.contextPackageName, ViewModelStoreOwnerCreator.CLASS_NAME), AndroidClass.Application)
                     .endControlFlow()
                     .beginControlFlow("if($N != null)", VIEW_MODEL_STORE_OWNER)
-                    .addStatement("return new $T($N).get(key,$T.class)", AndroidClass.ViewModelProvider, VIEW_MODEL_STORE_OWNER, getClassName(viewModelElement.asType()))
+                    .addStatement("return new $T($N).get(key,$T.class)", AndroidClass.ViewModelProvider, VIEW_MODEL_STORE_OWNER, ClassName.get(getPackageName(viewModelElement), className))
                     .endControlFlow()
                     .addStatement("throw new RuntimeException(\"Cannot get instance by \" + owner)");
         }

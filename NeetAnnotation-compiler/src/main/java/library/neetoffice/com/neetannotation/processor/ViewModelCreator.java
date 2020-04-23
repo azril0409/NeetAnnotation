@@ -29,6 +29,9 @@ import library.neetoffice.com.neetannotation.InjectEntity;
 import library.neetoffice.com.neetannotation.ListInteractor;
 import library.neetoffice.com.neetannotation.NViewModel;
 import library.neetoffice.com.neetannotation.Published;
+import library.neetoffice.com.neetannotation.Subscribe;
+import library.neetoffice.com.neetannotation.Subscribes;
+import library.neetoffice.com.neetannotation.ViewModelOf;
 
 public class ViewModelCreator extends BaseCreator {
     static final String FIND_SUBJECT_BY_NAME = "findSubjectByName";
@@ -39,12 +42,15 @@ public class ViewModelCreator extends BaseCreator {
     static final String CONSTRUCTOR_APPLICATION_PARAMETER = "application";
     static final String CONSTRUCTOR_ACTIVITY_PARAMETER = "activity";
     static final String CONSTRUCTOR_CONTEXT_PARAMETER = "context";
+    static final String CONTEXT_FROM = "application";
     static final TypeVariableName SUBJECT_PARAMETERIZED_TYPE_NAME = TypeVariableName.get("T");
     private final MainProcessor mainProcessor;
+    final SubscribeHelp subscribeHelp;
 
     public ViewModelCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
         this.mainProcessor = processor;
+        subscribeHelp = new SubscribeHelp(this);
     }
 
     @Override
@@ -60,6 +66,8 @@ public class ViewModelCreator extends BaseCreator {
         final List<TypeElement> viewModelElements = findSuperElements(viewModelElement, roundEnv, NViewModel.class);
         viewModelElements.add(viewModelElement);
 
+        final SubscribeHelp.Builder subscribeBuilder = subscribeHelp.builder();
+
         final TypeSpec.Builder tb = TypeSpec.classBuilder(className)
                 .superclass(getClassName(viewModelElement.asType()))
                 .addSuperinterface(AndroidClass.LifecycleObserver)
@@ -70,6 +78,7 @@ public class ViewModelCreator extends BaseCreator {
 
         final CodeBlock.Builder init = CodeBlock.builder();
         final CodeBlock.Builder afterAnnotationCode = CodeBlock.builder();
+        final CodeBlock.Builder onClearedCode = CodeBlock.builder();
 
         if (haveDagger) {
             init.add(createDaggerCode(viewModelElement));
@@ -81,6 +90,12 @@ public class ViewModelCreator extends BaseCreator {
                 if (enclosedElement.getAnnotation(Published.class) != null) {
                     final CodeBlock instanceInteractor = createInstanceCode(viewModelElement, enclosedElement, haveDagger);
                     init.add(instanceInteractor);
+                } else if (enclosedElement.getAnnotation(ViewModelOf.class) != null) {
+                    subscribeBuilder.parseElement(enclosedElement);
+                } else if (enclosedElement.getAnnotation(Subscribe.class) != null) {
+                    subscribeBuilder.parseElement(enclosedElement);
+                } else if (enclosedElement.getAnnotation(Subscribes.class) != null) {
+                    subscribeBuilder.parseElement(enclosedElement);
                 }
                 afterAnnotationCode.add(createAfterAnnotationCode(enclosedElement));
             }
@@ -88,6 +103,10 @@ public class ViewModelCreator extends BaseCreator {
         if (haveDagger) {
             init.addStatement("$N.inject(this)", DAGGER_NAME);
         }
+        subscribeBuilder.addDisposableFieldInType(tb);
+        onClearedCode.add(subscribeBuilder.createDispose());
+        init.add(subscribeBuilder.createAddViewModelOfCode(CONTEXT_FROM));
+        init.add(subscribeBuilder.createCodeSubscribeInOnCreate(className, CONTEXT_FROM));
         init.add(afterAnnotationCode.build());
         boolean haveConstructor = false;
         for (Element enclosedElement : viewModelElement.getEnclosedElements()) {
@@ -161,6 +180,15 @@ public class ViewModelCreator extends BaseCreator {
         }
 
         tb.addMethod(getInstanceBykey.build());
+
+
+        final MethodSpec.Builder onCleared = MethodSpec.methodBuilder("onCleared")
+                .returns(void.class)
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC)
+                .addStatement("super.onCleared()")
+                .addCode(onClearedCode.build());
+        tb.addMethod(onCleared.build());
 
         writeTo(getPackageName(viewModelElement), tb.build());
     }

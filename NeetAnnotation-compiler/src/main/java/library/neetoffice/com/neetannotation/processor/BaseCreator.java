@@ -64,7 +64,7 @@ public abstract class BaseCreator {
         try {
             final JavaFile javaFile = JavaFile.builder(packageName, typeSpec).build();
             javaFile.writeTo(processingEnv.getFiler());
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

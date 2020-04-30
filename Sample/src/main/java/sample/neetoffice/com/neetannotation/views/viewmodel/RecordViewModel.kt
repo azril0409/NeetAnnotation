@@ -6,7 +6,7 @@ import library.neetoffice.com.neetannotation.*
 import library.neetoffice.com.neetdao.Dao
 import sample.neetoffice.com.neetannotation.models.Record
 import sample.neetoffice.com.neetannotation.models.RecordInteractor
-import sample.neetoffice.com.neetannotation.models.RecordListInteractor
+import sample.neetoffice.com.neetannotation.models.RecordListinteractor
 import sample.neetoffice.com.neetannotation.modules.RecordModule
 import text.sss.support.IntegerInteractor
 import text.sss.support.ThrowableInteractor
@@ -21,7 +21,7 @@ open class RecordViewModel(application: Application) : AndroidViewModel(applicat
     @InjectEntity
     lateinit var onRecord: RecordInteractor
     @Published
-    lateinit var onRecords: RecordListInteractor
+    lateinit var onRecords: RecordListinteractor
     @Published
     lateinit var value: IntegerInteractor
     @Published

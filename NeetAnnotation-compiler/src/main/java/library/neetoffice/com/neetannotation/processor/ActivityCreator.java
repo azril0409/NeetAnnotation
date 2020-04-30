@@ -38,9 +38,9 @@ public class ActivityCreator extends BaseCreator {
     final MenuHelp menuHelp;
     final ActivityResultHelp activityResultHelp;
     final HandleHelp handleHelp;
-    private final SecondProcessor mainProcessor;
+    private final MainProcessor mainProcessor;
 
-    public ActivityCreator(SecondProcessor processor, ProcessingEnvironment processingEnv) {
+    public ActivityCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
         mainProcessor = processor;
         resourcesHelp = new ResourcesHelp();

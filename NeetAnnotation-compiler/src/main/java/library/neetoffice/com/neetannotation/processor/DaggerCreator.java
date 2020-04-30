@@ -122,7 +122,7 @@ public class DaggerCreator extends BaseCreator {
         return getEntity.build();
     }
 
-    void createContextModule(String packageName) {
+    void        createContextModule(String packageName) {
         final TypeSpec.Builder contextModuleBuilder = TypeSpec.classBuilder(ClassName.get(packageName, AndroidClass.CONTEXT_MODULE_NAME))
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addAnnotation(DaggerClass.Module);

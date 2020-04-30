@@ -28,7 +28,11 @@ import library.neetoffice.com.neetannotation.SetInteractor;
 @SupportedAnnotationTypes({
         "library.neetoffice.com.neetannotation.Interactor",
         "library.neetoffice.com.neetannotation.NDagger",
-        "library.neetoffice.com.neetannotation.NViewModel"})
+        "library.neetoffice.com.neetannotation.NViewModel",
+        "library.neetoffice.com.neetannotation.NActivity",
+        "library.neetoffice.com.neetannotation.NFragment",
+        "library.neetoffice.com.neetannotation.NView",
+        "library.neetoffice.com.neetannotation.NService"})
 @AutoService(Process.class)
 public class MainProcessor extends AbstractProcessor {
     private static final String APPLY = "apply";
@@ -42,6 +46,10 @@ public class MainProcessor extends AbstractProcessor {
     ViewModelStoreOwnerCreator viewModelStoreOwnerCreator;
     DaggerCreator daggerCreator;
     ViewModelCreator viewModelCreator;
+    ActivityCreator activityCreator;
+    FragmentCreator fragmentCreator;
+    ViewCreator viewCreator;
+    ServiceCreator serviceCreator;
     String contextPackageName = "com.neetoffice.neetannotation";
     ClassName contextModule;
     ClassName systemModule;
@@ -61,6 +69,10 @@ public class MainProcessor extends AbstractProcessor {
         viewModelStoreOwnerCreator = new ViewModelStoreOwnerCreator(this, processingEnv);
         daggerCreator = new DaggerCreator(this, processingEnv);
         viewModelCreator = new ViewModelCreator(this, processingEnv);
+        activityCreator = new ActivityCreator(this, processingEnv);
+        fragmentCreator = new FragmentCreator(this, processingEnv);
+        viewCreator = new ViewCreator(this, processingEnv);
+        serviceCreator = new ServiceCreator(this, processingEnv);
         final Map<String, String> options = processingEnv.getOptions();
         if (options.containsKey(APPLY)) {
             final String apply = options.get(APPLY);
@@ -106,6 +118,22 @@ public class MainProcessor extends AbstractProcessor {
         final Set<? extends Element> nViewModels = roundEnv.getElementsAnnotatedWith(NViewModel.class);
         for (Element nViewModel : nViewModels) {
             viewModelCreator.process((TypeElement) nViewModel, roundEnv);
+        }
+        final Set<? extends Element> nActivitys = roundEnv.getElementsAnnotatedWith(NActivity.class);
+        for (Element nActivity : nActivitys) {
+            activityCreator.process((TypeElement) nActivity, roundEnv);
+        }
+        final Set<? extends Element> nFragments = roundEnv.getElementsAnnotatedWith(NFragment.class);
+        for (Element nFragment : nFragments) {
+            fragmentCreator.process((TypeElement) nFragment, roundEnv);
+        }
+        final Set<? extends Element> nViews = roundEnv.getElementsAnnotatedWith(NView.class);
+        for (Element nView : nViews) {
+            viewCreator.process((TypeElement) nView, roundEnv);
+        }
+        final Set<? extends Element> nServices = roundEnv.getElementsAnnotatedWith(NService.class);
+        for (Element nService : nServices) {
+            serviceCreator.process((TypeElement) nService, roundEnv);
         }
         return true;
     }

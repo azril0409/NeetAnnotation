@@ -22,7 +22,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
 public class ListInteractorCreator extends BaseCreator {
-    static final String INTERACTOR = "ListInteractor";
+    static final String INTERACTOR = "Listinteractor";
     static final String PRESENTER_ = INTERACTOR + "_";
     static final String ENTITY_FIELD_NAME = "entity";
     static final String SUBJECT_FIELD_NAME = "subject";

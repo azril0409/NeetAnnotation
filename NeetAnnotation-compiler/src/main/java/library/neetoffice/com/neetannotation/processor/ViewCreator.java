@@ -29,9 +29,9 @@ public class ViewCreator extends BaseCreator {
     final ResourcesHelp resourcesHelp;
     final ListenerHelp listenerHelp;
     final SubscribeHelp subscribeHelp;
-    private final SecondProcessor mainProcessor;
+    private final MainProcessor mainProcessor;
 
-    public ViewCreator(SecondProcessor processor, ProcessingEnvironment processingEnv) {
+    public ViewCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
         mainProcessor = processor;
         resourcesHelp = new ResourcesHelp();

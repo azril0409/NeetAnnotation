@@ -277,13 +277,13 @@ public class ExtraHelp {
                     .build();
         }
 
-        MethodSpec createSetExtraMethod(VariableElement extraElement, TypeName returnType) {
-            final ParameterSpec parameter = ParameterSpec.get(extraElement);
+        MethodSpec createSetExtraMethod(Element extraElement, TypeName returnType) {
+            //final ParameterSpec parameter = ParameterSpec.get(extraElement);
             final MethodSpec.Builder mb = MethodSpec.methodBuilder(extraElement.getSimpleName().toString())
                     .addModifiers(Modifier.PUBLIC)
-                    .addParameter(parameter.type, parameter.name)
+                    .addParameter(ClassName.get(extraElement.asType()), extraElement.getSimpleName().toString())
                     .returns(returnType);
-            mb.addCode(createPutExtraCode(extraElement, BUNDLE, getExtraKey(extraElement), parameter.name));
+            mb.addCode(createPutExtraCode(extraElement, BUNDLE, getExtraKey(extraElement), extraElement.getSimpleName().toString()));
             mb.addStatement("return this");
             return mb.build();
         }

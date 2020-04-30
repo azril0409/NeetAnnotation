@@ -45,9 +45,9 @@ public class FragmentCreator extends BaseCreator {
     final MenuHelp menuHelp;
     final ActivityResultHelp activityResultHelp;
     final HandleHelp handleHelp;
-    private final SecondProcessor mainProcessor;
+    private final MainProcessor mainProcessor;
 
-    public FragmentCreator(SecondProcessor processor, ProcessingEnvironment processingEnv) {
+    public FragmentCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
         mainProcessor = processor;
         resourcesHelp = new ResourcesHelp();

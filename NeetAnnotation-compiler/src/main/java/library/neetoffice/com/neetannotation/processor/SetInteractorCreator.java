@@ -21,7 +21,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 
 public class SetInteractorCreator extends BaseCreator {
-    static final String INTERACTOR = "SetInteractor";
+    static final String INTERACTOR = "Setinteractor";
     static final String PRESENTER_ = INTERACTOR + "_";
     static final String ENTITY_FIELD_NAME = "entity";
     static final String SUBJECT_FIELD_NAME = "subject";

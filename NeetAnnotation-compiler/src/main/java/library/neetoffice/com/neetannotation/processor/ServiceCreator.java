@@ -40,9 +40,9 @@ public class ServiceCreator extends BaseCreator {
     private static final String INTENT_BUILDER = "IntentBuilder";
 
     private final ExtraHelp extraHelp;
-    private final SecondProcessor mainProcessor;
+    private final MainProcessor mainProcessor;
 
-    public ServiceCreator(SecondProcessor processor, ProcessingEnvironment processingEnv) {
+    public ServiceCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
         mainProcessor = processor;
         extraHelp = new ExtraHelp(this);

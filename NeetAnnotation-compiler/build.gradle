@@ -4,9 +4,9 @@ dependencies {
     api fileTree(include: ['*.jar'], dir: 'libs')
     api 'com.google.auto.service:auto-service:1.0-rc2'
     api 'com.squareup:javapoet:1.8.0'
-    api "com.google.dagger:dagger-compiler:+"
-    api "com.google.dagger:dagger-android-processor:+"
-    api "androidx.lifecycle:lifecycle-compiler:+"
+    api "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
+    api "com.google.dagger:dagger-compiler:$dagger_version"
+    api "com.google.dagger:dagger-android-processor:$dagger_version"
 }
 
 sourceCompatibility = "1.8"

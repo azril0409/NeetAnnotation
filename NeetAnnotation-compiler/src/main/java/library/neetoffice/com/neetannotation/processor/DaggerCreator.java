@@ -16,7 +16,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
-import library.neetoffice.com.neetannotation.InjectEntity;
+import library.neetoffice.com.neetannotation.InjectInitialEntity;
 import library.neetoffice.com.neetannotation.NDagger;
 import library.neetoffice.com.neetannotation.Published;
 
@@ -75,7 +75,7 @@ public class DaggerCreator extends BaseCreator {
 
         for (Element element : daggerElement.getEnclosedElements()) {
             if (element.getAnnotation(Published.class) != null &&
-                    element.getAnnotation(InjectEntity.class) != null) {
+                    element.getAnnotation(InjectInitialEntity.class) != null) {
                 tb.addMethod(createGetEntity(element));
             }
         }

@@ -36,6 +36,7 @@ public class ListInteractorCreator extends BaseCreator {
     static final String ENTITY = "entity";
     static final String SUBJECT = "subject";
     static final String SUBSCRIBE = "subscribe";
+    static final String NOTIFY_DATA_SET_CHANGED = "notifydatasetchanged";
 
     final HashMap<String, InteractBuild> interactBuilds = new HashMap<>();
     final HashMap<String, Element> interactElements = new HashMap<>();
@@ -169,6 +170,10 @@ public class ListInteractorCreator extends BaseCreator {
                 .addParameter(RxJavaClass.Observer(listType), "observer")
                 .returns(void.class);
         tb.addMethod(subscribe_5.build());
+        final MethodSpec.Builder notifyDataSetChanged = MethodSpec.methodBuilder(NOTIFY_DATA_SET_CHANGED)
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                .returns(void.class);
+        tb.addMethod(notifyDataSetChanged.build());
 
         writeTo(packageName, tb.build());
         interactBuilds.put(interfaceClassName.toString(), interactBuild);
@@ -306,6 +311,12 @@ public class ListInteractorCreator extends BaseCreator {
                 .returns(void.class)
                 .addStatement("subject.subscribe(observer)");
         tb.addMethod(subscribe_5.build());
+        final MethodSpec.Builder notifyDataSetChanged = MethodSpec.methodBuilder(NOTIFY_DATA_SET_CHANGED)
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .returns(void.class)
+                .addStatement("subject.onNext(entity)");
+        tb.addMethod(notifyDataSetChanged.build());
         tb.addMethod(createAcceptMethod(listType));
         writeTo(interactBuild.packageName, tb.build());
     }

@@ -11,6 +11,7 @@ public class RxJavaClass {
     public static final ClassName Disposable = ClassName.get("io.reactivex.disposables", "Disposable");
     public static final ClassName CompositeDisposable = ClassName.get("io.reactivex.disposables", "CompositeDisposable");
 
+    public static final ClassName RxJavaPlugins = ClassName.get("io.reactivex.plugins","RxJavaPlugins");
     public static final ClassName Functions = ClassName.get("io.reactivex.internal.functions", "Functions");
     public static final ClassName Function = ClassName.get("io.reactivex.functions", "Function");
     public static final ClassName Predicate = ClassName.get("io.reactivex.functions", "Predicate");

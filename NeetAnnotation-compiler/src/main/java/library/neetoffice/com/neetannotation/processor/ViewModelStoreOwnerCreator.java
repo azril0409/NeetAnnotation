@@ -87,6 +87,13 @@ public class ViewModelStoreOwnerCreator extends BaseCreator {
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class)
                 .addStatement("super.onCreate()")
+                .addCode("$T.setErrorHandler(new $T()",RxJavaClass.RxJavaPlugins,RxJavaClass.Consumer(ClassName.get(Throwable.class)))
+                .beginControlFlow("")
+                .addCode("@$T public void accept($T throwable) throws $T",Override.class,Throwable.class,Exception.class)
+                .beginControlFlow("")
+                .endControlFlow()
+                .endControlFlow()
+                .addStatement(")")
                 .addStatement("$N = $T.getInstance(this)", VIEW_MODEL_PROVIDER_FACTORY, AndroidClass.AndroidViewModelFactory);
         tb.addMethod(onCreate.build());
 

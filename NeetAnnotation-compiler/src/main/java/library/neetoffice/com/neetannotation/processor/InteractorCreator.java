@@ -31,6 +31,7 @@ public class InteractorCreator extends BaseCreator {
     static final String ENTITY_FIELD_NAME = "entity";
     static final String SUBJECT_FIELD_NAME = "subject";
     static final String SUBSCRIBE = "subscribe";
+    static final String NOTIFY_DATA_SET_CHANGED = "notifydatasetchanged";
     static final String SET = "set";
     static final String GET = "get";
 
@@ -152,6 +153,9 @@ public class InteractorCreator extends BaseCreator {
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .addParameter(RxJavaClass.Observer(entityType), "observer")
                 .returns(void.class);
+        final MethodSpec.Builder notifyDataSetChanged = MethodSpec.methodBuilder(NOTIFY_DATA_SET_CHANGED)
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                .returns(void.class);
 
         for (Element element : interactElement.getEnclosedElements()) {
             if (element.getKind() == ElementKind.FIELD) {
@@ -183,6 +187,7 @@ public class InteractorCreator extends BaseCreator {
         tb.addMethod(subscribe_3.build());
         tb.addMethod(subscribe_4.build());
         tb.addMethod(subscribe_5.build());
+        tb.addMethod(notifyDataSetChanged.build());
         writeTo(packageName, tb.build());
         interactBuilds.put(interfaceClassName.toString(), interactBuild);
         interactBuilds.put(interfaceName, interactBuild);
@@ -254,6 +259,11 @@ public class InteractorCreator extends BaseCreator {
                 .addParameter(RxJavaClass.Observer(entityType), "observer")
                 .returns(void.class)
                 .addStatement("subject.subscribe(observer)");
+        final MethodSpec.Builder notifyDataSetChanged = MethodSpec.methodBuilder(NOTIFY_DATA_SET_CHANGED)
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .returns(void.class)
+                .addStatement("subject.onNext(entity)");
 
         for (Setter setter : interactBuild.setters) {
             tb.addMethod(createSetterMethod(setter, implementClassName, fieldElements, methodElements));
@@ -275,6 +285,7 @@ public class InteractorCreator extends BaseCreator {
         tb.addMethod(subscribe_3.build());
         tb.addMethod(subscribe_4.build());
         tb.addMethod(subscribe_5.build());
+        tb.addMethod(notifyDataSetChanged.build());
         tb.addMethod(accept);
         writeTo(interactBuild.packageName, tb.build());
     }

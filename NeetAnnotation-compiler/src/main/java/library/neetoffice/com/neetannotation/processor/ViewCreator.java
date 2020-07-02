@@ -16,7 +16,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
-import library.neetoffice.com.neetannotation.AfterAnnotation;
+import library.neetoffice.com.neetannotation.AfterInject;
 import library.neetoffice.com.neetannotation.NView;
 import library.neetoffice.com.neetannotation.ViewById;
 
@@ -150,8 +150,8 @@ public class ViewCreator extends BaseCreator {
 
 
     CodeBlock createAfterAnnotationCode(Element afterAnnotationElement) {
-        final AfterAnnotation aAfterAnnotation = afterAnnotationElement.getAnnotation(AfterAnnotation.class);
-        if (aAfterAnnotation == null) {
+        final AfterInject aAfterInject = afterAnnotationElement.getAnnotation(AfterInject.class);
+        if (aAfterInject == null) {
             return CodeBlock.builder().build();
         }
         final ExecutableElement mothod = (ExecutableElement) afterAnnotationElement;

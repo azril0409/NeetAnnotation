@@ -12,13 +12,13 @@ import text.sss.support.IntegerInteractor
 import text.sss.support.ThrowableInteractor
 import javax.inject.Inject
 
-@NViewModel(isSingle = false)
+@NViewModel(isSingle = true)
 @NDagger(modules = [RecordModule::class])
 open class RecordViewModel(application: Application) : AndroidViewModel(application) {
     @Inject
     lateinit var dao: Dao<Record>
     @Published
-    @InjectEntity
+    @InjectInitialEntity
     lateinit var onRecord: RecordInteractor
     @Published
     lateinit var onRecords: RecordListinteractor
@@ -27,7 +27,7 @@ open class RecordViewModel(application: Application) : AndroidViewModel(applicat
     @Published
     lateinit var onError: ThrowableInteractor
 
-    @AfterAnnotation
+    @AfterInject
     fun onAfterAnnotation(){
     }
 

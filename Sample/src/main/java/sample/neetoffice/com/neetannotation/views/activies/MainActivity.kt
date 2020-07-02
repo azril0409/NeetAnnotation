@@ -1,9 +1,6 @@
 package sample.neetoffice.com.neetannotation.views.activies
 
-import android.app.Activity
 import android.app.Application
-import android.content.Context
-import android.content.Intent
 import android.util.Log
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
@@ -28,7 +25,7 @@ open class MainActivity : AppCompatActivity() {
     @ViewModelOf
     lateinit var recordViewModel: RecordViewModel
 
-    @AfterAnnotation
+    @AfterInject
     fun onAfter() {
         Log.d("TAG","$recordViewModel")
         Log.d("TAG","${recordViewModel.getApplication<Application>()}")

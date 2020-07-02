@@ -11,7 +11,7 @@ ext {
     developerName = 'TU TSUNG-TSE'
     developerEmail = 'azril0409@gmail.com'
 
-    libraryVersion = '1.1.3'
+    libraryVersion = '1.1.4'
     bintrayRepo = 'maven'
     bintrayName = 'Neetannotation-api'
     libraryDescription = ''

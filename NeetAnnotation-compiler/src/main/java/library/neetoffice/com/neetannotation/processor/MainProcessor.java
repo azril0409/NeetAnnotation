@@ -27,12 +27,15 @@ import library.neetoffice.com.neetannotation.SetInteractor;
 
 @SupportedAnnotationTypes({
         "library.neetoffice.com.neetannotation.Interactor",
+        "library.neetoffice.com.neetannotation.ListInteractor",
+        "library.neetoffice.com.neetannotation.SetInteractor",
         "library.neetoffice.com.neetannotation.NDagger",
         "library.neetoffice.com.neetannotation.NViewModel",
         "library.neetoffice.com.neetannotation.NActivity",
         "library.neetoffice.com.neetannotation.NFragment",
         "library.neetoffice.com.neetannotation.NView",
-        "library.neetoffice.com.neetannotation.NService"})
+        "library.neetoffice.com.neetannotation.NService",
+        "library.neetoffice.com.neetannotation.NApplication"})
 @AutoService(Process.class)
 public class MainProcessor extends AbstractProcessor {
     private static final String APPLY = "apply";
@@ -89,7 +92,7 @@ public class MainProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnv) {
         contextInteractorCreator.createModule(contextPackageName);
         daggerCreator.createContextModule(contextPackageName);
-        viewModelCreator.createContextModule(contextPackageName);
+        //viewModelCreator.createContextModule(contextPackageName);
         daggerCreator.createSystemModule(contextPackageName);
         viewModelStoreOwnerCreator.createSimpleViewModelStoreOwner(contextPackageName);
         viewModelStoreOwnerCreator.createApplaction(contextPackageName);

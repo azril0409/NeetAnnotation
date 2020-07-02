@@ -16,6 +16,7 @@ import static library.neetoffice.com.neetannotation.processor.InteractorCreator.
 import static library.neetoffice.com.neetannotation.processor.InteractorCreator.ENTITY;
 import static library.neetoffice.com.neetannotation.processor.InteractorCreator.ENTITY_FIELD_NAME;
 import static library.neetoffice.com.neetannotation.processor.InteractorCreator.INTERACTOR;
+import static library.neetoffice.com.neetannotation.processor.InteractorCreator.NOTIFY_DATA_SET_CHANGED;
 import static library.neetoffice.com.neetannotation.processor.InteractorCreator.PRESENTER_;
 import static library.neetoffice.com.neetannotation.processor.InteractorCreator.SUBJECT;
 import static library.neetoffice.com.neetannotation.processor.InteractorCreator.SUBJECT_FIELD_NAME;
@@ -110,6 +111,9 @@ public class ContextInteractorCreator extends BaseCreator{
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .addParameter(RxJavaClass.Observer(entityType), "observer")
                 .returns(void.class);
+        final MethodSpec.Builder notifyDataSetChanged = MethodSpec.methodBuilder(NOTIFY_DATA_SET_CHANGED)
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                .returns(void.class);
 
         interfaceTb.addMethod(abstractUpdate.build());
         interfaceTb.addMethod(abstractEntity.build());
@@ -120,6 +124,7 @@ public class ContextInteractorCreator extends BaseCreator{
         interfaceTb.addMethod(subscribe_3.build());
         interfaceTb.addMethod(subscribe_4.build());
         interfaceTb.addMethod(subscribe_5.build());
+        interfaceTb.addMethod(notifyDataSetChanged.build());
         writeTo(packageName, interfaceTb.build());
     }
 
@@ -190,6 +195,11 @@ public class ContextInteractorCreator extends BaseCreator{
                 .addParameter(RxJavaClass.Observer(entityType), "observer")
                 .returns(void.class)
                 .addStatement("subject.subscribe(observer)");
+        final MethodSpec.Builder notifyDataSetChanged = MethodSpec.methodBuilder(NOTIFY_DATA_SET_CHANGED)
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .returns(void.class)
+                .addStatement("subject.onNext(entity)");
 
         tb.addField(entityField);
         tb.addField(subjectField);
@@ -206,6 +216,7 @@ public class ContextInteractorCreator extends BaseCreator{
         tb.addMethod(subscribe_3.build());
         tb.addMethod(subscribe_4.build());
         tb.addMethod(subscribe_5.build());
+        tb.addMethod(notifyDataSetChanged.build());
         writeTo(packageName, tb.build());
     }
     private MethodSpec createNewInstance(TypeName instanceType, TypeName entityType, TypeVariableName... typeVariableNames) {

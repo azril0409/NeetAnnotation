@@ -20,7 +20,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.TypeMirror;
 
-import library.neetoffice.com.neetannotation.AfterAnnotation;
+import library.neetoffice.com.neetannotation.AfterInject;
 import library.neetoffice.com.neetannotation.DefaultBoolean;
 import library.neetoffice.com.neetannotation.DefaultByte;
 import library.neetoffice.com.neetannotation.DefaultChar;
@@ -121,8 +121,8 @@ public class ServiceCreator extends BaseCreator {
 
 
     CodeBlock createAfterAnnotationCode(Element afterAnnotationElement) {
-        final AfterAnnotation aAfterAnnotation = afterAnnotationElement.getAnnotation(AfterAnnotation.class);
-        if (aAfterAnnotation == null) {
+        final AfterInject aAfterInject = afterAnnotationElement.getAnnotation(AfterInject.class);
+        if (aAfterInject == null) {
             return CodeBlock.builder().build();
         }
         return CodeBlock.builder()

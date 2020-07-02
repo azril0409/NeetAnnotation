@@ -15,7 +15,7 @@ import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
-import library.neetoffice.com.neetannotation.AfterAnnotation;
+import library.neetoffice.com.neetannotation.AfterInject;
 import library.neetoffice.com.neetannotation.FragmentBy;
 import library.neetoffice.com.neetannotation.NActivity;
 import library.neetoffice.com.neetannotation.ViewById;
@@ -254,13 +254,13 @@ public class ActivityCreator extends BaseCreator {
     }
 
     CodeBlock createAfterAnnotationCode(Element afterAnnotationElement) {
-        final AfterAnnotation aAfterAnnotation = afterAnnotationElement.getAnnotation(AfterAnnotation.class);
-        if (aAfterAnnotation == null) {
+        final AfterInject aAfterInject = afterAnnotationElement.getAnnotation(AfterInject.class);
+        if (aAfterInject == null) {
             return CodeBlock.builder().build();
         }
-        final ExecutableElement mothod = (ExecutableElement) afterAnnotationElement;
+        final ExecutableElement method = (ExecutableElement) afterAnnotationElement;
         final StringBuffer stringBuffer = new StringBuffer();
-        final Iterator<? extends VariableElement> iterator = mothod.getParameters().iterator();
+        final Iterator<? extends VariableElement> iterator = method.getParameters().iterator();
         while (iterator.hasNext()) {
             final VariableElement parameter = iterator.next();
             if (isInstanceOf(parameter.asType(), AndroidClass.Bundle)) {

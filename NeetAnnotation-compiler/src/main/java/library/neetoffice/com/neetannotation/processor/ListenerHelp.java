@@ -346,6 +346,8 @@ public class ListenerHelp {
                 final ExecutableElement method = (ExecutableElement) entry.getValue().element;
                 final Iterator<? extends VariableElement> parameters = method.getParameters().iterator();
                 final CodeBlock.Builder code = CodeBlock.builder()
+                        .addStatement("$T item = parent.getItemAtPosition(position)", Object.class)
+                        .beginControlFlow("if(item != null)")
                         .add("$N.this.$N(", className, method.getSimpleName());
                 TypeMirror itemType = null;
                 while (parameters.hasNext()) {
@@ -363,7 +365,7 @@ public class ListenerHelp {
                     } else {
                         if (itemType == null) {
                             itemType = parameter.asType();
-                            code.add("($T)parent.getItemAtPosition(position)", itemType);
+                            code.add("($T)item", itemType);
                         } else {
                             code.add(AnnotationHelp.addNullCode(parameter));
                         }
@@ -373,6 +375,7 @@ public class ListenerHelp {
                     }
                 }
                 code.addStatement(")");
+                code.endControlFlow();
                 final CodeBlock.Builder callMethod = CodeBlock.builder()
                         .add("setOnItemClickListener(")
                         .beginControlFlow("new $T()", AndroidClass.AdapterView_OnItemClickListener)
@@ -392,7 +395,9 @@ public class ListenerHelp {
                 final ExecutableElement method = (ExecutableElement) entry.getValue().element;
                 final Iterator<? extends VariableElement> parameters = method.getParameters().iterator();
                 final CodeBlock.Builder code = CodeBlock.builder()
-                        .addStatement("boolean returns = false");
+                        .addStatement("$T item = parent.getItemAtPosition(position)", Object.class)
+                        .addStatement("boolean returns = false")
+                        .beginControlFlow("if(item != null)");
                 if (creator.getClassName(method.getReturnType()).equals(ClassName.get(Boolean.class))) {
                     code.add("returns = $N.this.$N(", className, method.getSimpleName());
                 } else {
@@ -414,7 +419,7 @@ public class ListenerHelp {
                     } else {
                         if (itemType == null) {
                             itemType = parameter.asType();
-                            code.add("($T)parent.getItemAtPosition(position)", itemType);
+                            code.add("($T)item", itemType);
                         } else {
                             code.add(AnnotationHelp.addNullCode(parameter));
                         }
@@ -423,7 +428,7 @@ public class ListenerHelp {
                         code.add(",");
                     }
                 }
-                code.addStatement(")")
+                code.addStatement(")").endControlFlow()
                         .addStatement("return returns");
                 final CodeBlock.Builder callMethod = CodeBlock.builder()
                         .add("setOnItemLongClickListener(")
@@ -444,7 +449,9 @@ public class ListenerHelp {
                 final ExecutableElement method = (ExecutableElement) entry.getValue().element;
                 final Iterator<? extends VariableElement> parameters = method.getParameters().iterator();
                 final CodeBlock.Builder code = CodeBlock.builder();
-                code.add("$N.this.$N(", className, method.getSimpleName());
+                code.addStatement("$T item = parent.getItemAtPosition(position)", Object.class)
+                        .beginControlFlow("if(item != null)")
+                        .add("$N.this.$N(", className, method.getSimpleName());
                 TypeMirror itemType = null;
                 while (parameters.hasNext()) {
                     final VariableElement parameter = parameters.next();
@@ -461,7 +468,7 @@ public class ListenerHelp {
                     } else {
                         if (itemType == null) {
                             itemType = parameter.asType();
-                            code.add("($T)parent.getItemAtPosition(position)", itemType);
+                            code.add("($T)item", itemType);
                         } else {
                             code.add(AnnotationHelp.addNullCode(parameter));
                         }
@@ -470,7 +477,7 @@ public class ListenerHelp {
                         code.add(",");
                     }
                 }
-                code.addStatement(")");
+                code.addStatement(")").endControlFlow();
                 final CodeBlock.Builder callMethod = CodeBlock.builder()
                         .add("setOnItemSelectedListener(")
                         .beginControlFlow("new $T()", AndroidClass.AdapterView_OnItemSelectedListener)

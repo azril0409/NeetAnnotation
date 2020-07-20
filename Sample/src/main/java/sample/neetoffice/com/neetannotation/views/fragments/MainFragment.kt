@@ -10,6 +10,7 @@ import sample.neetoffice.com.neetannotation.views.viewmodel.RecordViewModel
 import javax.inject.Named
 
 @NFragment(R.layout.activity_main)
+@OptionsMenu(R.menu.mian)
 open class MainFragment : Fragment() {
     @ViewById(R.id.listView)
     lateinit var listView: ListView

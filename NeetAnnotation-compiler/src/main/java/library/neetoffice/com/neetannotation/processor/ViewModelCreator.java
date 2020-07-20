@@ -184,13 +184,27 @@ public class ViewModelCreator extends BaseCreator {
 
         tb.addMethod(getInstanceBykey.build());
 
+        final FieldSpec.Builder lifecycle = FieldSpec.builder(AndroidClass.Lifecycle, "lifecycle", Modifier.PRIVATE);
+        tb.addField(lifecycle.build());
+        final MethodSpec.Builder addLifecycle = MethodSpec.methodBuilder("addLifecycle")
+                .addModifiers(Modifier.PUBLIC)
+                .addParameter(AndroidClass.Lifecycle, "lifecycle")
+                .beginControlFlow("if(this.lifecycle != null && lifecycle != null && this.lifecycle != lifecycle)")
+                .addStatement("this.lifecycle.removeObserver(this)")
+                .endControlFlow()
+                .addStatement("this.lifecycle = lifecycle")
+                .addStatement("lifecycle.addObserver(this)");
+        tb.addMethod(addLifecycle.build());
 
         final MethodSpec.Builder onCleared = MethodSpec.methodBuilder("onCleared")
                 .returns(void.class)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement("super.onCleared()")
-                .addCode(onClearedCode.build());
+                .addCode(onClearedCode.build())
+                .beginControlFlow("if(lifecycle != null)")
+                .addStatement("lifecycle.removeObserver(this)")
+                .endControlFlow();
         tb.addMethod(onCleared.build());
 
         writeTo(getPackageName(viewModelElement), tb.build());
@@ -331,12 +345,12 @@ public class ViewModelCreator extends BaseCreator {
         final Published aSubject = interactElement.getAnnotation(Published.class);
         final String name = interactElement.getSimpleName().toString();
         if (!name.isEmpty()) {
-            code.addStatement("case $S: return ($T) $N.$N()", name, RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.SUBJECT).build();
+            code.addStatement("case $S: return ($T) $N.$N()", name, RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.OBSERVABLE).build();
             if (!interactElement.getSimpleName().equals(name)) {
-                code.addStatement("case $S: return ($T) $N.$N()", interactElement.getSimpleName(), RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.SUBJECT).build();
+                code.addStatement("case $S: return ($T) $N.$N()", interactElement.getSimpleName(), RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.OBSERVABLE).build();
             }
         } else {
-            code.addStatement("case $S: return ($T) $N.$N()", interactElement.getSimpleName(), RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.SUBJECT).build();
+            code.addStatement("case $S: return ($T) $N.$N()", interactElement.getSimpleName(), RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.OBSERVABLE).build();
         }
         return code.build();
     }

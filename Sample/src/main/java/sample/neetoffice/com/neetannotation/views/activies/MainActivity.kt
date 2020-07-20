@@ -17,6 +17,7 @@ import javax.inject.Named
 
 @NActivity(R.layout.activity_main)
 @NDagger(modules = [RecordModule::class])
+@OptionsMenu(R.menu.mian)
 open class MainActivity : AppCompatActivity() {
     @ViewById(R.id.listView)
     lateinit var listView: ListView

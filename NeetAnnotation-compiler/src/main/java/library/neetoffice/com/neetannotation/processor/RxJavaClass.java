@@ -28,6 +28,9 @@ public class RxJavaClass {
     public static final TypeName Observer(TypeName parameterizedTypeName) {
         return ParameterizedTypeName.get(Observer, parameterizedTypeName);
     }
+    public static final TypeName Observable(TypeName parameterizedTypeName){
+        return ParameterizedTypeName.get(Observable, parameterizedTypeName);
+    }
     public static final TypeName Single(TypeName parameterizedTypeName) {
         return ParameterizedTypeName.get(Single, parameterizedTypeName);
     }

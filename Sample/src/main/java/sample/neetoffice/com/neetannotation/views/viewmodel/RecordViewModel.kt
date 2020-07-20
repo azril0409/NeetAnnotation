@@ -1,6 +1,7 @@
 package sample.neetoffice.com.neetannotation.views.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import library.neetoffice.com.neetannotation.*
 import library.neetoffice.com.neetdao.Dao

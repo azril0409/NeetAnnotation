@@ -147,7 +147,7 @@ public class ResourcesHelp {
         }
         final String name = element.getSimpleName().toString();
         return CodeBlock.builder()
-                .add("$N = AnimationUtils.loadAnimation($N", name, context_from)
+                .add("$N = AnimationUtils.loadAnimation($N,", name, context_from)
                 .add(AndroidResHelp.anim(aResAnimation.value(), aResAnimation.resName(), name, context_from, defPackage))
                 .addStatement(")")
                 .build();
@@ -160,7 +160,7 @@ public class ResourcesHelp {
         }
         final String name = element.getSimpleName().toString();
         return CodeBlock.builder()
-                .add("$N = AnimationUtils.loadLayoutAnimation($N", name, context_from)
+                .add("$N = AnimationUtils.loadLayoutAnimation($N,", name, context_from)
                 .add(AndroidResHelp.anim(aResLayoutAnimation.value(), aResLayoutAnimation.resName(), name, context_from, defPackage))
                 .addStatement(")")
                 .build();

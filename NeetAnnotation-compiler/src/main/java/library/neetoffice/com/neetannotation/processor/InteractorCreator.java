@@ -24,12 +24,12 @@ import javax.lang.model.element.VariableElement;
 public class InteractorCreator extends BaseCreator {
     static final String INTERACTOR = "Interactor";
     static final String PRESENTER_ = INTERACTOR + "_";
-    static final String UPDATE = "update";
-    static final String ENTITY = "entity";
-    static final String SUBJECT = "subject";
-    static final String ACCEPT = "accept";
     static final String ENTITY_FIELD_NAME = "entity";
     static final String SUBJECT_FIELD_NAME = "subject";
+    static final String UPDATE = "update";
+    static final String ENTITY = "entity";
+    static final String OBSERVABLE = "observable";
+    static final String ACCEPT = "accept";
     static final String SUBSCRIBE = "subscribe";
     static final String NOTIFY_DATA_SET_CHANGED = "notifydatasetchanged";
     static final String SET = "set";
@@ -118,11 +118,11 @@ public class InteractorCreator extends BaseCreator {
 
         final MethodSpec.Builder entity = MethodSpec.methodBuilder(ENTITY)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                .returns(RxJavaClass.Maybe(entityType));
+                .returns(RxJavaClass.Single(entityType));
 
-        final MethodSpec.Builder subject = MethodSpec.methodBuilder(SUBJECT)
+        final MethodSpec.Builder subject = MethodSpec.methodBuilder(OBSERVABLE)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                .returns(RxJavaClass.Subject(entityType));
+                .returns(RxJavaClass.Observable(entityType));
 
         final MethodSpec.Builder subscribe_0 = MethodSpec.methodBuilder(SUBSCRIBE)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
@@ -354,8 +354,10 @@ public class InteractorCreator extends BaseCreator {
         return MethodSpec.methodBuilder(ENTITY)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .returns(RxJavaClass.Maybe(entityType))
-                .addCode("return $T.just($N != null)", RxJavaClass.Maybe, ENTITY_FIELD_NAME)
+                .returns(RxJavaClass.Single(entityType))
+                .addStatement("return $T.just($N)", RxJavaClass.Single, ENTITY_FIELD_NAME)
+                /*
+                .addCode("return $T.just($N != null)", RxJavaClass.Single, ENTITY_FIELD_NAME)
                 .beginControlFlow(".filter(new $T()", RxJavaClass.Predicate(ClassName.get(Boolean.class)))
                 .beginControlFlow("@$T public boolean test($T aBoolean) throws $T ", Override.class, ClassName.get(Boolean.class), Exception.class)
                 .addStatement("return aBoolean")
@@ -366,14 +368,15 @@ public class InteractorCreator extends BaseCreator {
                 .addStatement("return $N", ENTITY_FIELD_NAME)
                 .endControlFlow()
                 .endControlFlow(")")
+                 */
                 .build();
     }
 
     private MethodSpec createSubjectMethod(TypeName entityType) {
-        return MethodSpec.methodBuilder(SUBJECT)
+        return MethodSpec.methodBuilder(OBSERVABLE)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .returns(RxJavaClass.Subject(entityType))
+                .returns(RxJavaClass.Observable(entityType))
                 .addStatement("return $N", SUBJECT_FIELD_NAME).build();
     }
 
@@ -384,6 +387,9 @@ public class InteractorCreator extends BaseCreator {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(entityType, ENTITY_FIELD_NAME)
                 .returns(void.class)
+                .beginControlFlow("if($N == null)", ENTITY_FIELD_NAME)
+                .addStatement("return")
+                .endControlFlow()
                 .addStatement("this.$N = $N", ENTITY_FIELD_NAME, ENTITY_FIELD_NAME)
                 .addStatement("$N.onNext($N)", SUBJECT_FIELD_NAME, ENTITY_FIELD_NAME)
                 .build();

@@ -56,15 +56,22 @@ public class DaggerCreator extends BaseCreator {
         if (isSubActivity(daggerElement) || isSubFragment(daggerElement) || isSubAndroidViewModel(daggerElement) || isSubService(daggerElement)) {
             addviewModelProvider = true;
             ab.addMember(MODULES, "$L", mainProcessor.contextModule + ".class")
-                    .addMember(MODULES, "$L", mainProcessor.systemModule + ".class")
-                    .addMember(MODULES, "$L", modulesValue);
+                    .addMember(MODULES, "$L", mainProcessor.systemModule + ".class");
+            if (modulesValue != null) {
+                ab.addMember(MODULES, "$L", modulesValue);
+            }
         } else if (haveActivityParameterInConstructor || haveApplicationParameterInConstructor || haveContextParameterInConstructor) {
             addviewModelProvider = true;
             ab.addMember(MODULES, "$L", mainProcessor.contextModule + ".class")
-                    .addMember(MODULES, "$L", mainProcessor.systemModule + ".class")
-                    .addMember(MODULES, "$L", modulesValue);
+                    .addMember(MODULES, "$L", mainProcessor.systemModule + ".class");
+            if (modulesValue != null) {
+                ab.addMember(MODULES, "$L", modulesValue);
+            }
         } else {
-            ab.addMember(MODULES, "{$L}", modulesValue);
+            if (modulesValue != null) {
+                ab.addMember(MODULES, "{$L}", modulesValue);
+            }else{
+                ab.addMember(MODULES, "{}");}
         }
         final String interfaceName = "_" + daggerElement.getSimpleName();
         final TypeSpec.Builder tb = TypeSpec.interfaceBuilder(interfaceName)
@@ -122,7 +129,7 @@ public class DaggerCreator extends BaseCreator {
         return getEntity.build();
     }
 
-    void        createContextModule(String packageName) {
+    void createContextModule(String packageName) {
         final TypeSpec.Builder contextModuleBuilder = TypeSpec.classBuilder(ClassName.get(packageName, AndroidClass.CONTEXT_MODULE_NAME))
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addAnnotation(DaggerClass.Module);

@@ -2,10 +2,13 @@ package library.neetoffice.com.neetannotation.processor;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
+import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -149,6 +152,7 @@ public class FragmentCreator extends BaseCreator {
         onDestroyMethodBuilder.addCode(subscribeBuilder.createDispose());
         onDestroyMethodBuilder.addStatement("super.onDestroy()");
         //
+        //tb.addField(FieldSpec.builder(ParameterizedTypeName.get(ClassName.get(HashSet.class), AndroidClass.AndroidViewModel),"viewmodes",Modifier.PRIVATE,Modifier.FINAL).initializer("new $T()",ParameterizedTypeName.get(ClassName.get(HashSet.class), AndroidClass.AndroidViewModel)).build());
         tb.addType(extraBuilder.createArgument(packageName, className));
         tb.addMethod(onCreateMethodBuilder.build());
         tb.addMethod(onActivityCreateMethodBuilder.build());

@@ -24,19 +24,12 @@ import javax.lang.model.element.TypeElement;
 public class ListInteractorCreator extends BaseCreator {
     static final String INTERACTOR = "Listinteractor";
     static final String PRESENTER_ = INTERACTOR + "_";
-    static final String ENTITY_FIELD_NAME = "entity";
     static final String SUBJECT_FIELD_NAME = "subject";
-    static final String ACCEPT = "accept";
     static final String ADD = "add";
     static final String ADDALL = "addAll";
     static final String SET = "set";
     static final String REMOVE = "remove";
     static final String CLEAR = "clear";
-    static final String UPDATE = "update";
-    static final String ENTITY = "entity";
-    static final String SUBJECT = "subject";
-    static final String SUBSCRIBE = "subscribe";
-    static final String NOTIFY_DATA_SET_CHANGED = "notifydatasetchanged";
 
     final HashMap<String, InteractBuild> interactBuilds = new HashMap<>();
     final HashMap<String, Element> interactElements = new HashMap<>();
@@ -120,44 +113,44 @@ public class ListInteractorCreator extends BaseCreator {
         tb.addMethod(clear.build());
 
 
-        final MethodSpec.Builder update = MethodSpec.methodBuilder(UPDATE)
+        final MethodSpec.Builder update = MethodSpec.methodBuilder(InteractorCreator.UPDATE)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .addParameter(listType, interactElement.getSimpleName().toString())
                 .returns(void.class);
         tb.addMethod(update.build());
 
-        final MethodSpec.Builder entity = MethodSpec.methodBuilder(ENTITY)
+        final MethodSpec.Builder entity = MethodSpec.methodBuilder(InteractorCreator.ENTITY)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                .returns(RxJavaClass.Maybe(listType));
+                .returns(RxJavaClass.Single(listType));
         tb.addMethod(entity.build());
 
-        final MethodSpec.Builder subject = MethodSpec.methodBuilder(SUBJECT)
+        final MethodSpec.Builder subject = MethodSpec.methodBuilder(InteractorCreator.OBSERVABLE)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                .returns(RxJavaClass.Subject(listType));
+                .returns(RxJavaClass.Observable(listType));
         tb.addMethod(subject.build());
-        final MethodSpec.Builder subscribe_0 = MethodSpec.methodBuilder(SUBSCRIBE)
+        final MethodSpec.Builder subscribe_0 = MethodSpec.methodBuilder(InteractorCreator.SUBSCRIBE)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .returns(RxJavaClass.Disposable);
         tb.addMethod(subscribe_0.build());
-        final MethodSpec.Builder subscribe_1 = MethodSpec.methodBuilder(SUBSCRIBE)
+        final MethodSpec.Builder subscribe_1 = MethodSpec.methodBuilder(InteractorCreator.SUBSCRIBE)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .addParameter(RxJavaClass.Consumer(listType), "onNext")
                 .returns(RxJavaClass.Disposable);
         tb.addMethod(subscribe_1.build());
-        final MethodSpec.Builder subscribe_2 = MethodSpec.methodBuilder(SUBSCRIBE)
+        final MethodSpec.Builder subscribe_2 = MethodSpec.methodBuilder(InteractorCreator.SUBSCRIBE)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .addParameter(RxJavaClass.Consumer(listType), "onNext")
                 .addParameter(RxJavaClass.Consumer(ClassName.get(Throwable.class)), "onError")
                 .returns(RxJavaClass.Disposable);
         tb.addMethod(subscribe_2.build());
-        final MethodSpec.Builder subscribe_3 = MethodSpec.methodBuilder(SUBSCRIBE)
+        final MethodSpec.Builder subscribe_3 = MethodSpec.methodBuilder(InteractorCreator.SUBSCRIBE)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .addParameter(RxJavaClass.Consumer(listType), "onNext")
                 .addParameter(RxJavaClass.Consumer(ClassName.get(Throwable.class)), "onError")
                 .addParameter(RxJavaClass.Action, "onComplete")
                 .returns(RxJavaClass.Disposable);
         tb.addMethod(subscribe_3.build());
-        final MethodSpec.Builder subscribe_4 = MethodSpec.methodBuilder(SUBSCRIBE)
+        final MethodSpec.Builder subscribe_4 = MethodSpec.methodBuilder(InteractorCreator.SUBSCRIBE)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .addParameter(RxJavaClass.Consumer(listType), "onNext")
                 .addParameter(RxJavaClass.Consumer(ClassName.get(Throwable.class)), "onError")
@@ -165,12 +158,12 @@ public class ListInteractorCreator extends BaseCreator {
                 .addParameter(RxJavaClass.Consumer(RxJavaClass.Disposable), "onSubscribe")
                 .returns(RxJavaClass.Disposable);
         tb.addMethod(subscribe_4.build());
-        final MethodSpec.Builder subscribe_5 = MethodSpec.methodBuilder(SUBSCRIBE)
+        final MethodSpec.Builder subscribe_5 = MethodSpec.methodBuilder(InteractorCreator.SUBSCRIBE)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .addParameter(RxJavaClass.Observer(listType), "observer")
                 .returns(void.class);
         tb.addMethod(subscribe_5.build());
-        final MethodSpec.Builder notifyDataSetChanged = MethodSpec.methodBuilder(NOTIFY_DATA_SET_CHANGED)
+        final MethodSpec.Builder notifyDataSetChanged = MethodSpec.methodBuilder(InteractorCreator.NOTIFY_DATA_SET_CHANGED)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .returns(void.class);
         tb.addMethod(notifyDataSetChanged.build());
@@ -197,7 +190,7 @@ public class ListInteractorCreator extends BaseCreator {
                 .addSuperinterface(RxJavaClass.Consumer(listType))
                 .addSuperinterface(interactBuild.interactTypeName);
 
-        tb.addField(FieldSpec.builder(listType, ENTITY_FIELD_NAME, Modifier.PRIVATE).build());
+        tb.addField(FieldSpec.builder(listType, InteractorCreator.ENTITY_FIELD_NAME, Modifier.PRIVATE).build());
         tb.addField(FieldSpec.builder(subjectType, SUBJECT_FIELD_NAME, Modifier.PRIVATE, Modifier.FINAL).build());
         tb.addMethod(createConstructor(entityType));
         tb.addMethod(createNewInstance(ClassName.get(interactBuild.packageName, implementClassName), listType));
@@ -207,8 +200,8 @@ public class ListInteractorCreator extends BaseCreator {
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(entityType, interactElement.getSimpleName().toString())
-                .addStatement("$N.add($N)", ENTITY_FIELD_NAME, interactElement.getSimpleName().toString())
-                .addStatement("$N.onNext($N)", SUBJECT_FIELD_NAME, ENTITY_FIELD_NAME)
+                .addStatement("$N.add($N)", InteractorCreator.ENTITY_FIELD_NAME, interactElement.getSimpleName().toString())
+                .addStatement("$N.onNext($N)", SUBJECT_FIELD_NAME, InteractorCreator.ENTITY_FIELD_NAME)
                 .returns(void.class);
         tb.addMethod(add.build());
 
@@ -216,8 +209,8 @@ public class ListInteractorCreator extends BaseCreator {
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(ParameterizedTypeName.get(ClassName.get(Collection.class), entityType), "collection")
-                .addStatement("$N.addAll(collection)",ENTITY_FIELD_NAME)
-                .addStatement("$N.onNext($N)", SUBJECT_FIELD_NAME, ENTITY_FIELD_NAME)
+                .addStatement("$N.addAll(collection)", InteractorCreator.ENTITY_FIELD_NAME)
+                .addStatement("$N.onNext($N)", SUBJECT_FIELD_NAME, InteractorCreator.ENTITY_FIELD_NAME)
                 .returns(void.class);
         tb.addMethod(addAll.build());
 
@@ -226,8 +219,8 @@ public class ListInteractorCreator extends BaseCreator {
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(int.class, "index")
                 .addParameter(entityType, interactElement.getSimpleName().toString())
-                .addStatement("$N.set(index,$N)", ENTITY_FIELD_NAME, interactElement.getSimpleName().toString())
-                .addStatement("$N.onNext($N)", SUBJECT_FIELD_NAME, ENTITY_FIELD_NAME)
+                .addStatement("$N.set(index,$N)", InteractorCreator.ENTITY_FIELD_NAME, interactElement.getSimpleName().toString())
+                .addStatement("$N.onNext($N)", SUBJECT_FIELD_NAME, InteractorCreator.ENTITY_FIELD_NAME)
                 .returns(void.class);
         tb.addMethod(set.build());
 
@@ -236,8 +229,8 @@ public class ListInteractorCreator extends BaseCreator {
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(entityType, interactElement.getSimpleName().toString())
-                .addStatement("$N.remove($N)", ENTITY_FIELD_NAME, interactElement.getSimpleName().toString())
-                .addStatement("$N.onNext($N)", SUBJECT_FIELD_NAME, ENTITY_FIELD_NAME)
+                .addStatement("$N.remove($N)", InteractorCreator.ENTITY_FIELD_NAME, interactElement.getSimpleName().toString())
+                .addStatement("$N.onNext($N)", SUBJECT_FIELD_NAME, InteractorCreator.ENTITY_FIELD_NAME)
                 .returns(void.class);
         tb.addMethod(remove1.build());
 
@@ -245,9 +238,9 @@ public class ListInteractorCreator extends BaseCreator {
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(int.class, "index")
-                .beginControlFlow("if($N.size() > index)", ENTITY_FIELD_NAME)
-                .addStatement("$N.remove(index)", ENTITY_FIELD_NAME)
-                .addStatement("$N.onNext($N)", SUBJECT_FIELD_NAME, ENTITY_FIELD_NAME)
+                .beginControlFlow("if($N.size() > index)", InteractorCreator.ENTITY_FIELD_NAME)
+                .addStatement("$N.remove(index)", InteractorCreator.ENTITY_FIELD_NAME)
+                .addStatement("$N.onNext($N)", SUBJECT_FIELD_NAME, InteractorCreator.ENTITY_FIELD_NAME)
                 .endControlFlow()
                 .returns(void.class);
         tb.addMethod(remove2.build());
@@ -255,8 +248,8 @@ public class ListInteractorCreator extends BaseCreator {
         final MethodSpec.Builder clear = MethodSpec.methodBuilder(CLEAR)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addStatement("$N.clear()", ENTITY_FIELD_NAME)
-                .addStatement("$N.onNext($N)", SUBJECT_FIELD_NAME, ENTITY_FIELD_NAME)
+                .addStatement("$N.clear()", InteractorCreator.ENTITY_FIELD_NAME)
+                .addStatement("$N.onNext($N)", SUBJECT_FIELD_NAME, InteractorCreator.ENTITY_FIELD_NAME)
                 .returns(void.class);
         tb.addMethod(clear.build());
 
@@ -264,20 +257,20 @@ public class ListInteractorCreator extends BaseCreator {
         tb.addMethod(createUpdateMethod(listType));
         tb.addMethod(createEntityMethod(implementClassName, listType));
         tb.addMethod(createSubjectMethod(listType));
-        final MethodSpec.Builder subscribe_0 = MethodSpec.methodBuilder(SUBSCRIBE)
+        final MethodSpec.Builder subscribe_0 = MethodSpec.methodBuilder(InteractorCreator.SUBSCRIBE)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .returns(RxJavaClass.Disposable)
                 .addStatement("return subject.subscribe()");
         tb.addMethod(subscribe_0.build());
-        final MethodSpec.Builder subscribe_1 = MethodSpec.methodBuilder(SUBSCRIBE)
+        final MethodSpec.Builder subscribe_1 = MethodSpec.methodBuilder(InteractorCreator.SUBSCRIBE)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(RxJavaClass.Consumer(listType), "onNext")
                 .returns(RxJavaClass.Disposable)
                 .addStatement("return subject.subscribe(onNext)");
         tb.addMethod(subscribe_1.build());
-        final MethodSpec.Builder subscribe_2 = MethodSpec.methodBuilder(SUBSCRIBE)
+        final MethodSpec.Builder subscribe_2 = MethodSpec.methodBuilder(InteractorCreator.SUBSCRIBE)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(RxJavaClass.Consumer(listType), "onNext")
@@ -285,7 +278,7 @@ public class ListInteractorCreator extends BaseCreator {
                 .returns(RxJavaClass.Disposable)
                 .addStatement("return subject.subscribe(onNext,onError)");
         tb.addMethod(subscribe_2.build());
-        final MethodSpec.Builder subscribe_3 = MethodSpec.methodBuilder(SUBSCRIBE)
+        final MethodSpec.Builder subscribe_3 = MethodSpec.methodBuilder(InteractorCreator.SUBSCRIBE)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(RxJavaClass.Consumer(listType), "onNext")
@@ -294,7 +287,7 @@ public class ListInteractorCreator extends BaseCreator {
                 .returns(RxJavaClass.Disposable)
                 .addStatement("return subject.subscribe(onNext,onError,onComplete)");
         tb.addMethod(subscribe_3.build());
-        final MethodSpec.Builder subscribe_4 = MethodSpec.methodBuilder(SUBSCRIBE)
+        final MethodSpec.Builder subscribe_4 = MethodSpec.methodBuilder(InteractorCreator.SUBSCRIBE)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(RxJavaClass.Consumer(listType), "onNext")
@@ -304,14 +297,14 @@ public class ListInteractorCreator extends BaseCreator {
                 .returns(RxJavaClass.Disposable)
                 .addStatement("return subject.subscribe(onNext,onError,onComplete,onSubscribe)");
         tb.addMethod(subscribe_4.build());
-        final MethodSpec.Builder subscribe_5 = MethodSpec.methodBuilder(SUBSCRIBE)
+        final MethodSpec.Builder subscribe_5 = MethodSpec.methodBuilder(InteractorCreator.SUBSCRIBE)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(RxJavaClass.Observer(listType), "observer")
                 .returns(void.class)
                 .addStatement("subject.subscribe(observer)");
         tb.addMethod(subscribe_5.build());
-        final MethodSpec.Builder notifyDataSetChanged = MethodSpec.methodBuilder(NOTIFY_DATA_SET_CHANGED)
+        final MethodSpec.Builder notifyDataSetChanged = MethodSpec.methodBuilder(InteractorCreator.NOTIFY_DATA_SET_CHANGED)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .returns(void.class)
@@ -326,63 +319,66 @@ public class ListInteractorCreator extends BaseCreator {
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(ParameterizedTypeName.get(ClassName.get(Collection.class), entityType), "collection")
                 .beginControlFlow("if(collection == null)")
-                .addStatement("$N = new $T()", ENTITY_FIELD_NAME, ParameterizedTypeName.get(ClassName.get(ArrayList.class), entityType))
+                .addStatement("$N = new $T()", InteractorCreator.ENTITY_FIELD_NAME, ParameterizedTypeName.get(ClassName.get(ArrayList.class), entityType))
                 .nextControlFlow("else")
-                .addStatement("$N = new $T(collection)", ENTITY_FIELD_NAME, ParameterizedTypeName.get(ClassName.get(ArrayList.class), entityType))
+                .addStatement("$N = new $T(collection)", InteractorCreator.ENTITY_FIELD_NAME, ParameterizedTypeName.get(ClassName.get(ArrayList.class), entityType))
                 .endControlFlow()
-                .addStatement("$N = $T.createDefault($N)", SUBJECT_FIELD_NAME, RxJavaClass.BehaviorSubject, ENTITY_FIELD_NAME)
+                .addStatement("$N = $T.createDefault($N)", SUBJECT_FIELD_NAME, RxJavaClass.BehaviorSubject, InteractorCreator.ENTITY_FIELD_NAME)
                 .build();
     }
 
     private MethodSpec createUpdateMethod(TypeName entityType) {
-        return MethodSpec.methodBuilder(UPDATE)
+        return MethodSpec.methodBuilder(InteractorCreator.UPDATE)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(entityType, ENTITY_FIELD_NAME)
+                .addParameter(entityType, InteractorCreator.ENTITY_FIELD_NAME)
                 .returns(void.class)
-                .addStatement("this.$N.clear()", ENTITY_FIELD_NAME)
-                .addStatement("this.$N.addAll($N)", ENTITY_FIELD_NAME, ENTITY_FIELD_NAME)
-                .addStatement("$N.onNext(this.$N)", SUBJECT_FIELD_NAME, ENTITY_FIELD_NAME)
+                .beginControlFlow("if($N == null)",InteractorCreator.ENTITY_FIELD_NAME)
+                .addStatement("return")
+                .endControlFlow()
+                .addStatement("this.$N.clear()", InteractorCreator.ENTITY_FIELD_NAME)
+                .addStatement("this.$N.addAll($N)", InteractorCreator.ENTITY_FIELD_NAME, InteractorCreator.ENTITY_FIELD_NAME)
+                .addStatement("$N.onNext(this.$N)", SUBJECT_FIELD_NAME, InteractorCreator.ENTITY_FIELD_NAME)
                 .build();
     }
 
     private MethodSpec createEntityMethod(String elementClass, TypeName entityType) {
-        return MethodSpec.methodBuilder(ENTITY)
+        return MethodSpec.methodBuilder(InteractorCreator.ENTITY)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .returns(RxJavaClass.Maybe(entityType))
-                .addStatement("return $T.just($N)", RxJavaClass.Maybe, ENTITY_FIELD_NAME)
+                .returns(RxJavaClass.Single(entityType))
+                .addStatement("return $T.just($N)", RxJavaClass.Single, InteractorCreator.ENTITY_FIELD_NAME)
                 .build();
     }
 
     private MethodSpec createSubjectMethod(TypeName entityType) {
-        return MethodSpec.methodBuilder(SUBJECT)
+        return MethodSpec.methodBuilder(InteractorCreator.OBSERVABLE)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .returns(RxJavaClass.Subject(entityType))
+                .returns(RxJavaClass.Observable(entityType))
                 .addStatement("return $N", SUBJECT_FIELD_NAME).build();
     }
 
     private MethodSpec createAcceptMethod(TypeName entityType) {
-        return MethodSpec.methodBuilder(ACCEPT)
+        return MethodSpec.methodBuilder(InteractorCreator.ACCEPT)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(entityType, ENTITY_FIELD_NAME)
+                .addParameter(entityType, InteractorCreator.ENTITY_FIELD_NAME)
                 .addException(Exception.class)
                 .returns(void.class)
-                .addStatement("$N($N)", UPDATE, ENTITY_FIELD_NAME)
+                .addStatement("$N($N)", InteractorCreator.UPDATE, InteractorCreator.ENTITY_FIELD_NAME)
                 .build();
     }
 
     private MethodSpec createNewInstance(TypeName instanceType, TypeName entityType, TypeVariableName... typeVariableNames) {
         final MethodSpec.Builder builder = MethodSpec.methodBuilder("newInstance");
         builder.addModifiers(Modifier.PUBLIC, Modifier.STATIC);
-        builder.addParameter(entityType, ENTITY_FIELD_NAME);
+        builder.addParameter(entityType, InteractorCreator.ENTITY_FIELD_NAME);
         for (TypeVariableName typeVariableName : typeVariableNames) {
             builder.addTypeVariable(typeVariableName);
         }
         builder.returns(instanceType);
-        builder.addStatement("return new $T($N)", instanceType, ENTITY_FIELD_NAME);
+        builder.addStatement("return new $T($N)", instanceType, InteractorCreator.ENTITY_FIELD_NAME);
         return builder.build();
     }
 

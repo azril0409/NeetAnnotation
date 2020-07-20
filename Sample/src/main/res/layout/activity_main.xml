@@ -12,6 +12,7 @@
         android:layout_height="wrap_content"
         android:background="?attr/colorPrimary"
         android:minHeight="?attr/actionBarSize"
+        app:menu="@menu/mian"
         android:theme="?attr/actionBarTheme" />
 
     <androidx.constraintlayout.widget.ConstraintLayout

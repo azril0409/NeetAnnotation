@@ -1,9 +1,13 @@
 package library.neetoffice.com.neetannotation.processor;
 
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
+import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeSpec;
 
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
@@ -78,6 +82,7 @@ public class ActivityCreator extends BaseCreator {
                 .addAnnotation(AndroidClass.Keep)
                 .superclass(getClassName(activityElement.asType()))
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
+        //private Set<ViewModel> set = new HashSet<ViewModel>();
 
         final MethodSpec.Builder onCreateMethodBuilder = createOnCreateMethodBuilder();
         final MethodSpec.Builder onSaveInstanceStateMethodBuilder = createOnSaveInstanceStateMethodBuilder();
@@ -136,11 +141,12 @@ public class ActivityCreator extends BaseCreator {
         onOptionsItemSelectedBuilder.addCode(menuBuilder.createOnOptionsItemSelectedCode(ITEM));
         onOptionsItemSelectedBuilder.addStatement("return super.onOptionsItemSelected($N)", ITEM);
         //
-        onDestroyMethodBuilder.addCode(subscribeBuilder.createDispose());
         onDestroyMethodBuilder.addStatement("super.onDestroy()");
+        onDestroyMethodBuilder.addCode(subscribeBuilder.createDispose());
         //
+        //tb.addField(FieldSpec.builder(ParameterizedTypeName.get(ClassName.get(HashSet.class), AndroidClass.AndroidViewModel),"viewmodes",Modifier.PRIVATE,Modifier.FINAL).initializer("new $T()",ParameterizedTypeName.get(ClassName.get(HashSet.class), AndroidClass.AndroidViewModel)).build());
         tb.addType(extraBuilder.createActivityIntentBuilder(packageName, className));
-        tb.addType(activityResultBuilder.createActivityIntentBuilder(packageName,className));
+        tb.addType(activityResultBuilder.createActivityIntentBuilder(packageName, className));
         tb.addMethod(onCreateMethodBuilder.build());
         tb.addMethod(onSaveInstanceStateMethodBuilder.build());
         tb.addMethod(onActivityResultMethodBuilder.build());

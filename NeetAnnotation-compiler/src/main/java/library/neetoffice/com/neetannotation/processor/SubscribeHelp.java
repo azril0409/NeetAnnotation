@@ -304,7 +304,7 @@ public class SubscribeHelp {
 
         private CodeBlock createSubscribeToViewMode(SubscribeGroup subscribeGroup, String thisClassName, TypeName viewModelType, String viewModelName) {
             final CodeBlock.Builder cb = CodeBlock.builder();
-            cb.add("$N.add((($T)$N).$N.subject()", CompositeDisposable_NAME, viewModelType, viewModelName, subscribeGroup.subjectName);
+            cb.add("$N.add((($T)$N).$N.$N()", CompositeDisposable_NAME, viewModelType, viewModelName, subscribeGroup.subjectName,InteractorCreator.OBSERVABLE);
             final CodeBlock nextCodeBlock;
             final CodeBlock errorCodeBlock;
             final CodeBlock completedCodeBlock;
@@ -493,7 +493,7 @@ public class SubscribeHelp {
             final CodeBlock.Builder cb = CodeBlock.builder();
             for (ViewModelOfElement viewModelOf : viewModelOfMap.values()) {
                 final ClassName typeName = viewModelOf.getProcessorType(creator);
-                cb.add(CodeBlock.builder().addStatement("$N.getLifecycle().addObserver(($T)$N)", context_from, typeName, viewModelOf.element.getSimpleName()).build());
+                cb.add(CodeBlock.builder().addStatement("(($T)$N).addLifecycle($N.getLifecycle())",typeName,viewModelOf.element.getSimpleName(), context_from).build());
             }
             final HashMap<String, String> localViewModelNames = new HashMap<>();
             for (HashMap<String, SubscribeGroup> subscribeGroups : subscribeMap.values()) {
@@ -505,7 +505,7 @@ public class SubscribeHelp {
                         if (!localViewModelNames.containsKey(subscribeGroup.mapKey)) {
                             final String localViewModelName = "lm" + subscribeGroup.viewModelKey + typeName.simpleName();
                             localViewModelNames.put(subscribeGroup.mapKey, localViewModelName);
-                            cb.add(CodeBlock.builder().addStatement("$N.getLifecycle().addObserver(($T)$N)", context_from, typeName_, localViewModelName).build());
+                            cb.add(CodeBlock.builder().addStatement("(($T)$N).addLifecycle($N.getLifecycle())",typeName_,localViewModelName, context_from).build());
                         }
                     }
                 }

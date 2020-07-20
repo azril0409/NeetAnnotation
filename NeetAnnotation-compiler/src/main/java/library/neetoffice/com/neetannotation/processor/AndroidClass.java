@@ -8,6 +8,7 @@ public class AndroidClass {
     public static final ClassName Application = ClassName.get("android.app", "Application");
     public static final ClassName Activity = ClassName.get("android.app", "Activity");
     public static final ClassName AndroidViewModel = ClassName.get("androidx.lifecycle", "AndroidViewModel");
+    public static final ClassName Lifecycle = ClassName.get("androidx.lifecycle","Lifecycle");
     public static final ClassName LifecycleObserver = ClassName.get("androidx.lifecycle", "LifecycleObserver");
     public static final ClassName ViewModelProviders = ClassName.get("androidx.lifecycle", "ViewModelProviders");
     public static final ClassName ViewModelProvider = ClassName.get("androidx.lifecycle", "ViewModelProvider");

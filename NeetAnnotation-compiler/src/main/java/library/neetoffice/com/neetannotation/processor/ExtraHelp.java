@@ -29,6 +29,7 @@ import library.neetoffice.com.neetannotation.DefaultFloat;
 import library.neetoffice.com.neetannotation.DefaultInt;
 import library.neetoffice.com.neetannotation.DefaultLong;
 import library.neetoffice.com.neetannotation.DefaultShort;
+import library.neetoffice.com.neetannotation.DefaultString;
 import library.neetoffice.com.neetannotation.Extra;
 import library.neetoffice.com.neetannotation.SaveInstance;
 
@@ -227,7 +228,7 @@ public class ExtraHelp {
             } else if ("short".equals(variableType.toString())) {
                 final DefaultShort aDefaultShort = element.getAnnotation(DefaultShort.class);
                 if (aDefaultShort != null) {
-                    return cb.addStatement("$N.getShort($S,(byte)$L)", getBundleMethod, key, aDefaultShort.value())
+                    return cb.addStatement("$N.getShort($S,(short)$L)", getBundleMethod, key, aDefaultShort.value())
                             .build();
                 }
                 return cb.addStatement("$N.getShort($S)", getBundleMethod, key)
@@ -235,7 +236,7 @@ public class ExtraHelp {
             } else if ("int".equals(variableType.toString())) {
                 final DefaultInt aDefaultInt = element.getAnnotation(DefaultInt.class);
                 if (aDefaultInt != null) {
-                    return cb.addStatement("$N.getInt($S,(byte)$L)", getBundleMethod, key, aDefaultInt.value())
+                    return cb.addStatement("$N.getInt($S,(int)$L)", getBundleMethod, key, aDefaultInt.value())
                             .build();
                 }
                 return cb.addStatement("$N.getInt($S)", getBundleMethod, key)
@@ -243,7 +244,7 @@ public class ExtraHelp {
             } else if ("long".equals(variableType.toString())) {
                 final DefaultLong aDefaultLong = element.getAnnotation(DefaultLong.class);
                 if (aDefaultLong != null) {
-                    return cb.addStatement("$N.getLong($S,(byte)$L)", getBundleMethod, key, aDefaultLong.value())
+                    return cb.addStatement("$N.getLong($S,(long)$L)", getBundleMethod, key, aDefaultLong.value())
                             .build();
                 }
                 return cb.addStatement("$N.getLong($S)", getBundleMethod, key)
@@ -251,7 +252,7 @@ public class ExtraHelp {
             } else if ("float".equals(variableType.toString())) {
                 final DefaultFloat aDefaultFloat = element.getAnnotation(DefaultFloat.class);
                 if (aDefaultFloat != null) {
-                    return cb.addStatement("$N.getFloat($S,(byte)$L)", getBundleMethod, key, aDefaultFloat.value())
+                    return cb.addStatement("$N.getFloat($S,(float)$L)", getBundleMethod, key, aDefaultFloat.value())
                             .build();
                 }
                 return cb.addStatement("$N.getFloat($S)", getBundleMethod, key)
@@ -259,7 +260,7 @@ public class ExtraHelp {
             } else if ("double".equals(variableType.toString())) {
                 final DefaultDouble aDefaultDouble = element.getAnnotation(DefaultDouble.class);
                 if (aDefaultDouble != null) {
-                    return cb.addStatement("$N.getDouble($S,(byte)$L)", getBundleMethod, key, aDefaultDouble.value())
+                    return cb.addStatement("$N.getDouble($S,(double)$L)", getBundleMethod, key, aDefaultDouble.value())
                             .build();
                 }
                 return cb.addStatement("$N.getDouble($S)", getBundleMethod, key)
@@ -271,6 +272,14 @@ public class ExtraHelp {
                             .build();
                 }
                 return cb.addStatement("$N.getBoolean($S)", getBundleMethod, key)
+                        .build();
+            } else if ("java.lang.String".equals(variableType.toString())) {
+                final DefaultString aDefaultString = element.getAnnotation(DefaultString.class);
+                if (aDefaultString != null) {
+                    return cb.addStatement("$N.getString($S,\"$L\")", getBundleMethod, key, aDefaultString.value())
+                            .build();
+                }
+                return cb.addStatement("$N.getString($S)", getBundleMethod, key)
                         .build();
             }
             return cb.addStatement("($T)$N.get($S)", variableType, getBundleMethod, key)

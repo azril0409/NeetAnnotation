@@ -18,7 +18,7 @@ import static library.neetoffice.com.neetannotation.processor.InteractorCreator.
 import static library.neetoffice.com.neetannotation.processor.InteractorCreator.INTERACTOR;
 import static library.neetoffice.com.neetannotation.processor.InteractorCreator.NOTIFY_DATA_SET_CHANGED;
 import static library.neetoffice.com.neetannotation.processor.InteractorCreator.PRESENTER_;
-import static library.neetoffice.com.neetannotation.processor.InteractorCreator.SUBJECT;
+import static library.neetoffice.com.neetannotation.processor.InteractorCreator.OBSERVABLE;
 import static library.neetoffice.com.neetannotation.processor.InteractorCreator.SUBJECT_FIELD_NAME;
 import static library.neetoffice.com.neetannotation.processor.InteractorCreator.SUBSCRIBE;
 import static library.neetoffice.com.neetannotation.processor.InteractorCreator.UPDATE;
@@ -76,11 +76,11 @@ public class ContextInteractorCreator extends BaseCreator{
 
         final MethodSpec.Builder abstractEntity = MethodSpec.methodBuilder(ENTITY)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                .returns(RxJavaClass.Maybe(entityType));
+                .returns(RxJavaClass.Single(entityType));
 
-        final MethodSpec.Builder abstractSubject = MethodSpec.methodBuilder(SUBJECT)
+        final MethodSpec.Builder abstractSubject = MethodSpec.methodBuilder(OBSERVABLE)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                .returns(RxJavaClass.Subject(entityType));
+                .returns(RxJavaClass.Observable(entityType));
 
         final MethodSpec.Builder subscribe_0 = MethodSpec.methodBuilder(SUBSCRIBE)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
@@ -258,7 +258,9 @@ public class ContextInteractorCreator extends BaseCreator{
         return MethodSpec.methodBuilder(ENTITY)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .returns(RxJavaClass.Maybe(entityType))
+                .returns(RxJavaClass.Single(entityType))
+                .addStatement("return $T.just($N)", RxJavaClass.Single, ENTITY_FIELD_NAME)
+                /*
                 .addCode("return $T.just($N != null)", RxJavaClass.Maybe, ENTITY_FIELD_NAME)
                 .beginControlFlow(".filter(new $T()", RxJavaClass.Predicate(ClassName.get(Boolean.class)))
                 .beginControlFlow("@$T public boolean test($T aBoolean) throws $T ", Override.class, ClassName.get(Boolean.class), Exception.class)
@@ -270,15 +272,16 @@ public class ContextInteractorCreator extends BaseCreator{
                 .addStatement("return $N", ENTITY_FIELD_NAME)
                 .endControlFlow()
                 .endControlFlow(")")
+                 */
                 .build();
     }
 
 
     private MethodSpec createSubjectMethod(TypeName entityType) {
-        return MethodSpec.methodBuilder(SUBJECT)
+        return MethodSpec.methodBuilder(OBSERVABLE)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .returns(RxJavaClass.Subject(entityType))
+                .returns(RxJavaClass.Observable(entityType))
                 .addStatement("return $N", SUBJECT_FIELD_NAME).build();
     }
 
@@ -289,6 +292,9 @@ public class ContextInteractorCreator extends BaseCreator{
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .addParameter(entityType, ENTITY_FIELD_NAME)
                 .returns(void.class)
+                .beginControlFlow("if($N == null)",ENTITY_FIELD_NAME)
+                .addStatement("return")
+                .endControlFlow()
                 .addStatement("this.$N = $N", ENTITY_FIELD_NAME, ENTITY_FIELD_NAME)
                 .addStatement("$N.onNext($N)", SUBJECT_FIELD_NAME, ENTITY_FIELD_NAME)
                 .build();

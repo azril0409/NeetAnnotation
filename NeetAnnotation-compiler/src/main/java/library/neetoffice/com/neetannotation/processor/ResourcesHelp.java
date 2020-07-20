@@ -133,7 +133,7 @@ public class ResourcesHelp {
             return CodeBlock.builder().build();
         }
         final String name = element.getSimpleName().toString();
-        return  CodeBlock.builder()
+        return CodeBlock.builder()
                 .add("$N = $N.getResources().getDrawable(", name, context_from)
                 .add(AndroidResHelp.drawable(aResDrawable.value(), aResDrawable.resName(), name, context_from, defPackage))
                 .addStatement(",$N.getTheme())", context_from)
@@ -147,7 +147,7 @@ public class ResourcesHelp {
         }
         final String name = element.getSimpleName().toString();
         return CodeBlock.builder()
-                .add("$N = AnimationUtils.loadAnimation($N,", name, context_from)
+                .add("$N = $T.loadAnimation($N,", name, AndroidClass.AnimationUtils, context_from)
                 .add(AndroidResHelp.anim(aResAnimation.value(), aResAnimation.resName(), name, context_from, defPackage))
                 .addStatement(")")
                 .build();
@@ -160,7 +160,7 @@ public class ResourcesHelp {
         }
         final String name = element.getSimpleName().toString();
         return CodeBlock.builder()
-                .add("$N = AnimationUtils.loadLayoutAnimation($N,", name, context_from)
+                .add("$N = $T.loadLayoutAnimation($N,", name, AndroidClass.AnimationUtils, context_from)
                 .add(AndroidResHelp.anim(aResLayoutAnimation.value(), aResLayoutAnimation.resName(), name, context_from, defPackage))
                 .addStatement(")")
                 .build();

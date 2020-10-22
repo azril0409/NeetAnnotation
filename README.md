@@ -14,7 +14,7 @@ app.gradle<br>
 apply plugin: 'kotlin-kapt'
 
 dependencies{
-  def neetannotation_version = "1.1.7-rc"
+  def neetannotation_version = "1.1.7-rc2"
   def lifecycle_version = "2.2.0"
   def arch_version = "2.1.0"
   def dagger_version = "2.25"

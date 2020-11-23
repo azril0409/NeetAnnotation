@@ -154,6 +154,7 @@ public class FragmentCreator extends BaseCreator {
         //
         //tb.addField(FieldSpec.builder(ParameterizedTypeName.get(ClassName.get(HashSet.class), AndroidClass.AndroidViewModel),"viewmodes",Modifier.PRIVATE,Modifier.FINAL).initializer("new $T()",ParameterizedTypeName.get(ClassName.get(HashSet.class), AndroidClass.AndroidViewModel)).build());
         tb.addType(extraBuilder.createArgument(packageName, className));
+        tb.addType(activityResultBuilder.createActivityIntentBuilder(packageName, className));
         tb.addMethod(onCreateMethodBuilder.build());
         tb.addMethod(onActivityCreateMethodBuilder.build());
         tb.addMethod(onCreateViewMethodBuilder.build());

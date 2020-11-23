@@ -1,17 +1,27 @@
 package library.neetoffice.com.neetannotation.processor;
 
 import com.squareup.javapoet.ClassName;
+import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
+import javax.lang.model.element.VariableElement;
+
+import library.neetoffice.com.neetannotation.AfterInject;
 
 public class ViewModelStoreOwnerCreator extends BaseCreator {
     static final String CLASS_NAME = "SimpleViewModelStoreOwner";
@@ -26,7 +36,13 @@ public class ViewModelStoreOwnerCreator extends BaseCreator {
     @Override
     void process(TypeElement applicationElement, RoundEnvironment roundEnv) {
         final String className = applicationElement.getSimpleName() + "_";
-        createApplaction(getPackageName(applicationElement), className, getClassName(applicationElement.asType()));
+        final List<? extends Element> enclosedElements = applicationElement.getEnclosedElements();
+        ArrayList<CodeBlock> onAfterInjectElements = new ArrayList();
+        for (Element element : enclosedElements) {
+            createAfterAnnotationCode(element);
+        }
+        createApplaction(onAfterInjectElements, getPackageName(applicationElement), className, getClassName(applicationElement.asType()));
+
     }
 
     void createSimpleViewModelStoreOwner(String packageName) {
@@ -65,10 +81,10 @@ public class ViewModelStoreOwnerCreator extends BaseCreator {
     }
 
     void createApplaction(String packageName) {
-        createApplaction(packageName, "Application_", AndroidClass.Application);
+        createApplaction(new ArrayList(), packageName, "Application_", AndroidClass.Application);
     }
 
-    void createApplaction(String packageName, String className, TypeName claz) {
+    void createApplaction(List<CodeBlock> onAfterInjectElements, String packageName, String className, TypeName claz) {
         final TypeSpec.Builder tb = TypeSpec.classBuilder(className)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .superclass(claz)
@@ -87,14 +103,17 @@ public class ViewModelStoreOwnerCreator extends BaseCreator {
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class)
                 .addStatement("super.onCreate()")
-                .addCode("$T.setErrorHandler(new $T()",RxJavaClass.RxJavaPlugins,RxJavaClass.Consumer(ClassName.get(Throwable.class)))
+                .addCode("$T.setErrorHandler(new $T()", RxJavaClass.RxJavaPlugins, RxJavaClass.Consumer(ClassName.get(Throwable.class)))
                 .beginControlFlow("")
-                .addCode("@$T public void accept($T throwable) throws $T",Override.class,Throwable.class,Exception.class)
+                .addCode("@$T public void accept($T throwable) throws $T", Override.class, Throwable.class, Exception.class)
                 .beginControlFlow("")
                 .endControlFlow()
                 .endControlFlow()
                 .addStatement(")")
                 .addStatement("$N = $T.getInstance(this)", VIEW_MODEL_PROVIDER_FACTORY, AndroidClass.AndroidViewModelFactory);
+        for (CodeBlock codeBlock : onAfterInjectElements) {
+            onCreate.addStatement(codeBlock);
+        }
         tb.addMethod(onCreate.build());
 
 
@@ -112,5 +131,15 @@ public class ViewModelStoreOwnerCreator extends BaseCreator {
                 .addStatement("return $N", VIEW_MODEL_STORE);
         tb.addMethod(getViewModelStore.build());
         writeTo(packageName, tb.build());
+    }
+
+    CodeBlock createAfterAnnotationCode(Element afterAnnotationElement) {
+        final AfterInject aAfterInject = afterAnnotationElement.getAnnotation(AfterInject.class);
+        if (aAfterInject == null) {
+            return CodeBlock.builder().build();
+        }
+        return CodeBlock.builder()
+                .addStatement("$N()", afterAnnotationElement.getSimpleName())
+                .build();
     }
 }

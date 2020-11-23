@@ -59,6 +59,13 @@ public class ListInteractorCreator extends BaseCreator {
     }
 
     @Override
+    void release() {
+        super.release();
+        interactBuilds.clear();
+        interactElements.clear();
+    }
+
+    @Override
     void process(TypeElement interactElement, RoundEnvironment roundEnv) {
         final ListInteractorCreator.InteractBuild build = createInterface(interactElement);
         createImplement(interactElement, build);
@@ -347,6 +354,9 @@ public class ListInteractorCreator extends BaseCreator {
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .returns(RxJavaClass.Single(entityType))
+                .beginControlFlow("if(entity == null)")
+                .addStatement("return $T.never()", RxJavaClass.Single)
+                .endControlFlow()
                 .addStatement("return $T.just($N)", RxJavaClass.Single, InteractorCreator.ENTITY_FIELD_NAME)
                 .build();
     }

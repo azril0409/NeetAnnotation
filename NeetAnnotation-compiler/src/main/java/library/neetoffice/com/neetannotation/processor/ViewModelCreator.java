@@ -184,27 +184,12 @@ public class ViewModelCreator extends BaseCreator {
 
         tb.addMethod(getInstanceBykey.build());
 
-        final FieldSpec.Builder lifecycle = FieldSpec.builder(AndroidClass.Lifecycle, "lifecycle", Modifier.PRIVATE);
-        tb.addField(lifecycle.build());
-        final MethodSpec.Builder addLifecycle = MethodSpec.methodBuilder("addLifecycle")
-                .addModifiers(Modifier.PUBLIC)
-                .addParameter(AndroidClass.Lifecycle, "lifecycle")
-                .beginControlFlow("if(this.lifecycle != null && lifecycle != null && this.lifecycle != lifecycle)")
-                .addStatement("this.lifecycle.removeObserver(this)")
-                .endControlFlow()
-                .addStatement("this.lifecycle = lifecycle")
-                .addStatement("lifecycle.addObserver(this)");
-        tb.addMethod(addLifecycle.build());
-
         final MethodSpec.Builder onCleared = MethodSpec.methodBuilder("onCleared")
                 .returns(void.class)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
                 .addStatement("super.onCleared()")
-                .addCode(onClearedCode.build())
-                .beginControlFlow("if(lifecycle != null)")
-                .addStatement("lifecycle.removeObserver(this)")
-                .endControlFlow();
+                .addCode(onClearedCode.build());
         tb.addMethod(onCleared.build());
 
         writeTo(getPackageName(viewModelElement), tb.build());

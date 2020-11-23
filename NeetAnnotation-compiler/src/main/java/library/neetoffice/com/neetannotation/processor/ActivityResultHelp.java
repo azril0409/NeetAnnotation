@@ -238,16 +238,19 @@ public class ActivityResultHelp {
                     .build());
 
             activityResult.addMethod(MethodSpec.methodBuilder("result")
+                    .addModifiers(Modifier.PUBLIC)
                     .addParameter(int.class, "resultCode")
                     .addStatement("$N.setResult(resultCode,build())", activityName)
                     .build());
 
 
             activityResult.addMethod(MethodSpec.methodBuilder("resultOk")
+                    .addModifiers(Modifier.PUBLIC)
                     .addStatement("$N.setResult($T.RESULT_OK,build())", activityName, AndroidClass.Activity)
                     .build());
 
             activityResult.addMethod(MethodSpec.methodBuilder("resultCancel")
+                    .addModifiers(Modifier.PUBLIC)
                     .addStatement("$N.setResult($T.RESULT_CANCELED,build())", activityName, AndroidClass.Activity)
                     .build());
 

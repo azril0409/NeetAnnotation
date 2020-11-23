@@ -95,6 +95,13 @@ public class InteractorCreator extends BaseCreator {
     }
 
     @Override
+    void release() {
+        super.release();
+        interactBuilds.clear();
+        interactElements.clear();
+    }
+
+    @Override
     void process(TypeElement interactElement, RoundEnvironment roundEnv) {
         final InteractBuild build = createInterface(interactElement);
         createImplement(interactElement, build);
@@ -158,6 +165,7 @@ public class InteractorCreator extends BaseCreator {
                 .returns(void.class);
 
         for (Element element : interactElement.getEnclosedElements()) {
+            if (element.getModifiers().contains(Modifier.STATIC)){ continue;}
             if (element.getKind() == ElementKind.FIELD) {
                 final TypeName fieldType = getClassName(element.asType());
                 final String fieldMame = element.getSimpleName().toString();
@@ -263,7 +271,9 @@ public class InteractorCreator extends BaseCreator {
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .returns(void.class)
-                .addStatement("subject.onNext(entity)");
+                .beginControlFlow("if(entity != null)")
+                .addStatement("subject.onNext(entity)")
+                .endControlFlow();
 
         for (Setter setter : interactBuild.setters) {
             tb.addMethod(createSetterMethod(setter, implementClassName, fieldElements, methodElements));
@@ -355,20 +365,10 @@ public class InteractorCreator extends BaseCreator {
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .returns(RxJavaClass.Single(entityType))
+                .beginControlFlow("if(entity == null)")
+                .addStatement("return $T.never()", RxJavaClass.Single)
+                .endControlFlow()
                 .addStatement("return $T.just($N)", RxJavaClass.Single, ENTITY_FIELD_NAME)
-                /*
-                .addCode("return $T.just($N != null)", RxJavaClass.Single, ENTITY_FIELD_NAME)
-                .beginControlFlow(".filter(new $T()", RxJavaClass.Predicate(ClassName.get(Boolean.class)))
-                .beginControlFlow("@$T public boolean test($T aBoolean) throws $T ", Override.class, ClassName.get(Boolean.class), Exception.class)
-                .addStatement("return aBoolean")
-                .endControlFlow()
-                .endControlFlow()
-                .beginControlFlow(").map(new $T()", RxJavaClass.Function(ClassName.get(Boolean.class), entityType))
-                .beginControlFlow("@$T public $T apply($T aBoolean) throws $T", Override.class, entityType, ClassName.get(Boolean.class), Exception.class)
-                .addStatement("return $N", ENTITY_FIELD_NAME)
-                .endControlFlow()
-                .endControlFlow(")")
-                 */
                 .build();
     }
 
@@ -420,6 +420,9 @@ public class InteractorCreator extends BaseCreator {
         final String parameterName = setter.parameterName;
         final String interactMethodName = setter.methodName.toLowerCase();
         final CodeBlock.Builder codeBlock = CodeBlock.builder();
+        codeBlock.beginControlFlow("if($N.this.$N == null)",implementClassName, ENTITY_FIELD_NAME)
+                .addStatement("return")
+                .endControlFlow();
         if (methodElements.containsKey(interactMethodName)) {
             final ExecutableElement methodElement = methodElements.get(interactMethodName);
             codeBlock.addStatement("$N.this.$N.$N($N)", implementClassName, ENTITY_FIELD_NAME, methodElement.getSimpleName(), parameterName);
@@ -447,6 +450,10 @@ public class InteractorCreator extends BaseCreator {
     private CodeBlock createGetterCodeBlock(Getter getter, String implementClassName, HashMap<String, VariableElement> fieldElements, HashMap<String, ExecutableElement> methodElements) {
         final String interactMethodName = getter.methodName.toLowerCase();
         final CodeBlock.Builder codeBlock = CodeBlock.builder();
+        codeBlock.beginControlFlow("if($N.this.$N == null)",implementClassName, ENTITY_FIELD_NAME)
+                .add("return ")
+                .addStatement(addNullCode(getClassName(getter.element.asType())))
+                .endControlFlow();
         if (methodElements.containsKey(interactMethodName)) {
             final ExecutableElement methodElement = methodElements.get(interactMethodName);
             codeBlock.addStatement("return $N.this.$N.$N()", implementClassName, ENTITY_FIELD_NAME, methodElement.getSimpleName());

@@ -223,4 +223,7 @@ public abstract class BaseCreator {
         } while (isSuperElement);
         return superElement;
     }
+
+    void release() {
+    }
 }

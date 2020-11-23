@@ -64,6 +64,13 @@ public class SetInteractorCreator extends BaseCreator {
     }
 
     @Override
+    void release() {
+        super.release();
+        interactBuilds.clear();
+        interactElements.clear();
+    }
+
+    @Override
     void process(TypeElement interactElement, RoundEnvironment roundEnv) {
         final SetInteractorCreator.InteractBuild build = createInterface(interactElement);
         createImplement(interactElement, build);
@@ -118,7 +125,7 @@ public class SetInteractorCreator extends BaseCreator {
 
         final MethodSpec.Builder entity = MethodSpec.methodBuilder(ENTITY)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                .returns(RxJavaClass.Maybe(listType));
+                .returns(RxJavaClass.Single(listType));
         tb.addMethod(entity.build());
 
         final MethodSpec.Builder subject = MethodSpec.methodBuilder(SUBJECT)
@@ -328,8 +335,11 @@ public class SetInteractorCreator extends BaseCreator {
         return MethodSpec.methodBuilder(ENTITY)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .returns(RxJavaClass.Maybe(entityType))
-                .addStatement("return $T.just($N)", RxJavaClass.Maybe, ENTITY_FIELD_NAME)
+                .returns(RxJavaClass.Single(entityType))
+                .beginControlFlow("if(entity == null)")
+                .addStatement("return $T.never()", RxJavaClass.Single)
+                .endControlFlow()
+                .addStatement("return $T.just($N)", RxJavaClass.Single, ENTITY_FIELD_NAME)
                 .build();
     }
 

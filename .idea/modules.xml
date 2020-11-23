@@ -2,11 +2,11 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/Feature/Feature.iml" filepath="$PROJECT_DIR$/Feature/Feature.iml" group="NeetAnnotation/Feature" />
-      <module fileurl="file://$PROJECT_DIR$/NeetAnnotation.iml" filepath="$PROJECT_DIR$/NeetAnnotation.iml" group="NeetAnnotation" />
-      <module fileurl="file://$PROJECT_DIR$/NeetAnnotation-compiler/NeetAnnotation-compiler.iml" filepath="$PROJECT_DIR$/NeetAnnotation-compiler/NeetAnnotation-compiler.iml" group="NeetAnnotation/NeetAnnotation-compiler" />
-      <module fileurl="file://$PROJECT_DIR$/Neetannotation-api/Neetannotation-api.iml" filepath="$PROJECT_DIR$/Neetannotation-api/Neetannotation-api.iml" group="NeetAnnotation/Neetannotation-api" />
-      <module fileurl="file://$PROJECT_DIR$/Sample/Sample.iml" filepath="$PROJECT_DIR$/Sample/Sample.iml" group="NeetAnnotation/Sample" />
+      <module fileurl="file://$PROJECT_DIR$/NeetAnnotation.iml" filepath="$PROJECT_DIR$/NeetAnnotation.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Feature/NeetAnnotation.Feature.iml" filepath="$PROJECT_DIR$/.idea/modules/Feature/NeetAnnotation.Feature.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/NeetAnnotation-compiler/NeetAnnotation.NeetAnnotation-compiler.iml" filepath="$PROJECT_DIR$/.idea/modules/NeetAnnotation-compiler/NeetAnnotation.NeetAnnotation-compiler.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Neetannotation-api/NeetAnnotation.Neetannotation-api.iml" filepath="$PROJECT_DIR$/.idea/modules/Neetannotation-api/NeetAnnotation.Neetannotation-api.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/modules/Sample/NeetAnnotation.Sample.iml" filepath="$PROJECT_DIR$/.idea/modules/Sample/NeetAnnotation.Sample.iml" />
     </modules>
   </component>
 </project>

@@ -26,16 +26,7 @@ import library.neetoffice.com.neetannotation.NViewModel;
 import library.neetoffice.com.neetannotation.SetInteractor;
 
 @SupportedAnnotationTypes({
-        "library.neetoffice.com.neetannotation.Interactor",
-        "library.neetoffice.com.neetannotation.ListInteractor",
-        "library.neetoffice.com.neetannotation.SetInteractor",
-        "library.neetoffice.com.neetannotation.NDagger",
-        "library.neetoffice.com.neetannotation.NViewModel",
-        "library.neetoffice.com.neetannotation.NActivity",
-        "library.neetoffice.com.neetannotation.NFragment",
-        "library.neetoffice.com.neetannotation.NView",
-        "library.neetoffice.com.neetannotation.NService",
-        "library.neetoffice.com.neetannotation.NApplication"})
+        "library.neetoffice.com.neetannotation.*"})
 @AutoService(Process.class)
 public class MainProcessor extends AbstractProcessor {
     private static final String APPLY = "apply";
@@ -138,6 +129,17 @@ public class MainProcessor extends AbstractProcessor {
         for (Element nService : nServices) {
             serviceCreator.process((TypeElement) nService, roundEnv);
         }
+        contextInteractorCreator.release();
+        interactorCreator.release();
+        listInteractorCreator.release();
+        setInteractorCreator.release();
+        viewModelStoreOwnerCreator.release();
+        daggerCreator.release();
+        viewModelCreator.release();
+        activityCreator.release();
+        fragmentCreator.release();
+        viewCreator.release();
+        serviceCreator.release();
         return true;
     }
 }

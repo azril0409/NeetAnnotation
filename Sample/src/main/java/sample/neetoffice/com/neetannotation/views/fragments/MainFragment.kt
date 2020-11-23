@@ -14,6 +14,7 @@ import javax.inject.Named
 open class MainFragment : Fragment() {
     @ViewById(R.id.listView)
     lateinit var listView: ListView
+
     @Extra
     lateinit var list: ArrayList<Record>
 
@@ -27,5 +28,9 @@ open class MainFragment : Fragment() {
     @Subscribe(viewmode = RecordViewModel::class)
     fun onRecords(list: List<Record>) {
 
+    }
+
+    @ActivityResult(20)
+    fun onActivityResult(test: String) {
     }
 }

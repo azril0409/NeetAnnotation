@@ -121,12 +121,6 @@ public class ViewModelCreator extends BaseCreator {
                     .beginControlFlow("if(application instanceof $T)", AndroidClass.ViewModelStoreOwner)
                     .addStatement("return new $T(($T)application).get($T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
                     .endControlFlow()
-                    //.beginControlFlow("if(application instanceof $T)", AndroidClass.Application)
-                    //.beginControlFlow("if($N == null)", VIEW_MODEL_STORE_OWNER)
-                    //.addStatement("$N = new $T(($T)application)", VIEW_MODEL_STORE_OWNER, ClassName.get(mainProcessor.contextPackageName, ViewModelStoreOwnerCreator.CLASS_NAME), AndroidClass.Application)
-                    //.endControlFlow()
-                    //.addStatement("return new $T($N).get($T.class)", AndroidClass.ViewModelProvider, VIEW_MODEL_STORE_OWNER, ClassName.get(getPackageName(viewModelElement), className))
-                    //.endControlFlow()
                     .addStatement("throw new RuntimeException(\"Cannot get instance by \" + context)");
         } else {
             getInstance.addParameter(AndroidClass.Context, "context")
@@ -137,12 +131,6 @@ public class ViewModelCreator extends BaseCreator {
                     .beginControlFlow("if(application instanceof $T)", AndroidClass.ViewModelStoreOwner)
                     .addStatement("return new $T(($T)application).get($T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
                     .endControlFlow()
-                    //.beginControlFlow("if(application instanceof $T)", AndroidClass.Application)
-                    //.beginControlFlow("if($N == null)", VIEW_MODEL_STORE_OWNER)
-                    //.addStatement("$N = new $T(($T)application)", VIEW_MODEL_STORE_OWNER, ClassName.get(mainProcessor.contextPackageName, ViewModelStoreOwnerCreator.CLASS_NAME), AndroidClass.Application)
-                    //.endControlFlow()
-                    //.addStatement("return new $T(viewModelStoreOwner).get($T.class)", AndroidClass.ViewModelProvider, ClassName.get(getPackageName(viewModelElement), className))
-                    //.endControlFlow()
                     .addStatement("throw new RuntimeException(\"Cannot get instance by \" + context)");
         }
         tb.addMethod(getInstance.build());
@@ -196,36 +184,69 @@ public class ViewModelCreator extends BaseCreator {
     }
 
     CodeBlock createInstanceCode(TypeElement viewModelElement, Element interactElement, boolean haveDagger) {
-        final boolean isSubAndroidViewModel = isSubAndroidViewModel(viewModelElement);
+        final Published aPublished = interactElement.getAnnotation(Published.class);
         final String daggerMethodName = DaggerHelp.findNameFromDagger(this, interactElement);
         final InteractorCreator.InteractBuild interactBuild = mainProcessor.interactorCreator.interactBuilds.get(interactElement.asType().toString());
         final ListInteractorCreator.InteractBuild listInteractBuild = mainProcessor.listInteractorCreator.interactBuilds.get(interactElement.asType().toString());
         final SetInteractorCreator.InteractBuild setInteractBuild = mainProcessor.setInteractorCreator.interactBuilds.get(interactElement.asType().toString());
         final TypeName implementType;
         if (interactBuild != null) {
-            if (interactBuild.implementClassName.startsWith(interactBuild.packageName)) {
-                implementType = ClassName.bestGuess(interactBuild.implementClassName);
+            if (aPublished.recordLastEntity()) {
+                if (interactBuild.interactorClassName.startsWith(interactBuild.packageName)) {
+                    implementType = ClassName.bestGuess(interactBuild.interactorClassName);
+                } else {
+                    implementType = ClassName.get(interactBuild.packageName, interactBuild.interactorClassName);
+                }
             } else {
-                implementType = ClassName.get(interactBuild.packageName, interactBuild.implementClassName);
+                if (interactBuild.publisherClassName.startsWith(interactBuild.packageName)) {
+                    implementType = ClassName.bestGuess(interactBuild.publisherClassName);
+                } else {
+                    implementType = ClassName.get(interactBuild.packageName, interactBuild.publisherClassName);
+                }
             }
         } else if (listInteractBuild != null) {
-            if (listInteractBuild.implementClassName.startsWith(listInteractBuild.packageName)) {
-                implementType = ClassName.bestGuess(listInteractBuild.implementClassName);
+            if (aPublished.recordLastEntity()) {
+                if (listInteractBuild.interactorClassName.startsWith(listInteractBuild.packageName)) {
+                    implementType = ClassName.bestGuess(listInteractBuild.interactorClassName);
+                } else {
+                    implementType = ClassName.get(listInteractBuild.packageName, listInteractBuild.interactorClassName);
+                }
             } else {
-                implementType = ClassName.get(listInteractBuild.packageName, listInteractBuild.implementClassName);
+                if (listInteractBuild.publisherClassName.startsWith(listInteractBuild.packageName)) {
+                    implementType = ClassName.bestGuess(listInteractBuild.publisherClassName);
+                } else {
+                    implementType = ClassName.get(listInteractBuild.packageName, listInteractBuild.publisherClassName);
+                }
             }
         } else if (setInteractBuild != null) {
-            if (setInteractBuild.implementClassName.startsWith(setInteractBuild.packageName)) {
-                implementType = ClassName.bestGuess(setInteractBuild.implementClassName);
+            if (aPublished.recordLastEntity()) {
+                if (setInteractBuild.interactorClassName.startsWith(setInteractBuild.packageName)) {
+                    implementType = ClassName.bestGuess(setInteractBuild.interactorClassName);
+                } else {
+                    implementType = ClassName.get(setInteractBuild.packageName, setInteractBuild.interactorClassName);
+                }
             } else {
-                implementType = ClassName.get(setInteractBuild.packageName, setInteractBuild.implementClassName);
+                if (setInteractBuild.publisherClassName.startsWith(setInteractBuild.packageName)) {
+                    implementType = ClassName.bestGuess(setInteractBuild.publisherClassName);
+                } else {
+                    implementType = ClassName.get(setInteractBuild.packageName, setInteractBuild.publisherClassName);
+                }
             }
         } else {
             final String typeName = getClassName(interactElement.asType()).toString();
-            if (isContextInteractor(typeName)) {
-                implementType = ClassName.bestGuess(mainProcessor.contextPackageName + "." + typeName + "_");
+            final String entityTypeName = typeName.substring(0, typeName.length() - InteractorCreator.INTERACTOR.length());
+            if (aPublished.recordLastEntity()) {
+                if (isContextInteractor(typeName)) {
+                    implementType = ClassName.bestGuess(mainProcessor.contextPackageName + "." + entityTypeName + InteractorCreator.INTERACTOR_);
+                } else {
+                    implementType = ClassName.bestGuess(entityTypeName + InteractorCreator.INTERACTOR_);
+                }
             } else {
-                implementType = ClassName.bestGuess(typeName + "_");
+                if (isContextInteractor(typeName)) {
+                    implementType = ClassName.bestGuess(mainProcessor.contextPackageName + "." + entityTypeName + InteractorCreator.PUBLISHER_);
+                } else {
+                    implementType = ClassName.bestGuess(entityTypeName + InteractorCreator.PUBLISHER_);
+                }
             }
         }
 
@@ -246,7 +267,7 @@ public class ViewModelCreator extends BaseCreator {
 
     private CodeBlock createDaggerCode(TypeElement viewModelElement) {
         final CodeBlock.Builder code = CodeBlock.builder();
-        code.add("_$N $N = ", viewModelElement.getSimpleName(), DAGGER_NAME);
+        code.add("final _$N $N = ", viewModelElement.getSimpleName(), DAGGER_NAME);
         final boolean isSubAndroidViewModel = isSubAndroidViewModel(viewModelElement);
         if (isSubAndroidViewModel) {
             code.addStatement("Dagger_$N.builder().$N(new $T($N)).build()", viewModelElement.getSimpleName(), toModelCase(AndroidClass.CONTEXT_MODULE_NAME), mainProcessor.contextModule, CONSTRUCTOR_APPLICATION_PARAMETER);

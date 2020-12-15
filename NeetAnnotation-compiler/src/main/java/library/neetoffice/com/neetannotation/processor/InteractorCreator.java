@@ -23,7 +23,8 @@ import javax.lang.model.element.VariableElement;
 
 public class InteractorCreator extends BaseCreator {
     static final String INTERACTOR = "Interactor";
-    static final String PRESENTER_ = INTERACTOR + "_";
+    static final String INTERACTOR_ = INTERACTOR + "_";
+    static final String PUBLISHER_ = "Publisher_";
     static final String ENTITY_FIELD_NAME = "entity";
     static final String SUBJECT_FIELD_NAME = "subject";
     static final String UPDATE = "update";
@@ -41,7 +42,8 @@ public class InteractorCreator extends BaseCreator {
         final String interfaceName;
         final TypeName interactTypeName;
         String packageName;
-        String implementClassName;
+        String interactorClassName;
+        String publisherClassName;
 
         InteractBuild(TypeName interactTypeName, String interfaceName) {
             this.interactTypeName = interactTypeName;
@@ -52,8 +54,11 @@ public class InteractorCreator extends BaseCreator {
             this.packageName = packageName;
         }
 
-        public void setImplementClassName(String implementClassName) {
-            this.implementClassName = implementClassName;
+        public void setInteractorClassName(String className) {
+            this.interactorClassName = className;
+        }
+        public void setPublisherClassName(String className) {
+            this.publisherClassName = className;
         }
     }
 
@@ -103,24 +108,24 @@ public class InteractorCreator extends BaseCreator {
 
     @Override
     void process(TypeElement interactElement, RoundEnvironment roundEnv) {
-        final InteractBuild build = createInterface(interactElement);
-        createImplement(interactElement, build);
+        final String packageName = getPackageName(interactElement);
+        final ClassName entityType = ClassName.get(interactElement);
+        final InteractBuild build = createInterface(this, packageName, entityType, interactBuilds, interactElements, interactElement);
+        createImplement(this, packageName, entityType, build, true, interactElement);
+        createImplement(this, packageName, entityType, build, false, interactElement);
     }
 
-    private InteractBuild createInterface(TypeElement interactElement) {
-        final String interfaceName = interactElement.getSimpleName() + INTERACTOR;
-        final String packageName = getPackageName(interactElement);
-        final TypeName entityType = getClassName(interactElement.asType());
+    static InteractBuild createInterface(BaseCreator creator, String packageName, ClassName entityType, HashMap<String, InteractBuild> interactBuilds, HashMap<String, Element> interactElements, TypeElement interactElement) {
+        final String interfaceName = entityType.simpleName() + INTERACTOR;
         final ClassName interfaceClassName = ClassName.get(packageName, interfaceName);
         final InteractBuild interactBuild = new InteractBuild(interfaceClassName, interfaceName);
         final TypeSpec.Builder tb = TypeSpec.interfaceBuilder(interfaceName)
                 .addModifiers(Modifier.PUBLIC)
                 .addSuperinterface(RxJavaClass.Consumer(entityType));
 
-
         final MethodSpec.Builder update = MethodSpec.methodBuilder(UPDATE)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                .addParameter(entityType, interactElement.getSimpleName().toString())
+                .addParameter(entityType, entityType.simpleName())
                 .returns(void.class);
 
         final MethodSpec.Builder entity = MethodSpec.methodBuilder(ENTITY)
@@ -164,26 +169,30 @@ public class InteractorCreator extends BaseCreator {
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .returns(void.class);
 
-        for (Element element : interactElement.getEnclosedElements()) {
-            if (element.getModifiers().contains(Modifier.STATIC)){ continue;}
-            if (element.getKind() == ElementKind.FIELD) {
-                final TypeName fieldType = getClassName(element.asType());
-                final String fieldMame = element.getSimpleName().toString();
-                final String setterName = SET + toUpperCaseFirst(fieldMame);
-                final String getterName = GET + toUpperCaseFirst(fieldMame);
-                final MethodSpec.Builder setter = MethodSpec.methodBuilder(setterName)
-                        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                        .addParameter(fieldType, fieldMame)
-                        .returns(void.class);
-                final MethodSpec.Builder getter = MethodSpec.methodBuilder(getterName)
-                        .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                        .returns(fieldType);
-                if (!element.getModifiers().contains(Modifier.FINAL)) {
-                    tb.addMethod(setter.build());
-                    interactBuild.setters.add(new Setter(element, fieldMame, setterName, fieldType, fieldMame));
+        if (interactElement != null) {
+            for (Element element : interactElement.getEnclosedElements()) {
+                if (element.getModifiers().contains(Modifier.STATIC)) {
+                    continue;
                 }
-                tb.addMethod(getter.build());
-                interactBuild.getters.add(new Getter(element, fieldMame, getterName, fieldType));
+                if (element.getKind() == ElementKind.FIELD) {
+                    final TypeName fieldType = getClassName(element.asType());
+                    final String fieldMame = element.getSimpleName().toString();
+                    final String setterName = SET + creator.toUpperCaseFirst(fieldMame);
+                    final String getterName = GET + creator.toUpperCaseFirst(fieldMame);
+                    final MethodSpec.Builder setter = MethodSpec.methodBuilder(setterName)
+                            .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                            .addParameter(fieldType, fieldMame)
+                            .returns(void.class);
+                    final MethodSpec.Builder getter = MethodSpec.methodBuilder(getterName)
+                            .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                            .returns(fieldType);
+                    if (!element.getModifiers().contains(Modifier.FINAL)) {
+                        tb.addMethod(setter.build());
+                        interactBuild.setters.add(new Setter(element, fieldMame, setterName, fieldType, fieldMame));
+                    }
+                    tb.addMethod(getter.build());
+                    interactBuild.getters.add(new Getter(element, fieldMame, getterName, fieldType));
+                }
             }
         }
         tb.addMethod(update.build());
@@ -196,7 +205,7 @@ public class InteractorCreator extends BaseCreator {
         tb.addMethod(subscribe_4.build());
         tb.addMethod(subscribe_5.build());
         tb.addMethod(notifyDataSetChanged.build());
-        writeTo(packageName, tb.build());
+        creator.writeTo(packageName, tb.build());
         interactBuilds.put(interfaceClassName.toString(), interactBuild);
         interactBuilds.put(interfaceName, interactBuild);
         interactElements.put(interfaceClassName.toString(), interactElement);
@@ -204,14 +213,17 @@ public class InteractorCreator extends BaseCreator {
         return interactBuild;
     }
 
-    private void createImplement(TypeElement interactElement, InteractBuild interactBuild) {
+    static void createImplement(BaseCreator creator, String packageName, ClassName entityType, InteractBuild interactBuild, boolean isBehavior, TypeElement interactElement) {
         final HashMap<String, VariableElement> fieldElements = parseInteractFieldElement(interactElement);
         final HashMap<String, ExecutableElement> methodElements = parseInteractMethodElement(interactElement);
-        final TypeName entityType = getClassName(interactElement.asType());
         final TypeName subjectType = RxJavaClass.Subject(entityType);
-        final String implementClassName = interactElement.getSimpleName().toString() + PRESENTER_;
-        interactBuild.setImplementClassName(implementClassName);
-        interactBuild.setPackageName(getPackageName(interactElement));
+        final String implementClassName = entityType.simpleName() + (isBehavior?INTERACTOR_:PUBLISHER_);
+        if(isBehavior){
+            interactBuild.setInteractorClassName(implementClassName);
+        }else{
+            interactBuild.setPublisherClassName(implementClassName);
+        }
+        interactBuild.setPackageName(packageName);
 
         final TypeSpec.Builder tb = TypeSpec.classBuilder(implementClassName)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -221,7 +233,7 @@ public class InteractorCreator extends BaseCreator {
         final FieldSpec entityField = FieldSpec.builder(entityType, ENTITY_FIELD_NAME, Modifier.PRIVATE).build();
         final FieldSpec subjectField = FieldSpec.builder(subjectType, SUBJECT_FIELD_NAME, Modifier.PRIVATE, Modifier.FINAL)
                 .build();
-        final MethodSpec constructor = createConstructor(entityType);
+        final MethodSpec constructor = createConstructor(entityType, isBehavior);
         final MethodSpec entity = createEntityMethod(implementClassName, entityType);
         final MethodSpec subject = createSubjectMethod(entityType);
         final MethodSpec update = createUpdateMethod(entityType);
@@ -297,35 +309,39 @@ public class InteractorCreator extends BaseCreator {
         tb.addMethod(subscribe_5.build());
         tb.addMethod(notifyDataSetChanged.build());
         tb.addMethod(accept);
-        writeTo(interactBuild.packageName, tb.build());
+        creator.writeTo(interactBuild.packageName, tb.build());
     }
 
-    private HashMap<String, VariableElement> parseInteractFieldElement(TypeElement interactElement) {
+    private static HashMap<String, VariableElement> parseInteractFieldElement(TypeElement interactElement) {
         final HashMap<String, VariableElement> map = new HashMap<>();
-        for (Element fieldElement : interactElement.getEnclosedElements()) {
-            if (fieldElement.getKind() == ElementKind.FIELD &&
-                    !fieldElement.getModifiers().contains(Modifier.PRIVATE) &&
-                    !fieldElement.getModifiers().contains(Modifier.FINAL)) {
-                if (fieldElement.getModifiers().contains(Modifier.PUBLIC) && !fieldElement.getModifiers().contains(Modifier.FINAL)) {
-                    map.put(fieldElement.getSimpleName().toString().toLowerCase(), (VariableElement) fieldElement);
+        if (interactElement != null) {
+            for (Element fieldElement : interactElement.getEnclosedElements()) {
+                if (fieldElement.getKind() == ElementKind.FIELD &&
+                        !fieldElement.getModifiers().contains(Modifier.PRIVATE) &&
+                        !fieldElement.getModifiers().contains(Modifier.FINAL)) {
+                    if (fieldElement.getModifiers().contains(Modifier.PUBLIC) && !fieldElement.getModifiers().contains(Modifier.FINAL)) {
+                        map.put(fieldElement.getSimpleName().toString().toLowerCase(), (VariableElement) fieldElement);
+                    }
                 }
             }
         }
         return map;
     }
 
-    private HashMap<String, ExecutableElement> parseInteractMethodElement(TypeElement interactElement) {
+    private static HashMap<String, ExecutableElement> parseInteractMethodElement(TypeElement interactElement) {
         final HashMap<String, ExecutableElement> map = new HashMap<>();
-        for (Element element : interactElement.getEnclosedElements()) {
-            if (element.getKind() == ElementKind.METHOD &&
-                    !element.getModifiers().contains(Modifier.PRIVATE)) {
-                map.put(element.getSimpleName().toString().toLowerCase(), (ExecutableElement) element);
+        if (interactElement != null) {
+            for (Element element : interactElement.getEnclosedElements()) {
+                if (element.getKind() == ElementKind.METHOD &&
+                        !element.getModifiers().contains(Modifier.PRIVATE)) {
+                    map.put(element.getSimpleName().toString().toLowerCase(), (ExecutableElement) element);
+                }
             }
         }
         return map;
     }
 
-    private MethodSpec createNewInstance(TypeName instanceType, TypeName entityType, TypeVariableName... typeVariableNames) {
+    private static MethodSpec createNewInstance(TypeName instanceType, TypeName entityType, TypeVariableName... typeVariableNames) {
         final MethodSpec.Builder builder = MethodSpec.methodBuilder("newInstance");
         builder.addModifiers(Modifier.PUBLIC, Modifier.STATIC);
         builder.addParameter(entityType, ENTITY_FIELD_NAME);
@@ -337,7 +353,7 @@ public class InteractorCreator extends BaseCreator {
         return builder.build();
     }
 
-    private MethodSpec createNewInstanceNoParameters(TypeName instanceType, TypeName entityType) {
+    private static MethodSpec createNewInstanceNoParameters(TypeName instanceType, TypeName entityType) {
         final MethodSpec.Builder builder = MethodSpec.methodBuilder("newInstance");
         builder.addModifiers(Modifier.PUBLIC, Modifier.STATIC);
         builder.returns(instanceType);
@@ -347,20 +363,24 @@ public class InteractorCreator extends BaseCreator {
         return builder.build();
     }
 
-    private MethodSpec createConstructor(TypeName entityType) {
-        return MethodSpec.constructorBuilder()
+    private static MethodSpec createConstructor(TypeName entityType, boolean isBehavior) {
+        final MethodSpec.Builder builder = MethodSpec.constructorBuilder()
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(entityType, ENTITY_FIELD_NAME)
-                .addStatement("this.$N = $N", ENTITY_FIELD_NAME, ENTITY_FIELD_NAME)
-                .beginControlFlow("if($N == null)", ENTITY_FIELD_NAME)
-                .addStatement("$N = $T.create()", SUBJECT_FIELD_NAME, RxJavaClass.BehaviorSubject)
-                .nextControlFlow("else")
-                .addStatement("$N = $T.createDefault($N)", SUBJECT_FIELD_NAME, RxJavaClass.BehaviorSubject, ENTITY_FIELD_NAME)
-                .endControlFlow()
-                .build();
+                .addStatement("this.$N = $N", ENTITY_FIELD_NAME, ENTITY_FIELD_NAME);
+        if (isBehavior) {
+            return builder.beginControlFlow("if($N == null)", ENTITY_FIELD_NAME)
+                    .addStatement("$N = $T.create()", SUBJECT_FIELD_NAME, RxJavaClass.BehaviorSubject)
+                    .nextControlFlow("else")
+                    .addStatement("$N = $T.createDefault($N)", SUBJECT_FIELD_NAME, RxJavaClass.BehaviorSubject, ENTITY_FIELD_NAME)
+                    .endControlFlow()
+                    .build();
+        } else {
+            return builder.addStatement("$N = $T.create()", SUBJECT_FIELD_NAME, RxJavaClass.PublishSubject).build();
+        }
     }
 
-    private MethodSpec createEntityMethod(String elementClass, TypeName entityType) {
+    private static MethodSpec createEntityMethod(String elementClass, TypeName entityType) {
         return MethodSpec.methodBuilder(ENTITY)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -372,7 +392,7 @@ public class InteractorCreator extends BaseCreator {
                 .build();
     }
 
-    private MethodSpec createSubjectMethod(TypeName entityType) {
+    private static MethodSpec createSubjectMethod(TypeName entityType) {
         return MethodSpec.methodBuilder(OBSERVABLE)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -381,7 +401,7 @@ public class InteractorCreator extends BaseCreator {
     }
 
 
-    private MethodSpec createUpdateMethod(TypeName entityType) {
+    private static MethodSpec createUpdateMethod(TypeName entityType) {
         return MethodSpec.methodBuilder(UPDATE)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -395,7 +415,7 @@ public class InteractorCreator extends BaseCreator {
                 .build();
     }
 
-    private MethodSpec createAcceptMethod(TypeName entityType) {
+    private static MethodSpec createAcceptMethod(TypeName entityType) {
         return MethodSpec.methodBuilder(ACCEPT)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -406,7 +426,7 @@ public class InteractorCreator extends BaseCreator {
                 .build();
     }
 
-    private MethodSpec createSetterMethod(Setter setter, String implementClassName, HashMap<String, VariableElement> fieldElements, HashMap<String, ExecutableElement> methodElements) {
+    private static MethodSpec createSetterMethod(Setter setter, String implementClassName, HashMap<String, VariableElement> fieldElements, HashMap<String, ExecutableElement> methodElements) {
         return MethodSpec.methodBuilder(setter.methodName)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -416,11 +436,11 @@ public class InteractorCreator extends BaseCreator {
                 .build();
     }
 
-    private CodeBlock createSetterCodeBlock(Setter setter, String implementClassName, HashMap<String, VariableElement> fieldElements, HashMap<String, ExecutableElement> methodElements) {
+    private static CodeBlock createSetterCodeBlock(Setter setter, String implementClassName, HashMap<String, VariableElement> fieldElements, HashMap<String, ExecutableElement> methodElements) {
         final String parameterName = setter.parameterName;
         final String interactMethodName = setter.methodName.toLowerCase();
         final CodeBlock.Builder codeBlock = CodeBlock.builder();
-        codeBlock.beginControlFlow("if($N.this.$N == null)",implementClassName, ENTITY_FIELD_NAME)
+        codeBlock.beginControlFlow("if($N.this.$N == null)", implementClassName, ENTITY_FIELD_NAME)
                 .addStatement("return")
                 .endControlFlow();
         if (methodElements.containsKey(interactMethodName)) {
@@ -438,7 +458,7 @@ public class InteractorCreator extends BaseCreator {
                 .build();
     }
 
-    private MethodSpec createGetterMethod(Getter getter, String implementClassName, HashMap<String, VariableElement> fieldElements, HashMap<String, ExecutableElement> methodElements) {
+    private static MethodSpec createGetterMethod(Getter getter, String implementClassName, HashMap<String, VariableElement> fieldElements, HashMap<String, ExecutableElement> methodElements) {
         return MethodSpec.methodBuilder(getter.methodName)
                 .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
@@ -447,10 +467,10 @@ public class InteractorCreator extends BaseCreator {
                 .build();
     }
 
-    private CodeBlock createGetterCodeBlock(Getter getter, String implementClassName, HashMap<String, VariableElement> fieldElements, HashMap<String, ExecutableElement> methodElements) {
+    private static CodeBlock createGetterCodeBlock(Getter getter, String implementClassName, HashMap<String, VariableElement> fieldElements, HashMap<String, ExecutableElement> methodElements) {
         final String interactMethodName = getter.methodName.toLowerCase();
         final CodeBlock.Builder codeBlock = CodeBlock.builder();
-        codeBlock.beginControlFlow("if($N.this.$N == null)",implementClassName, ENTITY_FIELD_NAME)
+        codeBlock.beginControlFlow("if($N.this.$N == null)", implementClassName, ENTITY_FIELD_NAME)
                 .add("return ")
                 .addStatement(addNullCode(getClassName(getter.element.asType())))
                 .endControlFlow();

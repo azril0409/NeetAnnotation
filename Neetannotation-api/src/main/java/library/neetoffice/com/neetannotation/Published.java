@@ -9,4 +9,5 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 @Retention(SOURCE)
 @Target(FIELD)
 public @interface Published {
+    boolean recordLastEntity() default true;
 }

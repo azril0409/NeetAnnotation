@@ -25,7 +25,7 @@ open class RecordViewModel(application: Application) : AndroidViewModel(applicat
     lateinit var onRecords: RecordListinteractor
     @Published
     lateinit var value: IntegerInteractor
-    @Published
+    @Published(recordLastEntity = false)
     lateinit var onError: ThrowableInteractor
 
     @AfterInject

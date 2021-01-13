@@ -137,6 +137,11 @@ public abstract class BaseCreator {
         return CodeBlock.builder().add("null").build();
     }
 
+    boolean isSubApplication(TypeElement element) {
+        return isInstanceOf(element, AndroidClass.Application);
+    }
+
+
     boolean isSubActivity(TypeElement element) {
         return isInstanceOf(element, AndroidClass.Activity);
     }

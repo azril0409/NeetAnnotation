@@ -7,8 +7,13 @@ import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.inject.Inject;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -23,15 +28,30 @@ import library.neetoffice.com.neetannotation.Published;
 public class DaggerCreator extends BaseCreator {
     static final String MODULES = "modules";
     private final MainProcessor mainProcessor;
+    private final Set<TypeName> typenames;
 
     public DaggerCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
         mainProcessor = processor;
+        typenames = new HashSet();
+    }
+
+    void addLocalModule(TypeElement moduleElement) {
+        TypeName typename = getClassName(moduleElement.asType());
+        typenames.add(typename);
     }
 
     @Override
-    void process(TypeElement daggerElement, RoundEnvironment roundEnv) {
-        final Object modulesValue = findAnnotationValue(daggerElement, NDagger.class, MODULES);
+    void process(TypeElement nElement, RoundEnvironment roundEnv) {
+        typenames.add(mainProcessor.contextModule);
+        typenames.add(mainProcessor.systemModule);
+        boolean needCreateComponent = DaggerHelp.process(nElement);
+        if (needCreateComponent) {
+            createComponent(nElement, roundEnv);
+        }
+    }
+
+    void createComponent(TypeElement daggerElement, RoundEnvironment roundEnv) {
         final AnnotationSpec.Builder ab = AnnotationSpec.builder(DaggerClass.Component);
         boolean haveContextParameterInConstructor = false;
         boolean haveApplicationParameterInConstructor = false;
@@ -52,26 +72,26 @@ public class DaggerCreator extends BaseCreator {
                 }
             }
         }
-        boolean addviewModelProvider = false;
-        if (isSubActivity(daggerElement) || isSubFragment(daggerElement) || isSubAndroidViewModel(daggerElement) || isSubService(daggerElement)) {
-            addviewModelProvider = true;
-            ab.addMember(MODULES, "$L", mainProcessor.contextModule + ".class")
-                    .addMember(MODULES, "$L", mainProcessor.systemModule + ".class");
-            if (modulesValue != null) {
-                ab.addMember(MODULES, "$L", modulesValue);
+        if (isSubApplication(daggerElement) ||
+                isSubActivity(daggerElement) ||
+                isSubFragment(daggerElement) ||
+                isSubAndroidViewModel(daggerElement) ||
+                isSubService(daggerElement)) {
+            //ab.addMember(MODULES, "$L", mainProcessor.contextModule + ".class")
+            //        .addMember(MODULES, "$L", mainProcessor.systemModule + ".class");
+            for (TypeName typeName : typenames) {
+                ab.addMember(MODULES, "$L", typeName + ".class");
             }
         } else if (haveActivityParameterInConstructor || haveApplicationParameterInConstructor || haveContextParameterInConstructor) {
-            addviewModelProvider = true;
-            ab.addMember(MODULES, "$L", mainProcessor.contextModule + ".class")
-                    .addMember(MODULES, "$L", mainProcessor.systemModule + ".class");
-            if (modulesValue != null) {
-                ab.addMember(MODULES, "$L", modulesValue);
+            //ab.addMember(MODULES, "$L", mainProcessor.contextModule + ".class")
+            //        .addMember(MODULES, "$L", mainProcessor.systemModule + ".class");
+            for (TypeName typeName : typenames) {
+                ab.addMember(MODULES, "$L", typeName + ".class");
             }
         } else {
-            if (modulesValue != null) {
-                ab.addMember(MODULES, "{$L}", modulesValue);
-            }else{
-                ab.addMember(MODULES, "{}");}
+            for (TypeName typeName : typenames) {
+                ab.addMember(MODULES, "$L", typeName + ".class");
+            }
         }
         final String interfaceName = "_" + daggerElement.getSimpleName();
         final TypeSpec.Builder tb = TypeSpec.interfaceBuilder(interfaceName)
@@ -86,9 +106,6 @@ public class DaggerCreator extends BaseCreator {
                 tb.addMethod(createGetEntity(element));
             }
         }
-        if (addviewModelProvider) {
-            //tb.addMethod(createViewModelProviderMethod(daggerElement));
-        }
         writeTo(getPackageName(daggerElement), tb.build());
     }
 
@@ -97,13 +114,6 @@ public class DaggerCreator extends BaseCreator {
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .addParameter(getClassName(daggerElement.asType()), toModelCase(daggerElement.getSimpleName()))
                 .returns(void.class)
-                .build();
-    }
-
-    MethodSpec createViewModelProviderMethod(TypeElement daggerElement) {
-        return MethodSpec.methodBuilder("viewModelProvider")
-                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
-                .returns(AndroidClass.ViewModelProvider)
                 .build();
     }
 

@@ -5,6 +5,7 @@ dependencies {
     api 'com.google.auto.service:auto-service:1.0-rc2'
     api 'com.squareup:javapoet:1.8.0'
     api "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
+    api "com.google.dagger:dagger:$dagger_version"
     api "com.google.dagger:dagger-compiler:$dagger_version"
     api "com.google.dagger:dagger-android-processor:$dagger_version"
 }

@@ -28,20 +28,26 @@ public class ViewModelStoreOwnerCreator extends BaseCreator {
     static final String APPLICATION = "application";
     static final String VIEW_MODEL_STORE = "viewModelStore";
     static final String VIEW_MODEL_PROVIDER_FACTORY = "viewModelProviderFactory";
+    private final MainProcessor mainProcessor;
 
-    public ViewModelStoreOwnerCreator(AbstractProcessor processor, ProcessingEnvironment processingEnv) {
-        super(processor, processingEnv);
+    public ViewModelStoreOwnerCreator(MainProcessor mainProcessor, ProcessingEnvironment processingEnv) {
+        super(mainProcessor, processingEnv);
+        this.mainProcessor = mainProcessor;
     }
 
     @Override
     void process(TypeElement applicationElement, RoundEnvironment roundEnv) {
         final String className = applicationElement.getSimpleName() + "_";
         final List<? extends Element> enclosedElements = applicationElement.getEnclosedElements();
-        ArrayList<CodeBlock> onAfterInjectElements = new ArrayList();
-        for (Element element : enclosedElements) {
-            createAfterAnnotationCode(element);
+        ArrayList<CodeBlock> onCreateElements = new ArrayList();
+        final boolean haveDagger = DaggerHelp.process(applicationElement);
+        if (haveDagger) {
+            onCreateElements.add(createDaggerInjectCode(applicationElement));
         }
-        createApplaction(onAfterInjectElements, getPackageName(applicationElement), className, getClassName(applicationElement.asType()));
+        for (Element element : enclosedElements) {
+            onCreateElements.add(createAfterAnnotationCode(element));
+        }
+        createApplaction(onCreateElements, getPackageName(applicationElement), className, getClassName(applicationElement.asType()));
 
     }
 
@@ -84,7 +90,7 @@ public class ViewModelStoreOwnerCreator extends BaseCreator {
         createApplaction(new ArrayList(), packageName, "Application_", AndroidClass.Application);
     }
 
-    void createApplaction(List<CodeBlock> onAfterInjectElements, String packageName, String className, TypeName claz) {
+    void createApplaction(List<CodeBlock> onCreateElements, String packageName, String className, TypeName claz) {
         final TypeSpec.Builder tb = TypeSpec.classBuilder(className)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
                 .superclass(claz)
@@ -111,8 +117,8 @@ public class ViewModelStoreOwnerCreator extends BaseCreator {
                 .endControlFlow()
                 .addStatement(")")
                 .addStatement("$N = $T.getInstance(this)", VIEW_MODEL_PROVIDER_FACTORY, AndroidClass.AndroidViewModelFactory);
-        for (CodeBlock codeBlock : onAfterInjectElements) {
-            onCreate.addStatement(codeBlock);
+        for (CodeBlock codeBlock : onCreateElements) {
+            onCreate.addCode(codeBlock);
         }
         tb.addMethod(onCreate.build());
 
@@ -133,13 +139,17 @@ public class ViewModelStoreOwnerCreator extends BaseCreator {
         writeTo(packageName, tb.build());
     }
 
+    CodeBlock createDaggerInjectCode(TypeElement activityElement) {
+        return CodeBlock.builder()
+                .addStatement("Dagger_$N.builder().$N(new $T(this)).build().inject(this)", activityElement.getSimpleName(), toModelCase(AndroidClass.CONTEXT_MODULE_NAME), mainProcessor.contextModule)
+                .build();
+    }
+
     CodeBlock createAfterAnnotationCode(Element afterAnnotationElement) {
         final AfterInject aAfterInject = afterAnnotationElement.getAnnotation(AfterInject.class);
         if (aAfterInject == null) {
             return CodeBlock.builder().build();
         }
-        return CodeBlock.builder()
-                .addStatement("$N()", afterAnnotationElement.getSimpleName())
-                .build();
+        return CodeBlock.builder().addStatement("$N()", afterAnnotationElement.getSimpleName()).build();
     }
 }

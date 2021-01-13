@@ -14,6 +14,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 
+import dagger.Module;
 import library.neetoffice.com.neetannotation.Interactor;
 import library.neetoffice.com.neetannotation.ListInteractor;
 import library.neetoffice.com.neetannotation.NActivity;
@@ -83,15 +84,10 @@ public class MainProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnv) {
         contextInteractorCreator.createModule(contextPackageName);
         daggerCreator.createContextModule(contextPackageName);
-        //viewModelCreator.createContextModule(contextPackageName);
         daggerCreator.createSystemModule(contextPackageName);
         viewModelStoreOwnerCreator.createSimpleViewModelStoreOwner(contextPackageName);
         viewModelStoreOwnerCreator.createApplaction(contextPackageName);
 
-        final Set<? extends Element> applications = roundEnv.getElementsAnnotatedWith(NApplication.class);
-        for (Element application : applications) {
-            viewModelStoreOwnerCreator.process((TypeElement) application, roundEnv);
-        }
         final Set<? extends Element> interacts = roundEnv.getElementsAnnotatedWith(Interactor.class);
         for (Element interact : interacts) {
             interactorCreator.process((TypeElement) interact, roundEnv);
@@ -105,28 +101,40 @@ public class MainProcessor extends AbstractProcessor {
             setInteractorCreator.process((TypeElement) interact, roundEnv);
         }
 
-        final Set<? extends Element> nDaggers = roundEnv.getElementsAnnotatedWith(NDagger.class);
-        for (Element nDagger : nDaggers) {
-            daggerCreator.process((TypeElement) nDagger, roundEnv);
+        final Set<? extends Element> modules = roundEnv.getElementsAnnotatedWith(Module.class);
+        for (Element module : modules){
+            daggerCreator.addLocalModule((TypeElement)module);
         }
+
+        final Set<? extends Element> applications = roundEnv.getElementsAnnotatedWith(NApplication.class);
+        for (Element application : applications) {
+            daggerCreator.process((TypeElement) application, roundEnv);
+            viewModelStoreOwnerCreator.process((TypeElement) application, roundEnv);
+        }
+
         final Set<? extends Element> nViewModels = roundEnv.getElementsAnnotatedWith(NViewModel.class);
         for (Element nViewModel : nViewModels) {
+            daggerCreator.process((TypeElement) nViewModel, roundEnv);
             viewModelCreator.process((TypeElement) nViewModel, roundEnv);
         }
         final Set<? extends Element> nActivitys = roundEnv.getElementsAnnotatedWith(NActivity.class);
         for (Element nActivity : nActivitys) {
+            daggerCreator.process((TypeElement) nActivity, roundEnv);
             activityCreator.process((TypeElement) nActivity, roundEnv);
         }
         final Set<? extends Element> nFragments = roundEnv.getElementsAnnotatedWith(NFragment.class);
         for (Element nFragment : nFragments) {
+            daggerCreator.process((TypeElement) nFragment, roundEnv);
             fragmentCreator.process((TypeElement) nFragment, roundEnv);
         }
         final Set<? extends Element> nViews = roundEnv.getElementsAnnotatedWith(NView.class);
         for (Element nView : nViews) {
+            daggerCreator.process((TypeElement) nView, roundEnv);
             viewCreator.process((TypeElement) nView, roundEnv);
         }
         final Set<? extends Element> nServices = roundEnv.getElementsAnnotatedWith(NService.class);
         for (Element nService : nServices) {
+            daggerCreator.process((TypeElement) nService, roundEnv);
             serviceCreator.process((TypeElement) nService, roundEnv);
         }
         contextInteractorCreator.release();

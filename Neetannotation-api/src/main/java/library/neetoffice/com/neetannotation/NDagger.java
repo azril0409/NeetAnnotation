@@ -13,6 +13,7 @@ public @interface NDagger {
 
     /**
      *  modules is module for Dagger2 to add Component
+     *  @return module class array
      * */
     Class<?>[] modules() default {};
 }

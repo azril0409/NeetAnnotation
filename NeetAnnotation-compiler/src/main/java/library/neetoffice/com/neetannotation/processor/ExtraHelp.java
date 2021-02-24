@@ -346,6 +346,42 @@ public class ExtraHelp {
                     .returns(void.class)
                     .addStatement("$N.startActivity(build())", CONTEXT)
                     .build());
+            intentBuilder.addMethod(MethodSpec.methodBuilder("startActivity")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(AndroidClass.Bundle, "options")
+                    .returns(void.class)
+                    .addStatement("$N.startActivity(build(),options)", CONTEXT)
+                    .build());
+            intentBuilder.addMethod(MethodSpec.methodBuilder("startActivityForResult")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(AndroidClass.Activity, "activity")
+                    .addParameter(TypeName.INT, "requestCode")
+                    .returns(void.class)
+                    .addStatement("activity.startActivityForResult(build(),requestCode)")
+                    .build());
+            intentBuilder.addMethod(MethodSpec.methodBuilder("startActivityForResult")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(AndroidClass.Fragment, "fragment")
+                    .addParameter(TypeName.INT, "requestCode")
+                    .returns(void.class)
+                    .addStatement("fragment.startActivityForResult(build(),requestCode)")
+                    .build());
+            intentBuilder.addMethod(MethodSpec.methodBuilder("startActivityForResult")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(AndroidClass.Activity, "activity")
+                    .addParameter(TypeName.INT, "requestCode")
+                    .addParameter(AndroidClass.Bundle, "options")
+                    .returns(void.class)
+                    .addStatement("activity.startActivityForResult(build(),requestCode,options)")
+                    .build());
+            intentBuilder.addMethod(MethodSpec.methodBuilder("startActivityForResult")
+                    .addModifiers(Modifier.PUBLIC)
+                    .addParameter(AndroidClass.Fragment, "fragment")
+                    .addParameter(TypeName.INT, "requestCode")
+                    .addParameter(AndroidClass.Bundle, "options")
+                    .returns(void.class)
+                    .addStatement("fragment.startActivityForResult(build(),requestCode,options)")
+                    .build());
             return intentBuilder.build();
         }
 

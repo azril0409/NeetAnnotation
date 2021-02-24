@@ -29,6 +29,7 @@ public class InteractorCreator extends BaseCreator {
     static final String SUBJECT_FIELD_NAME = "subject";
     static final String UPDATE = "update";
     static final String ENTITY = "entity";
+    static final String GET_ENTITY = "getEntity";
     static final String OBSERVABLE = "observable";
     static final String ACCEPT = "accept";
     static final String SUBSCRIBE = "subscribe";
@@ -132,6 +133,10 @@ public class InteractorCreator extends BaseCreator {
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .returns(RxJavaClass.Single(entityType));
 
+        final MethodSpec.Builder getEntity =  MethodSpec.methodBuilder(GET_ENTITY)
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                .returns(entityType);
+
         final MethodSpec.Builder subject = MethodSpec.methodBuilder(OBSERVABLE)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .returns(RxJavaClass.Observable(entityType));
@@ -197,6 +202,7 @@ public class InteractorCreator extends BaseCreator {
         }
         tb.addMethod(update.build());
         tb.addMethod(entity.build());
+        tb.addMethod(getEntity.build());
         tb.addMethod(subject.build());
         tb.addMethod(subscribe_0.build());
         tb.addMethod(subscribe_1.build());
@@ -235,6 +241,7 @@ public class InteractorCreator extends BaseCreator {
                 .build();
         final MethodSpec constructor = createConstructor(entityType, isBehavior);
         final MethodSpec entity = createEntityMethod(implementClassName, entityType);
+        final MethodSpec getEntity = createGetEntityMethod(implementClassName, entityType);
         final MethodSpec subject = createSubjectMethod(entityType);
         final MethodSpec update = createUpdateMethod(entityType);
         final MethodSpec accept = createAcceptMethod(entityType);
@@ -300,6 +307,7 @@ public class InteractorCreator extends BaseCreator {
         tb.addMethod(constructor);
         tb.addMethod(update);
         tb.addMethod(entity);
+        tb.addMethod(getEntity);
         tb.addMethod(subject);
         tb.addMethod(subscribe_0.build());
         tb.addMethod(subscribe_1.build());
@@ -389,6 +397,15 @@ public class InteractorCreator extends BaseCreator {
                 .addStatement("return $T.never()", RxJavaClass.Single)
                 .endControlFlow()
                 .addStatement("return $T.just($N)", RxJavaClass.Single, ENTITY_FIELD_NAME)
+                .build();
+    }
+
+    private static MethodSpec createGetEntityMethod(String elementClass, TypeName entityType) {
+        return MethodSpec.methodBuilder(GET_ENTITY)
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .returns(entityType)
+                .addStatement("return $N", ENTITY_FIELD_NAME)
                 .build();
     }
 

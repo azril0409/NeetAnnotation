@@ -135,6 +135,11 @@ public class ListInteractorCreator extends BaseCreator {
                 .returns(RxJavaClass.Single(listType));
         tb.addMethod(entity.build());
 
+        final MethodSpec.Builder getEntity = MethodSpec.methodBuilder(InteractorCreator.GET_ENTITY)
+                .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
+                .returns(listType);
+        tb.addMethod(getEntity.build());
+
         final MethodSpec.Builder subject = MethodSpec.methodBuilder(InteractorCreator.OBSERVABLE)
                 .addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
                 .returns(RxJavaClass.Observable(listType));
@@ -267,6 +272,7 @@ public class ListInteractorCreator extends BaseCreator {
 
         tb.addMethod(createUpdateMethod(listType));
         tb.addMethod(createEntityMethod(implementClassName, listType));
+        tb.addMethod(createGetEntityMethod(implementClassName, listType));
         tb.addMethod(createSubjectMethod(listType));
 
         final MethodSpec.Builder subscribe_0 = MethodSpec.methodBuilder(InteractorCreator.SUBSCRIBE)
@@ -367,6 +373,15 @@ public class ListInteractorCreator extends BaseCreator {
                 .addStatement("return $T.never()", RxJavaClass.Single)
                 .endControlFlow()
                 .addStatement("return $T.just(($T)new $T($N))", RxJavaClass.Single, entityType, ArrayList.class, InteractorCreator.ENTITY_FIELD_NAME)
+                .build();
+    }
+
+    private static MethodSpec createGetEntityMethod(String elementClass, TypeName entityType) {
+        return MethodSpec.methodBuilder(InteractorCreator.GET_ENTITY)
+                .addAnnotation(Override.class)
+                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
+                .returns(entityType)
+                .addStatement("return $N", InteractorCreator.ENTITY_FIELD_NAME)
                 .build();
     }
 

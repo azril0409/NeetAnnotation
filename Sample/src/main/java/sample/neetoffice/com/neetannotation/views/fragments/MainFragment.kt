@@ -19,7 +19,7 @@ open class MainFragment : Fragment() {
     lateinit var list: ArrayList<Record>
 
 
-    @Subscribes(Subscribe(viewmode = RecordViewModel::class, key = "test"))
+    @Subscribes(Subscribe(viewmode = RecordViewModel::class))
     @Named("onRecord")
     fun onRecord2(record: Record) {
 

@@ -10,6 +10,7 @@ import com.squareup.javapoet.TypeSpec;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
@@ -18,6 +19,7 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.swing.text.html.parser.Entity;
 
 import library.neetoffice.com.neetannotation.AfterInject;
 import library.neetoffice.com.neetannotation.FragmentBy;

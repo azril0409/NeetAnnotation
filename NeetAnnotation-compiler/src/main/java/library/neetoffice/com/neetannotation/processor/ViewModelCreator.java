@@ -9,11 +9,14 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 import com.squareup.javapoet.TypeVariableName;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.inject.Named;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -24,6 +27,7 @@ import javax.lang.model.element.VariableElement;
 import library.neetoffice.com.neetannotation.AfterInject;
 import library.neetoffice.com.neetannotation.InjectInitialEntity;
 import library.neetoffice.com.neetannotation.NViewModel;
+import library.neetoffice.com.neetannotation.NamedAs;
 import library.neetoffice.com.neetannotation.Published;
 import library.neetoffice.com.neetannotation.ViewModelOf;
 
@@ -37,6 +41,7 @@ public class ViewModelCreator extends BaseCreator {
     static final String CONSTRUCTOR_CONTEXT_PARAMETER = "context";
     static final String CONTEXT_FROM = "application";
     static final TypeVariableName SUBJECT_PARAMETERIZED_TYPE_NAME = TypeVariableName.get("T");
+    static final HashMap<String, String> publishedNameMap = new HashMap();
     private final MainProcessor mainProcessor;
     final SubscribeHelp subscribeHelp;
 
@@ -44,6 +49,12 @@ public class ViewModelCreator extends BaseCreator {
         super(processor, processingEnv);
         this.mainProcessor = processor;
         subscribeHelp = new SubscribeHelp(this);
+    }
+
+    @Override
+    void release() {
+        super.release();
+        publishedNameMap.clear();
     }
 
     @Override
@@ -81,6 +92,16 @@ public class ViewModelCreator extends BaseCreator {
             final List<? extends Element> enclosedElements = viewModel.getEnclosedElements();
             for (Element enclosedElement : enclosedElements) {
                 if (enclosedElement.getAnnotation(Published.class) != null) {
+                    final NamedAs namedAs = enclosedElement.getAnnotation(NamedAs.class);
+                    if (namedAs != null) {
+                        for (String name : namedAs.value()) {
+                            final String key = viewModel.getQualifiedName().toString() + "_" + name;
+                            publishedNameMap.put(key, enclosedElement.getSimpleName().toString());
+                        }
+                    }
+                    final String key = viewModel.getQualifiedName().toString() + "_" + enclosedElement.getSimpleName().toString();
+                    publishedNameMap.put(key, enclosedElement.getSimpleName().toString());
+
                     final CodeBlock instanceInteractor = createInstanceCode(viewModelElement, enclosedElement, haveDagger);
                     init.add(instanceInteractor);
                 } else if (enclosedElement.getAnnotation(ViewModelOf.class) != null) {
@@ -169,6 +190,24 @@ public class ViewModelCreator extends BaseCreator {
         tb.addMethod(onCleared.build());
 
         writeTo(getPackageName(viewModelElement), tb.build());
+    }
+
+    private String getSubscribeMethodName(Element element) {
+        final String name;
+        final AnnotationMirror named = AnnotationHelp.findAnnotationMirror(element, DaggerClass.Named);
+        if (named == null) {
+            publishedNameMap.put(element.getSimpleName().toString(), "NOT find " + DaggerClass.Named.simpleName());
+            name = element.getSimpleName().toString();
+        } else {
+            final String value = (String) AnnotationHelp.findAnnotationValue(named, "value");
+            publishedNameMap.put(element.getSimpleName().toString(), "Find " + DaggerClass.Named.simpleName());
+            if (value.equals("null")) {
+                name = element.getSimpleName().toString();
+            } else {
+                name = value;
+            }
+        }
+        return name;
     }
 
     CodeBlock createInstanceCode(TypeElement viewModelElement, Element interactElement, boolean haveDagger) {

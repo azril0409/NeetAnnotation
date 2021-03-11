@@ -12,6 +12,7 @@ import sample.neetoffice.com.neetannotation.modules.RecordModule
 import text.sss.support.IntegerInteractor
 import text.sss.support.ThrowableInteractor
 import javax.inject.Inject
+import javax.inject.Named
 
 @NViewModel(isSingle = true)
 @NDagger(modules = [RecordModule::class])
@@ -19,14 +20,14 @@ open class RecordViewModel(application: Application) : AndroidViewModel(applicat
     @Inject
     lateinit var dao: Dao<Record>
     @Published
-    @InjectInitialEntity
     lateinit var onRecord: RecordInteractor
     @Published
     lateinit var onRecords: RecordListinteractor
     @Published
     lateinit var value: IntegerInteractor
     @Published(recordLastEntity = false)
-    lateinit var onError: ThrowableInteractor
+    @NamedAs("onError")
+    lateinit var error: ThrowableInteractor
 
     @AfterInject
     fun onAfterAnnotation(){

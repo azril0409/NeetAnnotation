@@ -21,6 +21,7 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.ExecutableType;
 
+import library.neetoffice.com.neetannotation.NamedAs;
 import library.neetoffice.com.neetannotation.Subscribe;
 import library.neetoffice.com.neetannotation.Subscribes;
 import library.neetoffice.com.neetannotation.ViewModelOf;
@@ -131,21 +132,38 @@ public class SubscribeHelp {
                         break;
                     }
                 }
-                final String name = getSubscribeMethodName(element);
+                final String name = element.getSimpleName().toString();
                 if (aSubscribe != null) {
                     final Object viewmode = creator.findAnnotationValue(aSubscribe, "viewmode");
                     final String key = (String) creator.findAnnotationValue(aSubscribe, "key");
                     if (key == null) {
-                        parseSubscribe(viewmode.toString(), "", name, element);
+                        if (!parseSubscribe(viewmode.toString(), "", name, element)) {
+                            final NamedAs namedAs = element.getAnnotation(NamedAs.class);
+                            if (namedAs != null) {
+                                for (String n : namedAs.value()) {
+                                    if (parseSubscribe(viewmode.toString(), "", n, element)) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     } else {
-                        parseSubscribe(viewmode.toString(), key, name, element);
+                        if (!parseSubscribe(viewmode.toString(), key, name, element)) {
+                            final NamedAs namedAs = element.getAnnotation(NamedAs.class);
+                            if (namedAs != null) {
+                                for (String n : namedAs.value()) {
+                                    if (parseSubscribe(viewmode.toString(), key, n, element)) {
+                                        break;
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
             if (element.getAnnotation(Subscribes.class) != null) {
                 parseSubscribes(element);
             }
-
             if (element.getAnnotation(ViewModelOf.class) != null) {
                 final Object v = creator.findAnnotationValue(element, ViewModelOf.class, "value");
                 final ViewModelOfElement viewModelOfElement = new ViewModelOfElement(element, v != null ? v.toString() : "");
@@ -162,7 +180,7 @@ public class SubscribeHelp {
                     break;
                 }
             }
-            final String name = getSubscribeMethodName(element);
+            final String name = element.getSimpleName().toString();
             final StringBuilder stringBuilder = new StringBuilder();
             if (aSubscribes != null) {
                 final String aaSubscribesValue = creator.findAnnotationValue(aSubscribes, "value").toString();
@@ -175,54 +193,61 @@ public class SubscribeHelp {
                         final String viewmode = annotation.split("viewmode=")[1].split(".class")[0];
                         try {
                             final String key = annotation.split("key=\"")[1].split("\"")[0];
-                            parseSubscribe(viewmode, key, name, element);
+                            if (!parseSubscribe(viewmode, key, name, element)) {
+                                final NamedAs namedAs = element.getAnnotation(NamedAs.class);
+                                if (namedAs != null) {
+                                    for (String n : namedAs.value()) {
+                                        if (parseSubscribe(viewmode, key, n, element)) {
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
                         } catch (Exception e) {
-                            parseSubscribe(viewmode, "", name, element);
+                            if (!parseSubscribe(viewmode, "", name, element)) {
+                                final NamedAs namedAs = element.getAnnotation(NamedAs.class);
+                                if (namedAs != null) {
+                                    for (String n : namedAs.value()) {
+                                        if (parseSubscribe(viewmode, "", n, element)) {
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
         }
 
-        private String getSubscribeMethodName(Element element) {
-            final String name;
-            final AnnotationMirror named = AnnotationHelp.findAnnotationMirror(element, DaggerClass.Named);
-            if (named == null) {
-                name = element.getSimpleName().toString();
-            } else {
-                final String value = (String) AnnotationHelp.findAnnotationValue(named, "value");
-                if (value.equals("null")) {
-                    name = element.getSimpleName().toString();
-                } else {
-                    name = value;
-                }
+        private Boolean parseSubscribe(String viewModel, String key, String name, Element element) {
+            final String _name = ViewModelCreator.publishedNameMap.get(viewModel + "_" + name);
+            if (_name == null) {
+                return false;
             }
-            return name;
-        }
-
-        private void parseSubscribe(String viewModel, String key, String subjectName, Element element) {
             if (element instanceof ExecutableElement) {
                 final ExecutableElement method = (ExecutableElement) element;
                 if (method.getParameters().isEmpty()) {
                     final SubscribeElement subscribeElement = SubscribeElement.createInstanceByCompletedElement(element);
                     subscribeElement.viewModel = viewModel;
-                    subscribeElement.subjectName = subjectName;
+                    subscribeElement.subjectName = _name;
                     subscribeElement.key = key;
                     parseSubscribeElement(subscribeElement);
                 } else {
                     final SubscribeElement subscribeElement = SubscribeElement.createInstanceByElement(element);
                     subscribeElement.viewModel = viewModel;
-                    subscribeElement.subjectName = subjectName;
+                    subscribeElement.subjectName = _name;
                     subscribeElement.key = key;
                     parseSubscribeElement(subscribeElement);
                 }
             } else {
                 final SubscribeElement subscribeElement = SubscribeElement.createInstanceByElement(element);
                 subscribeElement.viewModel = viewModel;
-                subscribeElement.subjectName = subjectName;
+                subscribeElement.subjectName = name;
                 subscribeElement.key = key;
                 parseSubscribeElement(subscribeElement);
             }
+            return true;
         }
 
         private void parseSubscribeElement(SubscribeElement subscribeElement) {

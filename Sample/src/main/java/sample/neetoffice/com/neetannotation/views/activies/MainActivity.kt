@@ -52,13 +52,14 @@ open class MainActivity : AppCompatActivity() {
     fun onFocusChange(hasFocus: Boolean) {
     }
 
-    @Subscribes(Subscribe(viewmode = RecordViewModel::class, key = "test"))
-    @Named("onRecord")
-    fun onRecord2(record: Record) {
+    @Subscribes(Subscribe(viewmode = RecordViewModel::class))
+    @NamedAs("onRecord")
+    fun onRecord2(record: Record, error:Throwable) {
 
     }
 
     @Subscribe(viewmode = RecordViewModel::class)
+    @NamedAs("onError")
     fun onError() {
     }
 

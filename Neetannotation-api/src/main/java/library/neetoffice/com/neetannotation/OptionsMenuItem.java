@@ -9,7 +9,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 @Retention(SOURCE)
 @Target(FIELD)
 public @interface OptionsMenuItem {
-    int value() default 0;
+    String value() default "";
 
     String resName() default "";
 }

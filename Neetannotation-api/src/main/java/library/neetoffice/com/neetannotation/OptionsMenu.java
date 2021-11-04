@@ -9,9 +9,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 @Retention(SOURCE)
 @Target(TYPE)
 public @interface OptionsMenu {
-    int value() default -1;
+    String value() default "";
 
     String resName() default "";
-
-    ViewById toolBar() default @ViewById;
 }

@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface CheckedChange {
 
-    int[] value() default {};
+    String[] value() default {};
 
     String[] resName() default {};
 }

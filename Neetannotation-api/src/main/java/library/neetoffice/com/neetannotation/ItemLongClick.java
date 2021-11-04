@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface ItemLongClick {
-    int[] value() default {};
+    String[] value() default {};
 
     String[] resName() default {};
 }

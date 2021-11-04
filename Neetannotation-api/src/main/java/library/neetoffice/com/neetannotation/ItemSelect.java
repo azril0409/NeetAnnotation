@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface ItemSelect {
-    int[] value() default {};
+    String[] value() default {};
 
     String[] resName() default {};
 }

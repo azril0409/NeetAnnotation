@@ -12,7 +12,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 @Retention(SOURCE)
 @Target(FIELD)
 public @interface ResIntArray {
-    int value() default 0;
+    String value() default "";
 
     String resName() default "";
 }

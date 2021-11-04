@@ -140,21 +140,23 @@ public class ListenerHelp {
             }
         }
 
-        private void addElementsMap(Element element, int[] rids, String[] resNames, String end, HashMap<String, ElementBundle> elements) {
-            for (int rid : rids) {
-                final String viewName = "i_" + rid;
-                final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id(rid, "", "", context_from, defPackage));
-                elements.put(viewName, bundle);
-            }
-            for (String resName : resNames) {
-                final String viewName = "n_" + resName;
-                final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id(0, resName, "", context_from, defPackage));
-                elements.put(viewName, bundle);
-            }
-            if (rids.length == 0 && resNames.length == 0) {
+        private void addElementsMap(Element element, String[] values, String[] resNames, String end, HashMap<String, ElementBundle> elements) {
+            if (values.length != 0) {
+                for (String resName : values) {
+                    final String viewName = "n_" + resName;
+                    final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id(resName, "", context_from, defPackage));
+                    elements.put(viewName, bundle);
+                }
+            } else if (resNames.length != 0) {
+                for (String resName : resNames) {
+                    final String viewName = "n_" + resName;
+                    final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id(resName, "", context_from, defPackage));
+                    elements.put(viewName, bundle);
+                }
+            } else {
                 final String elementName = parseMethodName(element.getSimpleName(), end);
                 final String viewName = "n_" + elementName;
-                final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id(0, "", elementName, context_from, defPackage));
+                final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id("", elementName, context_from, defPackage));
                 elements.put(viewName, bundle);
             }
         }

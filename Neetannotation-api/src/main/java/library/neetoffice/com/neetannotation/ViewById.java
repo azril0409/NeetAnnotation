@@ -13,17 +13,10 @@ import java.lang.annotation.Target;
 public @interface ViewById {
 
     /**
-     * The R.id.* field which refer to the layout.
-     *
-     * @return the id of the R.id
-     */
-    int value() default 0;
-
-
-    /**
      * The R.layout.* field which refer to the layout.
      *
      * @return the id of the R.id
      */
+    String value() default "";
     String resName() default "";
 }

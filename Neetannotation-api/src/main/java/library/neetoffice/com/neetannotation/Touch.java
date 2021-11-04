@@ -13,7 +13,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Retention(RUNTIME)
 @Target(METHOD)
 public @interface Touch {
-    int[] value() default {};
+    String[] value() default {};
 
     String[] resName() default {};
 

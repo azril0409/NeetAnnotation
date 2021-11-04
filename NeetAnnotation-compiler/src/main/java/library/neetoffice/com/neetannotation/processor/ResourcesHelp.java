@@ -42,9 +42,10 @@ public class ResourcesHelp {
             return CodeBlock.builder().build();
         }
         final String name = element.getSimpleName().toString();
+        final String resName = AndroidResHelp.parseResName(aResString.value(), aResString.resName());
         return CodeBlock.builder()
                 .add("$N = $N.getResources().getString(", name, context_from)
-                .add(AndroidResHelp.string(aResString.value(), aResString.resName(), name, context_from, defPackage))
+                .add(AndroidResHelp.string(resName, name, context_from, defPackage))
                 .addStatement(")")
                 .build();
     }
@@ -55,9 +56,10 @@ public class ResourcesHelp {
             return CodeBlock.builder().build();
         }
         final String name = element.getSimpleName().toString();
+        final String resName = AndroidResHelp.parseResName(aResStringArray.value(), aResStringArray.resName());
         return CodeBlock.builder()
                 .add("$N = $N.getResources().getStringArray(", name, context_from)
-                .add(AndroidResHelp.array(aResStringArray.value(), aResStringArray.resName(), name, context_from, defPackage))
+                .add(AndroidResHelp.array(resName, name, context_from, defPackage))
                 .addStatement(")")
                 .build();
     }
@@ -68,9 +70,10 @@ public class ResourcesHelp {
             return CodeBlock.builder().build();
         }
         final String name = element.getSimpleName().toString();
+        final String resName = AndroidResHelp.parseResName(aResBoolean.value(), aResBoolean.resName());
         return CodeBlock.builder()
                 .add("$N = $N.getResources().getBoolean(", name, context_from)
-                .add(AndroidResHelp.bool(aResBoolean.value(), aResBoolean.resName(), name, context_from, defPackage))
+                .add(AndroidResHelp.bool(resName, name, context_from, defPackage))
                 .addStatement(")")
                 .build();
     }
@@ -81,9 +84,10 @@ public class ResourcesHelp {
             return CodeBlock.builder().build();
         }
         final String name = element.getSimpleName().toString();
+        final String resName = AndroidResHelp.parseResName(aResDimen.value(), aResDimen.resName());
         return CodeBlock.builder()
                 .add("$N = $N.getResources().getDimensionPixelSize(", name, context_from)
-                .add(AndroidResHelp.dimen(aResDimen.value(), aResDimen.resName(), name, context_from, defPackage))
+                .add(AndroidResHelp.dimen(resName, name, context_from, defPackage))
                 .addStatement(")")
                 .build();
     }
@@ -94,9 +98,10 @@ public class ResourcesHelp {
             return CodeBlock.builder().build();
         }
         final String name = element.getSimpleName().toString();
+        final String resName = AndroidResHelp.parseResName(aResInt.value(), aResInt.resName());
         return CodeBlock.builder()
                 .add("$N = $N.getResources().getInteger(", name, context_from)
-                .add(AndroidResHelp.integer(aResInt.value(), aResInt.resName(), name, context_from, defPackage))
+                .add(AndroidResHelp.integer(resName, name, context_from, defPackage))
                 .addStatement(")")
                 .build();
     }
@@ -107,9 +112,10 @@ public class ResourcesHelp {
             return CodeBlock.builder().build();
         }
         final String name = element.getSimpleName().toString();
+        final String resName = AndroidResHelp.parseResName(aResIntArray.value(), aResIntArray.resName());
         return CodeBlock.builder()
                 .add("$N = $N.getResources().getIntArray(", name, context_from)
-                .add(AndroidResHelp.array(aResIntArray.value(), aResIntArray.resName(), name, context_from, defPackage))
+                .add(AndroidResHelp.array(resName, name, context_from, defPackage))
                 .addStatement(")")
                 .build();
     }
@@ -120,9 +126,10 @@ public class ResourcesHelp {
             return CodeBlock.builder().build();
         }
         final String name = element.getSimpleName().toString();
+        final String resName = AndroidResHelp.parseResName(aResColor.value(), aResColor.resName());
         return CodeBlock.builder()
                 .add("$N = $N.getResources().getColor(", name, context_from)
-                .add(AndroidResHelp.color(aResColor.value(), aResColor.resName(), name, context_from, defPackage))
+                .add(AndroidResHelp.color(resName, name, context_from, defPackage))
                 .addStatement(",$N.getTheme())", context_from)
                 .build();
     }
@@ -133,9 +140,10 @@ public class ResourcesHelp {
             return CodeBlock.builder().build();
         }
         final String name = element.getSimpleName().toString();
+        final String resName = AndroidResHelp.parseResName(aResDrawable.value(), aResDrawable.resName());
         return CodeBlock.builder()
                 .add("$N = $N.getResources().getDrawable(", name, context_from)
-                .add(AndroidResHelp.drawable(aResDrawable.value(), aResDrawable.resName(), name, context_from, defPackage))
+                .add(AndroidResHelp.drawable(resName, name, context_from, defPackage))
                 .addStatement(",$N.getTheme())", context_from)
                 .build();
     }
@@ -146,9 +154,10 @@ public class ResourcesHelp {
             return CodeBlock.builder().build();
         }
         final String name = element.getSimpleName().toString();
+        final String resName = AndroidResHelp.parseResName(aResAnimation.value(), aResAnimation.resName());
         return CodeBlock.builder()
                 .add("$N = $T.loadAnimation($N,", name, AndroidClass.AnimationUtils, context_from)
-                .add(AndroidResHelp.anim(aResAnimation.value(), aResAnimation.resName(), name, context_from, defPackage))
+                .add(AndroidResHelp.anim(resName, name, context_from, defPackage))
                 .addStatement(")")
                 .build();
     }
@@ -159,9 +168,10 @@ public class ResourcesHelp {
             return CodeBlock.builder().build();
         }
         final String name = element.getSimpleName().toString();
+        final String resName = AndroidResHelp.parseResName(aResLayoutAnimation.value(), aResLayoutAnimation.resName());
         return CodeBlock.builder()
                 .add("$N = $T.loadLayoutAnimation($N,", name, AndroidClass.AnimationUtils, context_from)
-                .add(AndroidResHelp.anim(aResLayoutAnimation.value(), aResLayoutAnimation.resName(), name, context_from, defPackage))
+                .add(AndroidResHelp.anim(resName, name, context_from, defPackage))
                 .addStatement(")")
                 .build();
     }

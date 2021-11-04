@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.FIELD)
 public @interface ResColor {
-    int value() default 0;
+    String value() default "";
 
     String resName() default "";
 }

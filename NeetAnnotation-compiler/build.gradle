@@ -1,18 +1,24 @@
-apply plugin: 'java-library'
+plugins {
+    id 'java-library'
+}
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
 dependencies {
     api project(':Neetannotation-api')
     api fileTree(include: ['*.jar'], dir: 'libs')
-    api 'com.google.auto.service:auto-service:1.0-rc2'
-    api 'com.squareup:javapoet:1.8.0'
-    api "androidx.lifecycle:lifecycle-compiler:$lifecycle_version"
+    api 'com.google.auto.service:auto-service:1.0'
+    api 'com.squareup:javapoet:1.13.0'
+    // Lifecycle
+    //noinspection LifecycleAnnotationProcessorWithJava8
+    api "androidx.lifecycle:lifecycle-compiler:2.4.0"
+    // Dagger2
     api "com.google.dagger:dagger:$dagger_version"
+    api "com.google.dagger:dagger-android-support:$dagger_version"
     api "com.google.dagger:dagger-compiler:$dagger_version"
     api "com.google.dagger:dagger-android-processor:$dagger_version"
 }
-
-sourceCompatibility = "1.8"
-targetCompatibility = "1.8"
-
 
 def name = 'NeetAnnotation-kapt'
 def libname = name + "_" + lib_version + ".jar"
@@ -29,7 +35,4 @@ task makeAar(type: Copy) {
 }
 makeAar.dependsOn(clearAar, "build")
 
-
 apply from: rootProject.file('Neetannotation-compiler/publish.gradle')
-apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/installv1.gradle'
-apply from: 'https://raw.githubusercontent.com/nuuneoi/JCenter/master/bintrayv1.gradle'

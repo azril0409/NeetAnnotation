@@ -1,6 +1,7 @@
 package library.neetoffice.com.neetannotation.processor;
 
 import com.squareup.javapoet.AnnotationSpec;
+import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
@@ -10,6 +11,7 @@ import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
+import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -17,6 +19,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import library.neetoffice.com.neetannotation.AfterInject;
+import library.neetoffice.com.neetannotation.NActivity;
 import library.neetoffice.com.neetannotation.NView;
 import library.neetoffice.com.neetannotation.ViewById;
 
@@ -141,9 +144,13 @@ public class ViewCreator extends BaseCreator {
         if (aViewById == null) {
             return CodeBlock.builder().build();
         }
+        String resName = aViewById.value();
+        if (resName.isEmpty()) {
+            resName = aViewById.resName();
+        }
         return CodeBlock.builder()
                 .add("$N = findViewById(", viewByIdElement.getSimpleName())
-                .add(AndroidResHelp.id(aViewById.value(), aViewById.resName(), viewByIdElement.getSimpleName().toString(), CONTEXT, DEF_PACKAGE))
+                .add(AndroidResHelp.id(resName, viewByIdElement.getSimpleName().toString(), CONTEXT, DEF_PACKAGE))
                 .addStatement(")")
                 .build();
     }
@@ -179,7 +186,7 @@ public class ViewCreator extends BaseCreator {
     CodeBlock createDaggerInjectCode(TypeElement viewElement) {
         final CodeBlock.Builder code = CodeBlock.builder();
         if (isInstanceOf(viewElement.asType(), AndroidClass.View)) {
-            code.addStatement("Dagger_$N.builder().$N(new $T($N)).build().inject(this)", viewElement.getSimpleName(), toModelCase(AndroidClass.CONTEXT_MODULE_NAME),mainProcessor.contextModule , CONTEXT);
+            code.addStatement("Dagger_$N.builder().$N(new $T($N)).build().inject(this)", viewElement.getSimpleName(), toModelCase(AndroidClass.CONTEXT_MODULE_NAME), mainProcessor.contextModule, CONTEXT);
         } else {
             code.addStatement("Dagger_$N.create().inject(this)", viewElement.getSimpleName());
         }
@@ -187,14 +194,34 @@ public class ViewCreator extends BaseCreator {
     }
 
     CodeBlock inflateLayout(TypeElement viewElement) {
-        final NView aNView = viewElement.getAnnotation(NView.class);
-        if (aNView.value() == 0 && aNView.resName().isEmpty()) {
+        final AnnotationMirror aNViewMirror = AnnotationHelp.findAnnotationMirror(viewElement, NView.class);
+        Object viewBindingObject = AnnotationHelp.findAnnotationValue(aNViewMirror, "value");
+        if (viewBindingObject == null) {
+            viewBindingObject = AnnotationHelp.findAnnotationValue(aNViewMirror, "viewBinding");
+        }
+        if (viewBindingObject != null) {
+            final String viewBindingString = viewBindingObject.toString();
+            final String[] split = viewBindingString.split("\\.");
+            if (split.length > 1) {
+                final String className = split[split.length - 1];
+                final String packageName = viewBindingString.substring(0, viewBindingString.length() - className.length() - 1);
+                if ("databinding".equals(split[split.length - 2]) && className.endsWith("Binding")) {
+                    final ClassName viewBinding = ClassName.get(packageName, className);
+                    return CodeBlock.builder()
+                            .addStatement("final $T factory = $T.from($N)", AndroidClass.LayoutInflater, AndroidClass.LayoutInflater, CONTEXT)
+                            .addStatement("final $T binding = $T.inflate(factory, this, true)", viewBinding, viewBinding)
+                            .build();
+                }
+            }
+        }
+        final String resName = (String) AnnotationHelp.findAnnotationValue(aNViewMirror, "resName");
+        if (resName == null) {
             return CodeBlock.builder().build();
         }
         return CodeBlock.builder()
                 .beginControlFlow("if(this instanceof $T)", AndroidClass.ViewGroup)
                 .add("ViewGroup.inflate($N,", CONTEXT)
-                .add(AndroidResHelp.layout(aNView.value(), aNView.resName(), viewElement.getSimpleName().toString(), CONTEXT, DEF_PACKAGE))
+                .add(AndroidResHelp.layout(resName, viewElement.getSimpleName().toString(), CONTEXT, DEF_PACKAGE))
                 .addStatement(",($T)this)", AndroidClass.ViewGroup)
                 .endControlFlow()
                 .build();

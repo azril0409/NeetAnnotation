@@ -19,7 +19,6 @@ import library.neetoffice.com.neetannotation.Interactor;
 import library.neetoffice.com.neetannotation.ListInteractor;
 import library.neetoffice.com.neetannotation.NActivity;
 import library.neetoffice.com.neetannotation.NApplication;
-import library.neetoffice.com.neetannotation.NDagger;
 import library.neetoffice.com.neetannotation.NFragment;
 import library.neetoffice.com.neetannotation.NService;
 import library.neetoffice.com.neetannotation.NView;
@@ -27,7 +26,9 @@ import library.neetoffice.com.neetannotation.NViewModel;
 import library.neetoffice.com.neetannotation.SetInteractor;
 
 @SupportedAnnotationTypes({
-        "library.neetoffice.com.neetannotation.*"})
+        "library.neetoffice.com.neetannotation.*",
+        "dagger.*"
+})
 @AutoService(Process.class)
 public class MainProcessor extends AbstractProcessor {
     private static final String APPLY = "apply";
@@ -102,8 +103,8 @@ public class MainProcessor extends AbstractProcessor {
         }
 
         final Set<? extends Element> modules = roundEnv.getElementsAnnotatedWith(Module.class);
-        for (Element module : modules){
-            daggerCreator.addLocalModule((TypeElement)module);
+        for (Element module : modules) {
+            daggerCreator.addLocalModule((TypeElement) module);
         }
 
         final Set<? extends Element> applications = roundEnv.getElementsAnnotatedWith(NApplication.class);

@@ -19,15 +19,17 @@ class Record() : Parcelable {
 
     @Id
     var id: Int? = null
+
     @DatabaseField
     var time: Long = 0
+
     @DatabaseField
     var timeString: String = ""
 
     constructor(parcel: Parcel) : this() {
         id = parcel.readValue(Int::class.java.classLoader) as? Int
         time = parcel.readLong()
-        timeString = parcel.readString()
+        timeString = parcel.readString() ?: ""
     }
 
     constructor(date: Date) : this() {

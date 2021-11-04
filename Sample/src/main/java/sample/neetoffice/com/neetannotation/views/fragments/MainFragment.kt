@@ -1,18 +1,19 @@
 package sample.neetoffice.com.neetannotation.views.fragments
 
-import android.os.Bundle
 import android.widget.ListView
+import androidx.appcompat.view.menu.MenuBuilder
 import androidx.fragment.app.Fragment
 import library.neetoffice.com.neetannotation.*
 import sample.neetoffice.com.neetannotation.R
+import sample.neetoffice.com.neetannotation.databinding.ActivityMainBinding
 import sample.neetoffice.com.neetannotation.models.Record
 import sample.neetoffice.com.neetannotation.views.viewmodel.RecordViewModel
 import javax.inject.Named
 
-@NFragment(R.layout.activity_main)
-@OptionsMenu(R.menu.mian)
+@NFragment(ActivityMainBinding::class)
+@OptionsMenu("mian")
 open class MainFragment : Fragment() {
-    @ViewById(R.id.listView)
+    @ViewById
     lateinit var listView: ListView
 
     @Extra
@@ -33,4 +34,23 @@ open class MainFragment : Fragment() {
     @ActivityResult(20)
     fun onActivityResult(test: String) {
     }
+    @OnStart
+    @OnCreate
+    fun start() {
+    }
+
+    @OnResume
+    fun rsume() {
+    }
+
+    @OnPause
+    fun pause() {
+    }
+
+    @OnStop
+    fun stop() {
+    }
+
+    @OnDestroy
+    fun destroy(){}
 }

@@ -10,7 +10,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 @Target(METHOD)
 public @interface BeforeTextChange {
 
-    int[] value() default {};
+    String[] value() default {};
 
     String[] resName() default {};
 }

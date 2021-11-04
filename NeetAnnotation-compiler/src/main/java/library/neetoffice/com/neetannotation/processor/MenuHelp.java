@@ -58,49 +58,28 @@ public class MenuHelp {
             if (aOptionsMenu == null) {
                 return CodeBlock.builder().build();
             }
-            final ViewById aViewById = aOptionsMenu.toolBar();
-            if (aViewById != null) {
-                if (creator.isSubFragmentActivity(typeElement)) {
-                    if (aViewById.value() == 0 && aViewById.resName().isEmpty()) {
-                        return CodeBlock.builder().build();
-                    }
-                    return CodeBlock.builder()
-                            .add("$T _toolbar = findViewById(", AndroidClass.View)
-                            .add(AndroidResHelp.id(aViewById.value(), aViewById.resName(), "", context_from, defPackage))
-                            .addStatement(")")
-                            .beginControlFlow("if(_toolbar instanceof $T)", AndroidClass.Toolbar_x)
-                            .addStatement("setSupportActionBar(($T)_toolbar)", AndroidClass.Toolbar_x)
-                            .endControlFlow()
-                            .build();
-                } else if (creator.isSubActivity(typeElement)) {
-                    if (aViewById.value() == 0 && aViewById.resName().isEmpty()) {
-                        return CodeBlock.builder().build();
-                    }
-                    return CodeBlock.builder()
-                            .add("$T _toolbar = findViewById(", AndroidClass.View)
-                            .add(AndroidResHelp.id(aViewById.value(), aViewById.resName(), "", context_from, defPackage))
-                            .addStatement(")")
-                            .beginControlFlow("if(_toolbar instanceof $T)", AndroidClass.Toolbar)
-                            .addStatement("setSupportActionBar(($T)_toolbar)", AndroidClass.Toolbar)
-                            .endControlFlow()
-                            .build();
-                } else if (creator.isSubFragment(typeElement)) {
-                    return CodeBlock.builder()
-                            .addStatement("setHasOptionsMenu(true)")
-                            .build();
-                }
+            if (creator.isSubFragment(typeElement)) {
+                return CodeBlock.builder()
+                        .addStatement("setHasOptionsMenu(true)")
+                        .build();
             }
             return CodeBlock.builder().build();
         }
 
         public void parseElement(Element element) {
             if (element.getAnnotation(MenuSelected.class) != null) {
+                final String elementName = element.getSimpleName().toString();
                 final MenuSelected aMenuSelected = element.getAnnotation(MenuSelected.class);
-                for (int rid : aMenuSelected.value()) {
-                    menuSelectedBundles.add(new MenuSelectedBundle(AndroidResHelp.id(rid, "", "toolbar", context_from, defPackage), element));
-                }
-                for (String resName : aMenuSelected.resName()) {
-                    menuSelectedBundles.add(new MenuSelectedBundle(AndroidResHelp.id(0, resName, "toolbar", context_from, defPackage), element));
+                if (aMenuSelected.value().length != 0) {
+                    for (String resName : aMenuSelected.value()) {
+                        menuSelectedBundles.add(new MenuSelectedBundle(AndroidResHelp.id(resName, elementName, context_from, defPackage), element));
+                    }
+                } else if (aMenuSelected.resName().length != 0) {
+                    for (String resName : aMenuSelected.resName()) {
+                        menuSelectedBundles.add(new MenuSelectedBundle(AndroidResHelp.id(resName, elementName, context_from, defPackage), element));
+                    }
+                } else {
+                    menuSelectedBundles.add(new MenuSelectedBundle(AndroidResHelp.id("", elementName, context_from, defPackage), element));
                 }
             }
             if (element.getAnnotation(OptionsMenuItem.class) != null) {
@@ -113,9 +92,10 @@ public class MenuHelp {
             if (aOptionsMenu == null) {
                 return CodeBlock.builder().build();
             }
+            final String resName = AndroidResHelp.parseResName(aOptionsMenu.value(), aOptionsMenu.resName());
             return CodeBlock.builder()
                     .add("$N.inflate(", inflater)
-                    .add(AndroidResHelp.menu(aOptionsMenu.value(), aOptionsMenu.resName(), context_from, defPackage))
+                    .add(AndroidResHelp.menu(resName, typeElement.getSimpleName().toString(), context_from, defPackage))
                     .addStatement(", $N)", menu)
                     .build();
         }
@@ -125,8 +105,9 @@ public class MenuHelp {
             for (Element element : menuItemElements) {
                 if (creator.isInstanceOf(element.asType(), AndroidClass.MenuItem)) {
                     final OptionsMenuItem aOptionsMenuItem = element.getAnnotation(OptionsMenuItem.class);
+                    final String resName = AndroidResHelp.parseResName(aOptionsMenuItem.value(), aOptionsMenuItem.resName());
                     code.add("this.$N = $N.findItem(", element.getSimpleName(), menu)
-                            .add(AndroidResHelp.id(aOptionsMenuItem.value(), aOptionsMenuItem.resName(), element.getSimpleName().toString(), context_from, defPackage))
+                            .add(AndroidResHelp.id(resName, element.getSimpleName().toString(), context_from, defPackage))
                             .addStatement(")");
                 }
             }
@@ -146,7 +127,6 @@ public class MenuHelp {
                         .add(createMenuSelectedCode(bundle, menuItemName))
                         .endControlFlow();
             }
-
             return cb.build();
         }
 

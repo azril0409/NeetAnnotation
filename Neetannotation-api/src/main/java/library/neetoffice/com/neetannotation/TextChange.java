@@ -13,7 +13,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 @Target(METHOD)
 public @interface TextChange {
 
-    int[] value() default {};
+    String[] value() default {};
 
     String[] resName() default {};
 

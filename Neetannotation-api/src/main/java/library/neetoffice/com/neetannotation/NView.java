@@ -10,13 +10,9 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 @Target(TYPE)
 public @interface NView {
 
-    /**
-     * The R.layout.* field which refer to the layout.
-     *
-     * @return the id of the layout
-     */
-    int value() default 0;
+    Class value() default NoBinder.class;
 
+    Class viewBinding() default NoBinder.class;
 
     /**
      * The R.layout.* field which refer to the layout.

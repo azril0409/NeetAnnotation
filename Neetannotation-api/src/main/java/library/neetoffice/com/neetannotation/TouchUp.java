@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface TouchUp {
-    int[] value() default {};
+    String[] value() default {};
 
     String[] resName() default {};
 }

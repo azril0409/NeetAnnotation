@@ -6,12 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by Deo on 2016/3/18.
- */
+ * Annotation that can be used to mark methods on @NViewModel object that should be invoked to handle Lifecycle.Event.ON_RESUME event.
+ * */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-public @interface ItemClick {
-    String[] value() default {};
-
-    String[] resName() default {};
+public @interface OnResume {
 }

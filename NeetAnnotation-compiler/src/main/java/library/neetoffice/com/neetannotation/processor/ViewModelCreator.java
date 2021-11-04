@@ -28,6 +28,12 @@ import library.neetoffice.com.neetannotation.AfterInject;
 import library.neetoffice.com.neetannotation.InjectInitialEntity;
 import library.neetoffice.com.neetannotation.NViewModel;
 import library.neetoffice.com.neetannotation.NamedAs;
+import library.neetoffice.com.neetannotation.OnCreate;
+import library.neetoffice.com.neetannotation.OnDestroy;
+import library.neetoffice.com.neetannotation.OnPause;
+import library.neetoffice.com.neetannotation.OnResume;
+import library.neetoffice.com.neetannotation.OnStart;
+import library.neetoffice.com.neetannotation.OnStop;
 import library.neetoffice.com.neetannotation.Published;
 import library.neetoffice.com.neetannotation.ViewModelOf;
 
@@ -40,15 +46,18 @@ public class ViewModelCreator extends BaseCreator {
     static final String CONSTRUCTOR_ACTIVITY_PARAMETER = "activity";
     static final String CONSTRUCTOR_CONTEXT_PARAMETER = "context";
     static final String CONTEXT_FROM = "application";
+    static final String OWNER = "owner";
     static final TypeVariableName SUBJECT_PARAMETERIZED_TYPE_NAME = TypeVariableName.get("T");
     static final HashMap<String, String> publishedNameMap = new HashMap();
     private final MainProcessor mainProcessor;
     final SubscribeHelp subscribeHelp;
+    final HandleHelp handleHelp;
 
     public ViewModelCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
         this.mainProcessor = processor;
         subscribeHelp = new SubscribeHelp(this);
+        handleHelp = new HandleHelp(this);
     }
 
     @Override
@@ -64,17 +73,17 @@ public class ViewModelCreator extends BaseCreator {
             return;
         }
         final NViewModel aNViewModel = viewModelElement.getAnnotation(NViewModel.class);
-        boolean isSingle = aNViewModel.isSingle();
         final boolean haveDagger = DaggerHelp.process(viewModelElement);
         final String className = viewModelElement.getSimpleName() + "_";
         final List<TypeElement> viewModelElements = findSuperElements(viewModelElement, roundEnv, NViewModel.class);
         viewModelElements.add(viewModelElement);
 
         final SubscribeHelp.Builder subscribeBuilder = subscribeHelp.builder();
+        final HandleHelp.Builder handleHelpBuilder = handleHelp.builder(className);
 
         final TypeSpec.Builder tb = TypeSpec.classBuilder(className)
                 .superclass(getClassName(viewModelElement.asType()))
-                .addSuperinterface(AndroidClass.LifecycleObserver)
+                .addSuperinterface(AndroidClass.DefaultLifecycleObserver)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
         //final FieldSpec.Builder viewModelStoreOwner = FieldSpec.builder(ClassName.get(mainProcessor.contextPackageName, ViewModelStoreOwnerCreator.CLASS_NAME), VIEW_MODEL_STORE_OWNER, Modifier.PRIVATE, Modifier.STATIC);
@@ -82,6 +91,12 @@ public class ViewModelCreator extends BaseCreator {
 
         final CodeBlock.Builder init = CodeBlock.builder();
         final CodeBlock.Builder afterAnnotationCode = CodeBlock.builder();
+        final CodeBlock.Builder onCreateCode = CodeBlock.builder();
+        final CodeBlock.Builder onStartCode = CodeBlock.builder();
+        final CodeBlock.Builder onResumeCode = CodeBlock.builder();
+        final CodeBlock.Builder onPauseCode = CodeBlock.builder();
+        final CodeBlock.Builder onStopCode = CodeBlock.builder();
+        final CodeBlock.Builder onDestroyCode = CodeBlock.builder();
         final CodeBlock.Builder onClearedCode = CodeBlock.builder();
 
         if (haveDagger) {
@@ -101,12 +116,31 @@ public class ViewModelCreator extends BaseCreator {
                     }
                     final String key = viewModel.getQualifiedName().toString() + "_" + enclosedElement.getSimpleName().toString();
                     publishedNameMap.put(key, enclosedElement.getSimpleName().toString());
-
                     final CodeBlock instanceInteractor = createInstanceCode(viewModelElement, enclosedElement, haveDagger);
                     init.add(instanceInteractor);
-                } else if (enclosedElement.getAnnotation(ViewModelOf.class) != null) {
+                }
+                if (enclosedElement.getAnnotation(ViewModelOf.class) != null) {
                     subscribeBuilder.parseElement(enclosedElement);
                 }
+                if (enclosedElement.getAnnotation(OnCreate.class) != null) {
+                    onCreateCode.add(parseLifecycleMethod(enclosedElement));
+                }
+                if (enclosedElement.getAnnotation(OnStart.class) != null) {
+                    onStartCode.add(parseLifecycleMethod(enclosedElement));
+                }
+                if (enclosedElement.getAnnotation(OnResume.class) != null) {
+                    onResumeCode.add(parseLifecycleMethod(enclosedElement));
+                }
+                if (enclosedElement.getAnnotation(OnPause.class) != null) {
+                    onPauseCode.add(parseLifecycleMethod(enclosedElement));
+                }
+                if (enclosedElement.getAnnotation(OnStop.class) != null) {
+                    onStopCode.add(parseLifecycleMethod(enclosedElement));
+                }
+                if (enclosedElement.getAnnotation(OnDestroy.class) != null) {
+                    onDestroyCode.add(parseLifecycleMethod(enclosedElement));
+                }
+                handleHelpBuilder.parseElement(enclosedElement);
                 afterAnnotationCode.add(createAfterAnnotationCode(enclosedElement));
             }
         }
@@ -132,54 +166,17 @@ public class ViewModelCreator extends BaseCreator {
                     .build());
         }
 
-
-        final MethodSpec.Builder getInstance = MethodSpec.methodBuilder("getInstance")
-                .returns(getClassName(viewModelElement.asType()))
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
-        if (isSingle) {
-            getInstance.addParameter(AndroidClass.Context, "context")
-                    .addStatement("final $T application = context.getApplicationContext()", AndroidClass.Context)
-                    .beginControlFlow("if(application instanceof $T)", AndroidClass.ViewModelStoreOwner)
-                    .addStatement("return new $T(($T)application).get($T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
-                    .endControlFlow()
-                    .addStatement("throw new RuntimeException(\"Cannot get instance by \" + context)");
-        } else {
-            getInstance.addParameter(AndroidClass.Context, "context")
-                    .beginControlFlow("if(context instanceof $T)", AndroidClass.ViewModelStoreOwner)
-                    .addStatement("return new $T(($T)context).get($T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
-                    .endControlFlow()
-                    .addStatement("final $T application = context.getApplicationContext()", AndroidClass.Context)
-                    .beginControlFlow("if(application instanceof $T)", AndroidClass.ViewModelStoreOwner)
-                    .addStatement("return new $T(($T)application).get($T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
-                    .endControlFlow()
-                    .addStatement("throw new RuntimeException(\"Cannot get instance by \" + context)");
+        tb.addMethod(getInstanceMethod(viewModelElement, className));
+        tb.addMethod(getInstanceWithKeyMethod(viewModelElement, className));
+        for (MethodSpec methodSpec : handleHelpBuilder.createMotheds()) {
+            tb.addMethod(methodSpec);
         }
-        tb.addMethod(getInstance.build());
-
-        final MethodSpec.Builder getInstanceBykey = MethodSpec.methodBuilder("getInstance")
-                .addParameter(String.class, "key")
-                .returns(getClassName(viewModelElement.asType()))
-                .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
-        if (isSingle) {
-            getInstanceBykey.addParameter(AndroidClass.Context, "context")
-                    .addStatement("final $T application = context.getApplicationContext()", AndroidClass.Context)
-                    .beginControlFlow("if(application instanceof $T)", AndroidClass.ViewModelStoreOwner)
-                    .addStatement("return new $T(($T)application).get(key,$T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
-                    .endControlFlow()
-                    .addStatement("throw new RuntimeException(\"Cannot get instance by \" + context)");
-        } else {
-            getInstanceBykey.addParameter(AndroidClass.Context, "context")
-                    .beginControlFlow("if(context instanceof $T)", AndroidClass.ViewModelStoreOwner)
-                    .addStatement("return new $T(($T)context).get(key,$T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
-                    .endControlFlow()
-                    .addStatement("final $T application = context.getApplicationContext()", AndroidClass.Context)
-                    .beginControlFlow("if(application instanceof $T)", AndroidClass.ViewModelStoreOwner)
-                    .addStatement("return new $T(($T)application).get(key,$T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
-                    .endControlFlow()
-                    .addStatement("throw new RuntimeException(\"Cannot get instance by \" + context)");
-        }
-
-        tb.addMethod(getInstanceBykey.build());
+        tb.addMethod(getLifecycleMethod("onCreate", onCreateCode.build()));
+        tb.addMethod(getLifecycleMethod("onStart", onStartCode.build()));
+        tb.addMethod(getLifecycleMethod("onResume", onResumeCode.build()));
+        tb.addMethod(getLifecycleMethod("onPause", onPauseCode.build()));
+        tb.addMethod(getLifecycleMethod("onStop", onStopCode.build()));
+        tb.addMethod(getLifecycleMethod("onDestroy", onDestroyCode.build()));
 
         final MethodSpec.Builder onCleared = MethodSpec.methodBuilder("onCleared")
                 .returns(void.class)
@@ -190,24 +187,6 @@ public class ViewModelCreator extends BaseCreator {
         tb.addMethod(onCleared.build());
 
         writeTo(getPackageName(viewModelElement), tb.build());
-    }
-
-    private String getSubscribeMethodName(Element element) {
-        final String name;
-        final AnnotationMirror named = AnnotationHelp.findAnnotationMirror(element, DaggerClass.Named);
-        if (named == null) {
-            publishedNameMap.put(element.getSimpleName().toString(), "NOT find " + DaggerClass.Named.simpleName());
-            name = element.getSimpleName().toString();
-        } else {
-            final String value = (String) AnnotationHelp.findAnnotationValue(named, "value");
-            publishedNameMap.put(element.getSimpleName().toString(), "Find " + DaggerClass.Named.simpleName());
-            if (value.equals("null")) {
-                name = element.getSimpleName().toString();
-            } else {
-                name = value;
-            }
-        }
-        return name;
     }
 
     CodeBlock createInstanceCode(TypeElement viewModelElement, Element interactElement, boolean haveDagger) {
@@ -371,7 +350,6 @@ public class ViewModelCreator extends BaseCreator {
         return mb.build();
     }
 
-
     CodeBlock createAfterAnnotationCode(Element afterAnnotationElement) {
         final AfterInject aAfterInject = afterAnnotationElement.getAnnotation(AfterInject.class);
         if (aAfterInject == null) {
@@ -394,57 +372,87 @@ public class ViewModelCreator extends BaseCreator {
                 .build();
     }
 
-
-    @Deprecated
-    MethodSpec.Builder createFindSubjectByNameMethodBuilder() {
-        return MethodSpec.methodBuilder(FIND_SUBJECT_BY_NAME)
-                .addTypeVariable(SUBJECT_PARAMETERIZED_TYPE_NAME)
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL)
-                .addParameter(String.class, FIND_SUBJECT_BY_NAME_PARAMETER_NAME)
-                .returns(RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME))
-                .beginControlFlow("switch ($N)", FIND_SUBJECT_BY_NAME_PARAMETER_NAME)
-                .addStatement("default: return $T.create()", RxJavaClass.BehaviorSubject);
-    }
-
-    @Deprecated
-    CodeBlock createFindSubjectByNameCode(Element interactElement) {
-        final CodeBlock.Builder code = CodeBlock.builder();
-        final Published aSubject = interactElement.getAnnotation(Published.class);
-        final String name = interactElement.getSimpleName().toString();
-        if (!name.isEmpty()) {
-            code.addStatement("case $S: return ($T) $N.$N()", name, RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.OBSERVABLE).build();
-            if (!interactElement.getSimpleName().equals(name)) {
-                code.addStatement("case $S: return ($T) $N.$N()", interactElement.getSimpleName(), RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.OBSERVABLE).build();
-            }
+    private MethodSpec getInstanceMethod(TypeElement viewModelElement, String className) {
+        final NViewModel aNViewModel = viewModelElement.getAnnotation(NViewModel.class);
+        final boolean isSingle = aNViewModel.isSingle();
+        final MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder("getInstance")
+                .returns(getClassName(viewModelElement.asType()))
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
+        if (isSingle) {
+            methodBuilder.addParameter(AndroidClass.Context, "context")
+                    .addStatement("final $T application = context.getApplicationContext()", AndroidClass.Context)
+                    .beginControlFlow("if(application instanceof $T)", AndroidClass.ViewModelStoreOwner)
+                    .addStatement("return new $T(($T)application).get($T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
+                    .endControlFlow()
+                    .addStatement("throw new RuntimeException(\"Cannot get instance by \" + context)");
         } else {
-            code.addStatement("case $S: return ($T) $N.$N()", interactElement.getSimpleName(), RxJavaClass.Subject(SUBJECT_PARAMETERIZED_TYPE_NAME), interactElement.getSimpleName(), InteractorCreator.OBSERVABLE).build();
+            methodBuilder.addParameter(AndroidClass.Context, "context")
+                    .beginControlFlow("if(context instanceof $T)", AndroidClass.ViewModelStoreOwner)
+                    .addStatement("return new $T(($T)context).get($T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
+                    .endControlFlow()
+                    .addStatement("final $T application = context.getApplicationContext()", AndroidClass.Context)
+                    .beginControlFlow("if(application instanceof $T)", AndroidClass.ViewModelStoreOwner)
+                    .addStatement("return new $T(($T)application).get($T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
+                    .endControlFlow()
+                    .addStatement("throw new RuntimeException(\"Cannot get instance by \" + context)");
         }
-        return code.build();
+        return methodBuilder.build();
     }
 
-    public void createContextModule(String packageName) {
-        final TypeSpec.Builder tb = TypeSpec.classBuilder("AndroidApplicationModel")
-                .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
+    private MethodSpec getInstanceWithKeyMethod(TypeElement viewModelElement, String className) {
+        final NViewModel aNViewModel = viewModelElement.getAnnotation(NViewModel.class);
+        final boolean isSingle = aNViewModel.isSingle();
+        final MethodSpec.Builder methodBuilder = MethodSpec.methodBuilder("getInstance")
+                .addParameter(String.class, "key")
+                .returns(getClassName(viewModelElement.asType()))
+                .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
+        if (isSingle) {
+            methodBuilder.addParameter(AndroidClass.Context, "context")
+                    .addStatement("final $T application = context.getApplicationContext()", AndroidClass.Context)
+                    .beginControlFlow("if(application instanceof $T)", AndroidClass.ViewModelStoreOwner)
+                    .addStatement("return new $T(($T)application).get(key,$T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
+                    .endControlFlow()
+                    .addStatement("throw new RuntimeException(\"Cannot get instance by \" + context)");
+        } else {
+            methodBuilder.addParameter(AndroidClass.Context, "context")
+                    .beginControlFlow("if(context instanceof $T)", AndroidClass.ViewModelStoreOwner)
+                    .addStatement("return new $T(($T)context).get(key,$T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
+                    .endControlFlow()
+                    .addStatement("final $T application = context.getApplicationContext()", AndroidClass.Context)
+                    .beginControlFlow("if(application instanceof $T)", AndroidClass.ViewModelStoreOwner)
+                    .addStatement("return new $T(($T)application).get(key,$T.class)", AndroidClass.ViewModelProvider, AndroidClass.ViewModelStoreOwner, ClassName.get(getPackageName(viewModelElement), className))
+                    .endControlFlow()
+                    .addStatement("throw new RuntimeException(\"Cannot get instance by \" + context)");
+        }
+        return methodBuilder.build();
+    }
 
-        final FieldSpec applicationField = FieldSpec.builder(AndroidClass.Application, "mApplication", Modifier.PRIVATE).build();
+    private CodeBlock parseLifecycleMethod(Element element) {
+        CodeBlock.Builder builder = CodeBlock.builder();
+        final ExecutableElement method = (ExecutableElement) element;
+        builder.add("$N(", element.getSimpleName());
+        final Iterator<? extends VariableElement> parameters = method.getParameters().iterator();
+        while (parameters.hasNext()) {
+            if (isInstanceOf(element.asType(), AndroidClass.LifecycleOwner)) {
+                builder.add(OWNER);
+            } else {
+                builder.add("null");
+            }
+            if (parameters.hasNext()) {
+                builder.add(",");
+            }
+        }
+        builder.addStatement(")");
+        return builder.build();
+    }
 
-        final MethodSpec constructor = MethodSpec.constructorBuilder()
+    private MethodSpec getLifecycleMethod(String name, CodeBlock code) {
+        return MethodSpec.methodBuilder(name)
+                .returns(void.class)
+                .addAnnotation(Override.class)
                 .addModifiers(Modifier.PUBLIC)
-                .addParameter(ParameterSpec.builder(AndroidClass.Application, "application").addAnnotation(AndroidClass.NonNull).build())
-                .addStatement("mApplication = application")
+                .addParameter(AndroidClass.LifecycleOwner, OWNER)
+                .addCode(code)
                 .build();
-
-        final MethodSpec getApplication = MethodSpec.methodBuilder("getApplication")
-                .addModifiers(Modifier.PUBLIC)
-                .addTypeVariable(TypeVariableName.get("T", AndroidClass.Application))
-                .returns(TypeVariableName.get("T"))
-                .addStatement("return (T) mApplication")
-                .build();
-
-        tb.addField(applicationField);
-        tb.addMethod(constructor);
-        tb.addMethod(getApplication);
-
-        writeTo(packageName, tb.build());
     }
 }

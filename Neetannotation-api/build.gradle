@@ -2,17 +2,29 @@ plugins {
     id 'java-library'
     id 'maven-publish'
 }
-java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
-}
+group = 'com.neetoffice.annotation'
+version = '1.3.1'
+
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
 }
 
+task sourcesJar(type: Jar) {
+    archiveClassifier = 'sources'
+    from sourceSets.main.allSource
+}
 
-def name = 'NeetAnnotation-api'
-def libname = name + "_" + lib_version + ".jar"
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    archiveClassifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+def libname = name + "_" + version + ".jar"
 def toPath = '../librarys/'
 def fromPath = 'build/libs/'
 task clearAar(type: Delete) {

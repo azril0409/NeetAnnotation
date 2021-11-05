@@ -3,7 +3,6 @@
 buildscript {
     ext{
         kotlin_version = '1.5.20'
-        lib_version = '119'
         lifecycle_version = "2.4.0"
         arch_version = "2.1.0"
         dagger_version = "2.25"
@@ -25,6 +24,7 @@ allprojects {
     repositories {
         google()
         mavenCentral()
+        maven { url "https://jitpack.io" }
     }
     tasks.withType(JavaCompile) {
         options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"

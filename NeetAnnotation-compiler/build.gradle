@@ -1,10 +1,10 @@
 plugins {
     id 'java-library'
+    id 'maven-publish'
 }
-java {
-    sourceCompatibility = JavaVersion.VERSION_11
-    targetCompatibility = JavaVersion.VERSION_11
-}
+group = 'com.neetoffice.annotation'
+version = '1.3.1'
+
 dependencies {
     api project(':Neetannotation-api')
     api fileTree(include: ['*.jar'], dir: 'libs')
@@ -20,8 +20,7 @@ dependencies {
     api "com.google.dagger:dagger-android-processor:$dagger_version"
 }
 
-def name = 'NeetAnnotation-kapt'
-def libname = name + "_" + lib_version + ".jar"
+def libname = name + "_" + version + ".jar"
 def toPath = '../librarys/'
 def fromPath = 'build/libs/'
 task clearAar(type: Delete) {
@@ -30,8 +29,8 @@ task clearAar(type: Delete) {
 task makeAar(type: Copy) {
     from(fromPath)
     into(toPath)
-    include("NeetAnnotationProcessor.jar")
-    rename("NeetAnnotationProcessor.jar", libname)
+    include("NeetAnnotation-compiler.jar")
+    rename("NeetAnnotation-compiler.jar", libname)
 }
 makeAar.dependsOn(clearAar, "build")
 

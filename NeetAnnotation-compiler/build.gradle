@@ -33,5 +33,3 @@ task makeAar(type: Copy) {
     rename("NeetAnnotation-compiler.jar", libname)
 }
 makeAar.dependsOn(clearAar, "build")
-
-apply from: rootProject.file('Neetannotation-compiler/publish.gradle')

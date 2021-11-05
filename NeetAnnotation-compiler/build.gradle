@@ -1,9 +1,25 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'com.github.dcendents.android-maven'
 }
 group = 'com.neetoffice.annotation'
 version = '1.3.1'
+
+dependencies {
+    api project(':Neetannotation-api')
+    api fileTree(include: ['*.jar'], dir: 'libs')
+    api 'com.google.auto.service:auto-service:1.0'
+    api 'com.squareup:javapoet:1.13.0'
+    // Lifecycle
+    //noinspection LifecycleAnnotationProcessorWithJava8
+    api "androidx.lifecycle:lifecycle-compiler:2.4.0"
+    // Dagger2
+    api "com.google.dagger:dagger:$dagger_version"
+    api "com.google.dagger:dagger-android-support:$dagger_version"
+    api "com.google.dagger:dagger-compiler:$dagger_version"
+    api "com.google.dagger:dagger-android-processor:$dagger_version"
+}
 
 task sourcesJar(type: Jar) {
     archiveClassifier = 'sources'
@@ -20,21 +36,40 @@ artifacts {
     archives sourcesJar
 }
 
+// To specify a license in the pom:
+install {
+    repositories.mavenInstaller {
+        pom {
+            project {
+                groupId 'com.neetoffice.annotation'
+                artifactId 'NeetAnnotation-compiler'
+                description ''
+                url 'https://github.com/azril0409/NeetAnnotation'
 
-dependencies {
-    api project(':Neetannotation-api')
-    api fileTree(include: ['*.jar'], dir: 'libs')
-    api 'com.google.auto.service:auto-service:1.0'
-    api 'com.squareup:javapoet:1.13.0'
-    // Lifecycle
-    //noinspection LifecycleAnnotationProcessorWithJava8
-    api "androidx.lifecycle:lifecycle-compiler:2.4.0"
-    // Dagger2
-    api "com.google.dagger:dagger:$dagger_version"
-    api "com.google.dagger:dagger-android-support:$dagger_version"
-    api "com.google.dagger:dagger-compiler:$dagger_version"
-    api "com.google.dagger:dagger-android-processor:$dagger_version"
+                // Set your license
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'azril0409'
+                        name 'TU TSUNG-TSE'
+                        email 'azril0409@gmail.com'
+                    }
+                }
+                scm {
+                    connection 'https://github.com/azril0409/NeetAnnotation.git'
+                    developerConnection 'https://github.com/azril0409/NeetAnnotation.git'
+                    url 'https://github.com/azril0409/NeetAnnotation'
+                }
+            }
+        }
+    }
 }
+
 
 def libname = name + "_" + version + ".jar"
 def toPath = '../librarys/'

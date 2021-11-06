@@ -144,19 +144,18 @@ public class ListenerHelp {
             if (values.length != 0) {
                 for (String resName : values) {
                     final String viewName = "n_" + resName;
-                    final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id(resName, "", context_from, defPackage));
+                    final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id(resName, element.getSimpleName(), context_from, defPackage));
                     elements.put(viewName, bundle);
                 }
             } else if (resNames.length != 0) {
                 for (String resName : resNames) {
                     final String viewName = "n_" + resName;
-                    final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id(resName, "", context_from, defPackage));
+                    final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id(resName, element.getSimpleName(), context_from, defPackage));
                     elements.put(viewName, bundle);
                 }
             } else {
-                final String elementName = parseMethodName(element.getSimpleName(), end);
-                final String viewName = "n_" + elementName;
-                final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id("", elementName, context_from, defPackage));
+                final String viewName = "n_" + element.getSimpleName().toString();
+                final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id("", element.getSimpleName(), end, context_from, defPackage));
                 elements.put(viewName, bundle);
             }
         }
@@ -904,16 +903,5 @@ public class ListenerHelp {
         }
         code.addStatement(")");
         return code.endControlFlow().build();
-    }
-
-    private static String parseMethodName(Name name, String end) {
-        String string = name.toString();
-        if (string.toLowerCase().startsWith("on")) {
-            string = String.valueOf(string.charAt(2)).toLowerCase() + string.substring(3);
-        }
-        if (string.toLowerCase().endsWith(end.toLowerCase())) {
-            string = string.substring(0, string.length() - end.length());
-        }
-        return string;
     }
 }

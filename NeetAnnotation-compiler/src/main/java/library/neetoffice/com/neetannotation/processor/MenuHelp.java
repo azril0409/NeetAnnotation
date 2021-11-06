@@ -9,6 +9,7 @@ import java.util.List;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
+import javax.lang.model.element.Name;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
@@ -68,7 +69,7 @@ public class MenuHelp {
 
         public void parseElement(Element element) {
             if (element.getAnnotation(MenuSelected.class) != null) {
-                final String elementName = element.getSimpleName().toString();
+                final Name elementName = element.getSimpleName();
                 final MenuSelected aMenuSelected = element.getAnnotation(MenuSelected.class);
                 if (aMenuSelected.value().length != 0) {
                     for (String resName : aMenuSelected.value()) {
@@ -95,7 +96,7 @@ public class MenuHelp {
             final String resName = AndroidResHelp.parseResName(aOptionsMenu.value(), aOptionsMenu.resName());
             return CodeBlock.builder()
                     .add("$N.inflate(", inflater)
-                    .add(AndroidResHelp.menu(resName, typeElement.getSimpleName().toString(), context_from, defPackage))
+                    .add(AndroidResHelp.menu(resName, typeElement.getSimpleName(), context_from, defPackage))
                     .addStatement(", $N)", menu)
                     .build();
         }
@@ -107,7 +108,7 @@ public class MenuHelp {
                     final OptionsMenuItem aOptionsMenuItem = element.getAnnotation(OptionsMenuItem.class);
                     final String resName = AndroidResHelp.parseResName(aOptionsMenuItem.value(), aOptionsMenuItem.resName());
                     code.add("this.$N = $N.findItem(", element.getSimpleName(), menu)
-                            .add(AndroidResHelp.id(resName, element.getSimpleName().toString(), context_from, defPackage))
+                            .add(AndroidResHelp.id(resName, element.getSimpleName(), context_from, defPackage))
                             .addStatement(")");
                 }
             }

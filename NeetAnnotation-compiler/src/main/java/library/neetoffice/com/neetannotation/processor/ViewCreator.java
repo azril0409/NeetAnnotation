@@ -150,7 +150,7 @@ public class ViewCreator extends BaseCreator {
         }
         return CodeBlock.builder()
                 .add("$N = findViewById(", viewByIdElement.getSimpleName())
-                .add(AndroidResHelp.id(resName, viewByIdElement.getSimpleName().toString(), CONTEXT, DEF_PACKAGE))
+                .add(AndroidResHelp.id(resName, viewByIdElement.getSimpleName(), CONTEXT, DEF_PACKAGE))
                 .addStatement(")")
                 .build();
     }
@@ -221,7 +221,7 @@ public class ViewCreator extends BaseCreator {
         return CodeBlock.builder()
                 .beginControlFlow("if(this instanceof $T)", AndroidClass.ViewGroup)
                 .add("ViewGroup.inflate($N,", CONTEXT)
-                .add(AndroidResHelp.layout(resName, viewElement.getSimpleName().toString(), CONTEXT, DEF_PACKAGE))
+                .add(AndroidResHelp.layout(resName, viewElement.getSimpleName(), CONTEXT, DEF_PACKAGE))
                 .addStatement(",($T)this)", AndroidClass.ViewGroup)
                 .endControlFlow()
                 .build();

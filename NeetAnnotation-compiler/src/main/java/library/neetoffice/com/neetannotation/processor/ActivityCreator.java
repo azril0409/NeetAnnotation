@@ -304,7 +304,7 @@ public class ActivityCreator extends BaseCreator {
         }
         return CodeBlock.builder()
                 .add("setContentView(")
-                .add(AndroidResHelp.layout(resName, activityElement.getSimpleName().toString().toLowerCase(), CONTEXT_FROM, DEF_PACKAGE))
+                .add(AndroidResHelp.layout(resName, activityElement.getSimpleName(), CONTEXT_FROM, DEF_PACKAGE))
                 .addStatement(")")
                 .build();
     }
@@ -320,7 +320,7 @@ public class ActivityCreator extends BaseCreator {
         }
         return CodeBlock.builder()
                 .add("$N = findViewById(", viewByIdElement.getSimpleName())
-                .add(AndroidResHelp.id(resName, viewByIdElement.getSimpleName().toString(), CONTEXT_FROM, DEF_PACKAGE))
+                .add(AndroidResHelp.id(resName, viewByIdElement.getSimpleName(), CONTEXT_FROM, DEF_PACKAGE))
                 .addStatement(")")
                 .build();
     }
@@ -339,7 +339,7 @@ public class ActivityCreator extends BaseCreator {
                     .add("$N = ($T)$N", element.getSimpleName(), element.asType(), CONTEXT_FROM)
                     .add(".getSupportFragmentManager()")
                     .add(".findFragmentById(")
-                    .add(AndroidResHelp.id(resName, element.getSimpleName().toString(), CONTEXT_FROM, DEF_PACKAGE))
+                    .add(AndroidResHelp.id(resName, element.getSimpleName(), CONTEXT_FROM, DEF_PACKAGE))
                     .addStatement(")")
                     .build();
         } else if (!aFragmentBy.tag().isEmpty()) {

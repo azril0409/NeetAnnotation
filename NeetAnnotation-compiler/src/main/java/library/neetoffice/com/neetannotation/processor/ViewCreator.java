@@ -44,8 +44,8 @@ public class ViewCreator extends BaseCreator {
 
     @Override
     void process(TypeElement viewElement, RoundEnvironment roundEnv) {
-        boolean isAabstract = viewElement.getModifiers().contains(Modifier.ABSTRACT);
-        if (isAabstract) {
+        boolean isAbstract = viewElement.getModifiers().contains(Modifier.ABSTRACT);
+        if (isAbstract) {
             return;
         }
         if (!isInstanceOf(viewElement.asType(), AndroidClass.View)) {
@@ -156,7 +156,7 @@ public class ViewCreator extends BaseCreator {
     }
 
 
-    CodeBlock createAfterAnnotationCode(Element afterAnnotationElement) {
+    private CodeBlock createAfterAnnotationCode(Element afterAnnotationElement) {
         final AfterInject aAfterInject = afterAnnotationElement.getAnnotation(AfterInject.class);
         if (aAfterInject == null) {
             return CodeBlock.builder().build();
@@ -183,7 +183,7 @@ public class ViewCreator extends BaseCreator {
     }
 
 
-    CodeBlock createDaggerInjectCode(TypeElement viewElement) {
+    private CodeBlock createDaggerInjectCode(TypeElement viewElement) {
         final CodeBlock.Builder code = CodeBlock.builder();
         if (isInstanceOf(viewElement.asType(), AndroidClass.View)) {
             code.addStatement("Dagger_$N.builder().$N(new $T($N)).build().inject(this)", viewElement.getSimpleName(), toModelCase(AndroidClass.CONTEXT_MODULE_NAME), mainProcessor.contextModule, CONTEXT);
@@ -193,7 +193,7 @@ public class ViewCreator extends BaseCreator {
         return code.build();
     }
 
-    CodeBlock inflateLayout(TypeElement viewElement) {
+    private CodeBlock inflateLayout(TypeElement viewElement) {
         final AnnotationMirror aNViewMirror = AnnotationHelp.findAnnotationMirror(viewElement, NView.class);
         Object viewBindingObject = AnnotationHelp.findAnnotationValue(aNViewMirror, "value");
         if (viewBindingObject == null) {

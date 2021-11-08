@@ -33,7 +33,7 @@ public class DaggerCreator extends BaseCreator {
     public DaggerCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
         mainProcessor = processor;
-        typenames = new HashSet();
+        typenames = new HashSet<>();
     }
 
     void addLocalModule(TypeElement moduleElement) {
@@ -77,14 +77,10 @@ public class DaggerCreator extends BaseCreator {
                 isSubFragment(daggerElement) ||
                 isSubAndroidViewModel(daggerElement) ||
                 isSubService(daggerElement)) {
-            //ab.addMember(MODULES, "$L", mainProcessor.contextModule + ".class")
-            //        .addMember(MODULES, "$L", mainProcessor.systemModule + ".class");
             for (TypeName typeName : typenames) {
                 ab.addMember(MODULES, "$L", typeName + ".class");
             }
         } else if (haveActivityParameterInConstructor || haveApplicationParameterInConstructor || haveContextParameterInConstructor) {
-            //ab.addMember(MODULES, "$L", mainProcessor.contextModule + ".class")
-            //        .addMember(MODULES, "$L", mainProcessor.systemModule + ".class");
             for (TypeName typeName : typenames) {
                 ab.addMember(MODULES, "$L", typeName + ".class");
             }

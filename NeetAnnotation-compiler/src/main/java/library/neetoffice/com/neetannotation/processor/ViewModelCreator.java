@@ -38,16 +38,12 @@ import library.neetoffice.com.neetannotation.Published;
 import library.neetoffice.com.neetannotation.ViewModelOf;
 
 public class ViewModelCreator extends BaseCreator {
-    static final String FIND_SUBJECT_BY_NAME = "findSubjectByName";
-    static final String FIND_SUBJECT_BY_NAME_PARAMETER_NAME = "name";
-    static final String VIEW_MODEL_STORE_OWNER = "viewModelStoreOwner";
     static final String DAGGER_NAME = "dagger";
     static final String CONSTRUCTOR_APPLICATION_PARAMETER = "application";
     static final String CONSTRUCTOR_ACTIVITY_PARAMETER = "activity";
     static final String CONSTRUCTOR_CONTEXT_PARAMETER = "context";
     static final String CONTEXT_FROM = "application";
     static final String OWNER = "owner";
-    static final TypeVariableName SUBJECT_PARAMETERIZED_TYPE_NAME = TypeVariableName.get("T");
     static final HashMap<String, String> publishedNameMap = new HashMap();
     private final MainProcessor mainProcessor;
     final SubscribeHelp subscribeHelp;

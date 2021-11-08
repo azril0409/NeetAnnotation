@@ -72,8 +72,8 @@ public class FragmentCreator extends BaseCreator {
 
     @Override
     void process(TypeElement fragmentElement, RoundEnvironment roundEnv) {
-        boolean isAabstract = fragmentElement.getModifiers().contains(Modifier.ABSTRACT);
-        if (isAabstract) {
+        boolean isAbstract = fragmentElement.getModifiers().contains(Modifier.ABSTRACT);
+        if (isAbstract) {
             return;
         }
         if (!isSubFragment(fragmentElement)) {
@@ -186,21 +186,15 @@ public class FragmentCreator extends BaseCreator {
         onOptionsItemSelectedBuilder.addCode(menuBuilder.createOnOptionsItemSelectedCode(ITEM));
         onOptionsItemSelectedBuilder.addStatement("return super.onOptionsItemSelected($N)", ITEM);
         //
-        onStartMethodBuilder.addStatement("super.onStart()");
         onStartMethodBuilder.addCode(onStartCode.build());
         //
-        onResumeMethodBuilder.addStatement("super.onResume()");
         onResumeMethodBuilder.addCode(onResumeCode.build());
         //
-        onPauseMethodBuilder.addStatement("super.onPause()");
         onPauseMethodBuilder.addCode(onPauseCode.build());
         //
-        onStopMethodBuilder.addStatement("super.onStop()");
         onStopMethodBuilder.addCode(onStopCode.build());
         //
-        //
         onDestroyMethodBuilder.addCode(subscribeBuilder.createDispose());
-        onDestroyMethodBuilder.addStatement("super.onDestroy()");
         onDestroyMethodBuilder.addCode(onDestroyCode.build());
         //
         //tb.addField(FieldSpec.builder(ParameterizedTypeName.get(ClassName.get(HashSet.class), AndroidClass.AndroidViewModel),"viewmodes",Modifier.PRIVATE,Modifier.FINAL).initializer("new $T()",ParameterizedTypeName.get(ClassName.get(HashSet.class), AndroidClass.AndroidViewModel)).build());
@@ -225,7 +219,7 @@ public class FragmentCreator extends BaseCreator {
         writeTo(packageName, tb.build());
     }
 
-    MethodSpec.Builder createOnCreateMethodBuilder() {
+    private MethodSpec.Builder createOnCreateMethodBuilder() {
         return MethodSpec.methodBuilder("onCreate")
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(AndroidClass.Bundle, SAVE_INSTANCE_STATE)
@@ -234,7 +228,7 @@ public class FragmentCreator extends BaseCreator {
                 .addStatement("super.onCreate($N)", SAVE_INSTANCE_STATE);
     }
 
-    MethodSpec.Builder createOnActivityCreateMethodBuilder() {
+    private MethodSpec.Builder createOnActivityCreateMethodBuilder() {
         return MethodSpec.methodBuilder("onActivityCreated")
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(AndroidClass.Bundle, SAVE_INSTANCE_STATE)
@@ -243,7 +237,7 @@ public class FragmentCreator extends BaseCreator {
                 .addStatement("super.onActivityCreated($N)", SAVE_INSTANCE_STATE);
     }
 
-    MethodSpec.Builder createOnCreateViewMethodBuilder(TypeElement fragmentElement) {
+    private MethodSpec.Builder createOnCreateViewMethodBuilder(TypeElement fragmentElement) {
         final MethodSpec.Builder mb = MethodSpec.methodBuilder("onCreateView")
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(AndroidClass.LayoutInflater, INFLATER)
@@ -279,7 +273,7 @@ public class FragmentCreator extends BaseCreator {
                 .addStatement(", $N, false)", CONTAINER);
     }
 
-    MethodSpec.Builder createOnViewCreatedMethodBuilder() {
+    private MethodSpec.Builder createOnViewCreatedMethodBuilder() {
         return MethodSpec.methodBuilder("onViewCreated")
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(AndroidClass.View, VIEW)
@@ -289,7 +283,7 @@ public class FragmentCreator extends BaseCreator {
                 .addStatement(" super.onViewCreated($N, $N)", VIEW, SAVE_INSTANCE_STATE);
     }
 
-    MethodSpec.Builder createOnSaveInstanceStateMethodBuilder() {
+    private MethodSpec.Builder createOnSaveInstanceStateMethodBuilder() {
         return MethodSpec.methodBuilder("onSaveInstanceState")
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(AndroidClass.Bundle, OUT_STATE)
@@ -298,7 +292,7 @@ public class FragmentCreator extends BaseCreator {
                 .addStatement("super.onSaveInstanceState($N)", OUT_STATE);
     }
 
-    MethodSpec.Builder createOnActivityResult() {
+    private MethodSpec.Builder createOnActivityResult() {
         return MethodSpec.methodBuilder("onActivityResult")
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(int.class, REQUEST_CODE)
@@ -309,7 +303,7 @@ public class FragmentCreator extends BaseCreator {
                 .addStatement("super.onActivityResult($N, $N, $N)", REQUEST_CODE, RESULT_CODE, DATA);
     }
 
-    MethodSpec.Builder createOnCreateOptionsMenuMethodBuilder() {
+    private MethodSpec.Builder createOnCreateOptionsMenuMethodBuilder() {
         return MethodSpec.methodBuilder("onCreateOptionsMenu")
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(AndroidClass.Menu, MENU)
@@ -333,16 +327,15 @@ public class FragmentCreator extends BaseCreator {
                 .build();
     }
 
-
-    MethodSpec.Builder getLifecycleMethod(String name) {
+    private MethodSpec.Builder getLifecycleMethod(String name) {
         return MethodSpec.methodBuilder(name)
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class)
-                .returns(void.class);
+                .returns(void.class)
+                .addStatement("super.$N()",name);
     }
 
-
-    CodeBlock createFindViewByIdCode(Element viewByIdElement) {
+    private CodeBlock createFindViewByIdCode(Element viewByIdElement) {
         final ViewById aViewById = viewByIdElement.getAnnotation(ViewById.class);
         if (aViewById == null) {
             return CodeBlock.builder().build();
@@ -358,7 +351,7 @@ public class FragmentCreator extends BaseCreator {
                 .build();
     }
 
-    CodeBlock createFindFragmentByCode(Element element) {
+    private CodeBlock createFindFragmentByCode(Element element) {
         final FragmentBy aFragmentBy = element.getAnnotation(FragmentBy.class);
         if (aFragmentBy == null) {
             return CodeBlock.builder().build();
@@ -383,8 +376,7 @@ public class FragmentCreator extends BaseCreator {
         return CodeBlock.builder().build();
     }
 
-
-    CodeBlock createAfterAnnotationCode(Element afterAnnotationElement) {
+    private CodeBlock createAfterAnnotationCode(Element afterAnnotationElement) {
         final AfterInject aAfterInject = afterAnnotationElement.getAnnotation(AfterInject.class);
         if (aAfterInject == null) {
             return CodeBlock.builder().build();
@@ -409,8 +401,7 @@ public class FragmentCreator extends BaseCreator {
                 .build();
     }
 
-
-    CodeBlock createDaggerInjectCode(TypeElement fragmentElement) {
+    private CodeBlock createDaggerInjectCode(TypeElement fragmentElement) {
         final CodeBlock.Builder code = CodeBlock.builder();
         if (isSubFragment(fragmentElement)) {
             code.addStatement("Dagger_$N.builder().$N(new $T(this)).build().inject(this)", fragmentElement.getSimpleName(), toModelCase(AndroidClass.CONTEXT_MODULE_NAME), mainProcessor.contextModule);

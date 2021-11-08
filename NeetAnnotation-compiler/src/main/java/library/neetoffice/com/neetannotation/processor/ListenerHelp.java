@@ -144,13 +144,13 @@ public class ListenerHelp {
             if (values.length != 0) {
                 for (String resName : values) {
                     final String viewName = "n_" + resName;
-                    final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id(resName, element.getSimpleName(), context_from, defPackage));
+                    final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id(resName, element.getSimpleName(), end, context_from, defPackage));
                     elements.put(viewName, bundle);
                 }
             } else if (resNames.length != 0) {
                 for (String resName : resNames) {
                     final String viewName = "n_" + resName;
-                    final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id(resName, element.getSimpleName(), context_from, defPackage));
+                    final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id(resName, element.getSimpleName(), end, context_from, defPackage));
                     elements.put(viewName, bundle);
                 }
             } else {

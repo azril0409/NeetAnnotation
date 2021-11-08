@@ -1,9 +1,14 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'signing'
 }
-group = 'com.neetoffice.annotation'
+
+group = 'io.github.azril0409'
 version = '1.3.2'
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
 
 dependencies {
     api project(':Neetannotation-api')
@@ -20,35 +25,73 @@ dependencies {
     api "com.google.dagger:dagger-android-processor:$dagger_version"
 }
 
+task javadocJar(type: Jar) {
+    archiveClassifier.set('javadoc')
+    from javadoc
+}
+
 task sourcesJar(type: Jar) {
-    archiveClassifier = 'sources'
+    archiveClassifier.set('sources')
     from sourceSets.main.allSource
 }
 
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    archiveClassifier = 'javadoc'
-    from javadoc.destinationDir
+artifacts {
+    archives javadocJar, sourcesJar
 }
 
-artifacts {
-    archives javadocJar
-    archives sourcesJar
+signing {
+    sign configurations.archives
 }
 
 afterEvaluate {
     publishing {
         publications {
-            maven(MavenPublication) {
-                groupId = 'com.neetoffice.annotation'
-                artifactId = 'Neetannotation-api'
-                version = '1.3.2'
-                description ''
-
-                from components.java
+            release(MavenPublication) {
+                groupId group
+                artifactId 'NeetAnnotation-compiler'
+                version version
+                pom {
+                    name = 'NeetAnnotation-compiler'
+                    description = ''
+                    url = 'https://github.com/azril0409/NeetAnnotation'
+                    licenses {
+                        license {
+                            name = 'The Apache Software License, Version 2.0'
+                            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        }
+                    }
+                    developers {
+                        developer {
+                            name = 'azril0409'
+                            email = 'TU TSUNG-TSE'
+                            url = 'azril0409@gmail.com'
+                        }
+                    }
+                    scm {
+                        connection = 'https://github.com/azril0409/NeetAnnotation.git'
+                        developerConnection = 'https://github.com/azril0409/NeetAnnotation.git'
+                        url = 'https://github.com/azril0409/NeetAnnotation'
+                    }
+                }
+            }
+        }
+        repositories {
+            maven {
+                name = "sonatype"
+                def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                def name = properties.getProperty("ossrhUsername") ?: ''
+                def pw = properties.getProperty("ossrhPassword") ?: ''
+                credentials {
+                    username name
+                    password pw
+                }
             }
         }
     }
 }
+
 
 def libname = name + "_" + version + ".jar"
 def toPath = '../librarys/'

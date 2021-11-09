@@ -52,13 +52,13 @@ public class ContextInteractorCreator extends BaseCreator {
 
     private void createBaseInteractor(String packageName, Class cls) {
         final ClassName stringClassName = ClassName.get(cls);
-        final InteractorCreator.InteractBuild stringBuild = InteractorCreator.createInterface(this, packageName, stringClassName, new HashMap(), new HashMap(), null);
+        final InteractorCreator.InteractBuild stringBuild = InteractorCreator.createInterface(this, packageName, stringClassName, new HashMap<>(), new HashMap<>(), null);
         InteractorCreator.createImplement(this, packageName, stringClassName, stringBuild, false, null);
         InteractorCreator.createImplement(this, packageName, stringClassName, stringBuild, true, null);
-        final ListInteractorCreator.InteractBuild stringListBuild = ListInteractorCreator.createInterface(this, packageName, stringClassName, new HashMap());
+        final ListInteractorCreator.InteractBuild stringListBuild = ListInteractorCreator.createInterface(this, packageName, stringClassName, new HashMap<>());
         ListInteractorCreator.createImplement(this, packageName, stringClassName, stringListBuild, false);
         ListInteractorCreator.createImplement(this, packageName, stringClassName, stringListBuild, true);
-        final SetInteractorCreator.InteractBuild stringSetBuild = SetInteractorCreator.createInterface(this, packageName, stringClassName, new HashMap());
+        final SetInteractorCreator.InteractBuild stringSetBuild = SetInteractorCreator.createInterface(this, packageName, stringClassName, new HashMap<>());
         SetInteractorCreator.createImplement(this, packageName, stringClassName, stringSetBuild, false);
         SetInteractorCreator.createImplement(this, packageName, stringClassName, stringSetBuild, true);
     }

@@ -39,7 +39,7 @@ public class ViewModelStoreOwnerCreator extends BaseCreator {
     void process(TypeElement applicationElement, RoundEnvironment roundEnv) {
         final String className = applicationElement.getSimpleName() + "_";
         final List<? extends Element> enclosedElements = applicationElement.getEnclosedElements();
-        ArrayList<CodeBlock> onCreateElements = new ArrayList();
+        ArrayList<CodeBlock> onCreateElements = new ArrayList<>();
         final boolean haveDagger = DaggerHelp.process(applicationElement);
         if (haveDagger) {
             onCreateElements.add(createDaggerInjectCode(applicationElement));
@@ -87,7 +87,7 @@ public class ViewModelStoreOwnerCreator extends BaseCreator {
     }
 
     void createApplaction(String packageName) {
-        createApplaction(new ArrayList(), packageName, "Application_", AndroidClass.Application);
+        createApplaction(new ArrayList<>(), packageName, "Application_", AndroidClass.Application);
     }
 
     void createApplaction(List<CodeBlock> onCreateElements, String packageName, String className, TypeName claz) {

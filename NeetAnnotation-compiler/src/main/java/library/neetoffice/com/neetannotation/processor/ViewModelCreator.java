@@ -44,7 +44,7 @@ public class ViewModelCreator extends BaseCreator {
     static final String CONSTRUCTOR_CONTEXT_PARAMETER = "context";
     static final String CONTEXT_FROM = "application";
     static final String OWNER = "owner";
-    static final HashMap<String, String> publishedNameMap = new HashMap();
+    static final HashMap<String, String> publishedNameMap = new HashMap<>();
     private final MainProcessor mainProcessor;
     final SubscribeHelp subscribeHelp;
     final HandleHelp handleHelp;

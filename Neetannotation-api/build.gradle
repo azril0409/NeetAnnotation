@@ -25,7 +25,12 @@ artifacts {
 }
 
 signing {
-    sign configurations.archives
+    useInMemoryPgpKeys(
+            properties.getProperty("signing.keyId"),
+            properties.getProperty("signing.key"),
+            properties.getProperty("signing.password")
+    )
+    sign publishing.publications
 }
 
 afterEvaluate {
@@ -35,9 +40,13 @@ afterEvaluate {
                 groupId group
                 artifactId 'NeetAnnotation-api'
                 version version
+
+                artifact sourcesJar
+                artifact javadocJar
+
                 pom {
                     name = 'NeetAnnotation-api'
-                    description = ''
+                    description = 'NeetAnnotation is an open source annotation framework for Android development. It base on android lifecycle, dagger2 and Rxjava.'
                     url = 'https://github.com/azril0409/NeetAnnotation'
                     licenses {
                         license {
@@ -62,6 +71,7 @@ afterEvaluate {
         }
         repositories {
             maven {
+                //上傳到 sonatype 的 nexus repository manager 代為 push 到 maven central
                 name = "sonatype"
                 def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
                 def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"

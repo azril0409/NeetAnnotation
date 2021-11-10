@@ -1,0 +1,8 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {}
+
+apply from: rootProject.file('NeetAnnotation-api/config.gradle')
+apply from: rootProject.file('publish.gradle')

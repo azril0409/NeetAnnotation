@@ -99,7 +99,7 @@ public class FragmentCreator extends BaseCreator {
 
         final MethodSpec.Builder onCreateMethodBuilder = createOnCreateMethodBuilder();
         final MethodSpec.Builder onActivityCreateMethodBuilder = createOnActivityCreateMethodBuilder();
-        final MethodSpec.Builder onCreateViewMethodBuilder = createOnCreateViewMethodBuilder(fragmentElement);
+        final MethodSpec.Builder onCreateViewMethodBuilder = createOnCreateViewMethodBuilder(tb, fragmentElement);
         final MethodSpec.Builder onViewCreatedMethodBuilder = createOnViewCreatedMethodBuilder();
         final MethodSpec.Builder onSaveInstanceStateMethodBuilder = createOnSaveInstanceStateMethodBuilder();
         final MethodSpec.Builder onActivityResultMethodBuilder = createOnActivityResult();
@@ -237,7 +237,7 @@ public class FragmentCreator extends BaseCreator {
                 .addStatement("super.onActivityCreated($N)", SAVE_INSTANCE_STATE);
     }
 
-    private MethodSpec.Builder createOnCreateViewMethodBuilder(TypeElement fragmentElement) {
+    private MethodSpec.Builder createOnCreateViewMethodBuilder(TypeSpec.Builder typeSpecBuilder, TypeElement fragmentElement) {
         final MethodSpec.Builder mb = MethodSpec.methodBuilder("onCreateView")
                 .addModifiers(Modifier.PUBLIC)
                 .addParameter(AndroidClass.LayoutInflater, INFLATER)
@@ -259,7 +259,10 @@ public class FragmentCreator extends BaseCreator {
                 final String packageName = viewBindingString.substring(0, viewBindingString.length() - className.length() - 1);
                 if ("databinding".equals(split[split.length - 2]) && className.endsWith("Binding")) {
                     final ClassName viewBinding = ClassName.get(packageName, className);
-                    return mb.addStatement("final $T binding = $T.inflate($N, $N, false)", viewBinding, viewBinding, INFLATER, CONTAINER)
+                    typeSpecBuilder.addField(FieldSpec.builder(viewBinding, "binding")
+                            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                            .build());
+                    return mb.addStatement("binding = $T.inflate($N, $N, false)", viewBinding, INFLATER, CONTAINER)
                             .addStatement("return binding.getRoot()");
                 }
             }
@@ -332,7 +335,7 @@ public class FragmentCreator extends BaseCreator {
                 .addModifiers(Modifier.PUBLIC)
                 .addAnnotation(Override.class)
                 .returns(void.class)
-                .addStatement("super.$N()",name);
+                .addStatement("super.$N()", name);
     }
 
     private CodeBlock createFindViewByIdCode(Element viewByIdElement) {

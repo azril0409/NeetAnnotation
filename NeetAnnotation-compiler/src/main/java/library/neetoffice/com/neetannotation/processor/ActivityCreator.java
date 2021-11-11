@@ -2,6 +2,7 @@ package library.neetoffice.com.neetannotation.processor;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
+import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 
@@ -65,7 +66,6 @@ public class ActivityCreator extends BaseCreator {
 
     @Override
     void process(TypeElement activityElement, RoundEnvironment roundEnv) {
-
         boolean isAbstract = activityElement.getModifiers().contains(Modifier.ABSTRACT);
         if (isAbstract) {
             return;
@@ -113,7 +113,6 @@ public class ActivityCreator extends BaseCreator {
         final CodeBlock.Builder onStopCode = CodeBlock.builder();
         final CodeBlock.Builder onDestroyCode = CodeBlock.builder();
 
-
         for (TypeElement superActivityElement : activityElements) {
             final List<? extends Element> enclosedElements = superActivityElement.getEnclosedElements();
             for (Element element : enclosedElements) {
@@ -154,7 +153,7 @@ public class ActivityCreator extends BaseCreator {
         //
         final boolean haveDagger = DaggerHelp.process(activityElement);
         //OnCreate
-        onCreateMethodBuilder.addCode(createSetContentViewCode(activityElement));
+        onCreateMethodBuilder.addCode(createSetContentViewCode(tb, activityElement));
         onCreateMethodBuilder.addCode(menuBuilder.parseOptionsMenuInOnCreate(activityElement));
         onCreateMethodBuilder.addCode(extraBuilder.createGetExtra(SAVE_INSTANCE_STATE));
         onCreateMethodBuilder.addCode(resCode.build());
@@ -270,13 +269,15 @@ public class ActivityCreator extends BaseCreator {
                 .addStatement("super.$N()", name);
     }
 
-    private CodeBlock createSetContentViewCode(TypeElement activityElement) {
+    private CodeBlock createSetContentViewCode(TypeSpec.Builder typeSpecBuilder, TypeElement activityElement) {
         final AnnotationMirror aNActivityMirror = AnnotationHelp.findAnnotationMirror(activityElement, NActivity.class);
         Object viewBindingObject = AnnotationHelp.findAnnotationValue(aNActivityMirror, "value");
         if (viewBindingObject == null) {
             viewBindingObject = AnnotationHelp.findAnnotationValue(aNActivityMirror, "viewBinding");
         }
         if (viewBindingObject != null) {
+
+
             final String viewBindingString = viewBindingObject.toString();
             final String[] split = viewBindingString.split("\\.");
             if (split.length > 1) {
@@ -284,8 +285,11 @@ public class ActivityCreator extends BaseCreator {
                 final String packageName = viewBindingString.substring(0, viewBindingString.length() - className.length() - 1);
                 if ("databinding".equals(split[split.length - 2]) && className.endsWith("Binding")) {
                     final ClassName viewBinding = ClassName.get(packageName, className);
+                    typeSpecBuilder.addField(FieldSpec.builder(viewBinding, "binding")
+                            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
+                            .build());
                     return CodeBlock.builder()
-                            .addStatement("final $T binding = $T.inflate(getLayoutInflater())", viewBinding, viewBinding)
+                            .addStatement("binding = $T.inflate(getLayoutInflater())", viewBinding)
                             .addStatement("setContentView(binding.getRoot())")
                             .build();
                 }

@@ -42,7 +42,7 @@ dependencies {
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.1'
     implementation 'com.google.code.gson:gson:2.2.4'
     //--- NeetAnnotation---
-    implementation project(':Neetannotation-api')
+    implementation project(':NeetAnnotation-api')
     kapt project(':NeetAnnotation-compiler')
     // Lifecycle
     implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.0"

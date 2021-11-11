@@ -6,6 +6,7 @@ import androidx.appcompat.widget.Toolbar
 import library.neetoffice.com.neetannotation.*
 import sample.neetoffice.com.neetannotation.databinding.ActivityMainBinding
 import sample.neetoffice.com.neetannotation.models.Record
+import sample.neetoffice.com.neetannotation.views.activies.MainActivity_.binding
 import sample.neetoffice.com.neetannotation.views.adapters.RecordAdapter
 import sample.neetoffice.com.neetannotation.views.viewmodel.RecordViewModel
 import java.util.*
@@ -14,8 +15,6 @@ import javax.inject.Inject
 @NActivity(ActivityMainBinding::class)
 @OptionsMenu("mian")
 open class MainActivity : AppCompatActivity() {
-    @ViewById
-    protected lateinit var toolbar: Toolbar
 
     @ViewById
     lateinit var listView: ListView
@@ -28,7 +27,7 @@ open class MainActivity : AppCompatActivity() {
 
     @AfterInject
     fun onAfter() {
-        setSupportActionBar(toolbar)
+        setSupportActionBar(binding.toolbar)
         listView.adapter = adapter
         // adapter.setAll(viewModel.load())
     }

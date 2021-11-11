@@ -8,6 +8,5 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 @Retention(SOURCE)
 @Target(FIELD)
-@Deprecated
 public @interface InjectInitialEntity {
 }

@@ -19,4 +19,5 @@ public @interface ViewById {
      */
     String value() default "";
     String resName() default "";
+    String resPackage() default "";
 }

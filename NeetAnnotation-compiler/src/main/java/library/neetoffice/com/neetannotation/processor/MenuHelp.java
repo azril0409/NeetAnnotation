@@ -73,14 +73,14 @@ public class MenuHelp {
                 final MenuSelected aMenuSelected = element.getAnnotation(MenuSelected.class);
                 if (aMenuSelected.value().length != 0) {
                     for (String resName : aMenuSelected.value()) {
-                        menuSelectedBundles.add(new MenuSelectedBundle(AndroidResHelp.id(resName, elementName, context_from, defPackage), element));
+                        menuSelectedBundles.add(new MenuSelectedBundle(AndroidResHelp.id(resName, aMenuSelected.resPackage(), elementName, context_from, defPackage), element));
                     }
                 } else if (aMenuSelected.resName().length != 0) {
                     for (String resName : aMenuSelected.resName()) {
-                        menuSelectedBundles.add(new MenuSelectedBundle(AndroidResHelp.id(resName, elementName, context_from, defPackage), element));
+                        menuSelectedBundles.add(new MenuSelectedBundle(AndroidResHelp.id(resName, aMenuSelected.resPackage(), elementName, context_from, defPackage), element));
                     }
                 } else {
-                    menuSelectedBundles.add(new MenuSelectedBundle(AndroidResHelp.id("", elementName, context_from, defPackage), element));
+                    menuSelectedBundles.add(new MenuSelectedBundle(AndroidResHelp.id("", aMenuSelected.resPackage(), elementName, context_from, defPackage), element));
                 }
             }
             if (element.getAnnotation(OptionsMenuItem.class) != null) {
@@ -96,7 +96,7 @@ public class MenuHelp {
             final String resName = AndroidResHelp.parseResName(aOptionsMenu.value(), aOptionsMenu.resName());
             return CodeBlock.builder()
                     .add("$N.inflate(", inflater)
-                    .add(AndroidResHelp.menu(resName, typeElement.getSimpleName(), context_from, defPackage))
+                    .add(AndroidResHelp.menu(resName, aOptionsMenu.resPackage(), typeElement.getSimpleName(), context_from, defPackage))
                     .addStatement(", $N)", menu)
                     .build();
         }
@@ -108,7 +108,7 @@ public class MenuHelp {
                     final OptionsMenuItem aOptionsMenuItem = element.getAnnotation(OptionsMenuItem.class);
                     final String resName = AndroidResHelp.parseResName(aOptionsMenuItem.value(), aOptionsMenuItem.resName());
                     code.add("this.$N = $N.findItem(", element.getSimpleName(), menu)
-                            .add(AndroidResHelp.id(resName, element.getSimpleName(), context_from, defPackage))
+                            .add(AndroidResHelp.id(resName, aOptionsMenuItem.resPackage(), element.getSimpleName(), context_from, defPackage))
                             .addStatement(")");
                 }
             }

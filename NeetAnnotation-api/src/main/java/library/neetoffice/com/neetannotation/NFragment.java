@@ -15,11 +15,11 @@ public @interface NFragment {
 
     Class viewBinding() default NoBinder.class;
 
-
     /**
      * The R.layout.* field which refer to the layout.
      *
      * @return the id of the layout
      */
     String resName() default "";
+    String resPackage() default "";
 }

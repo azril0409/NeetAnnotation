@@ -19,7 +19,7 @@ public @interface FragmentBy {
      */
     String value() default "";
     String resName() default "";
-
+    String resPackage() default "";
 
     String tag() default "";
 }

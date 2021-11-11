@@ -10,6 +10,6 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 @Target(METHOD)
 public @interface MenuSelected {
     String[] value() default {};
-
     String[] resName() default {};
+    String resPackage() default "";
 }

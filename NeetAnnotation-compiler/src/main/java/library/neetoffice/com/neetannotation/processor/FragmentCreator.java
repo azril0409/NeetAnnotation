@@ -271,8 +271,9 @@ public class FragmentCreator extends BaseCreator {
         if (resName == null) {
             return mb.addStatement("return super.onCreateView($N, $N, $N)", INFLATER, CONTAINER, SAVE_INSTANCE_STATE);
         }
+        final String resPackage = (String) AnnotationHelp.findAnnotationValue(aNFragmentMirror, "resPackage");
         return mb.addCode("return $N.inflate(", INFLATER)
-                .addCode(AndroidResHelp.layout(resName, fragmentElement.getSimpleName(), CONTEXT_FROM, DEF_PACKAGE))
+                .addCode(AndroidResHelp.layout(resName,resPackage, fragmentElement.getSimpleName(), CONTEXT_FROM, DEF_PACKAGE))
                 .addStatement(", $N, false)", CONTAINER);
     }
 
@@ -349,7 +350,7 @@ public class FragmentCreator extends BaseCreator {
         }
         return CodeBlock.builder()
                 .add("$N = $N.findViewById(", viewByIdElement.getSimpleName(), VIEW)
-                .add(AndroidResHelp.id(resName, viewByIdElement.getSimpleName(), CONTEXT_FROM, DEF_PACKAGE))
+                .add(AndroidResHelp.id(resName, aViewById.resPackage(), viewByIdElement.getSimpleName(), CONTEXT_FROM, DEF_PACKAGE))
                 .addStatement(")")
                 .build();
     }
@@ -368,7 +369,7 @@ public class FragmentCreator extends BaseCreator {
                     .add("$N = ($T)$N", element.getSimpleName(), element.asType(), CONTEXT_FROM)
                     .add(".getChildFragmentManager()")
                     .add(".findFragmentById(")
-                    .add(AndroidResHelp.id(resName, element.getSimpleName(), CONTEXT_FROM, DEF_PACKAGE))
+                    .add(AndroidResHelp.id(resName, aFragmentBy.resPackage(), element.getSimpleName(), CONTEXT_FROM, DEF_PACKAGE))
                     .addStatement(")")
                     .build();
         } else if (!aFragmentBy.tag().isEmpty()) {

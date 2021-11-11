@@ -11,7 +11,12 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface TouchUp {
+    /**
+     * The R.layout.* field which refer to the layout.
+     *
+     * @return the id of the R.id
+     */
     String[] value() default {};
-
     String[] resName() default {};
+    String resPackage() default "";
 }

@@ -12,10 +12,9 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 @Retention(SOURCE)
 @Target(METHOD)
 public @interface TextChange {
-
     String[] value() default {};
-
     String[] resName() default {};
+    String resPackage() default "";
 
     @Retention(RUNTIME)
     @Target(PARAMETER)

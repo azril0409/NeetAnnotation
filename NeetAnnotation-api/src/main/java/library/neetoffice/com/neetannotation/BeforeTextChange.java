@@ -9,8 +9,7 @@ import static java.lang.annotation.RetentionPolicy.SOURCE;
 @Retention(SOURCE)
 @Target(METHOD)
 public @interface BeforeTextChange {
-
     String[] value() default {};
-
     String[] resName() default {};
+    String resPackage() default "";
 }

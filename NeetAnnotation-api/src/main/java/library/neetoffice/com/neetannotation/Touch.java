@@ -14,8 +14,8 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target(METHOD)
 public @interface Touch {
     String[] value() default {};
-
     String[] resName() default {};
+    String resPackage() default "";
 
     @Retention(RUNTIME)
     @Target(FIELD)

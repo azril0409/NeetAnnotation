@@ -20,4 +20,5 @@ public @interface NView {
      * @return the id of the layout
      */
     String resName() default "";
+    String resPackage() default "";
 }

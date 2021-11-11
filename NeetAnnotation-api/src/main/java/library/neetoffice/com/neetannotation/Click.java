@@ -11,8 +11,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface Click {
-
     String[] value() default {};
-
     String[] resName() default {};
+    String resPackage() default "";
 }

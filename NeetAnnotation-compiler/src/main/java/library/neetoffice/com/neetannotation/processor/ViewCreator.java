@@ -150,11 +150,10 @@ public class ViewCreator extends BaseCreator {
         }
         return CodeBlock.builder()
                 .add("$N = findViewById(", viewByIdElement.getSimpleName())
-                .add(AndroidResHelp.id(resName, viewByIdElement.getSimpleName(), CONTEXT, DEF_PACKAGE))
+                .add(AndroidResHelp.id(resName, aViewById.resPackage(), viewByIdElement.getSimpleName(), CONTEXT, DEF_PACKAGE))
                 .addStatement(")")
                 .build();
     }
-
 
     private CodeBlock createAfterAnnotationCode(Element afterAnnotationElement) {
         final AfterInject aAfterInject = afterAnnotationElement.getAnnotation(AfterInject.class);
@@ -218,10 +217,11 @@ public class ViewCreator extends BaseCreator {
         if (resName == null) {
             return CodeBlock.builder().build();
         }
+        final String resPackage = (String) AnnotationHelp.findAnnotationValue(aNViewMirror, "resPackage");
         return CodeBlock.builder()
                 .beginControlFlow("if(this instanceof $T)", AndroidClass.ViewGroup)
                 .add("ViewGroup.inflate($N,", CONTEXT)
-                .add(AndroidResHelp.layout(resName, viewElement.getSimpleName(), CONTEXT, DEF_PACKAGE))
+                .add(AndroidResHelp.layout(resName, resPackage, viewElement.getSimpleName(), CONTEXT, DEF_PACKAGE))
                 .addStatement(",($T)this)", AndroidClass.ViewGroup)
                 .endControlFlow()
                 .build();

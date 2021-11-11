@@ -84,78 +84,78 @@ public class ListenerHelp {
         public void parseElement(javax.lang.model.element.Element element) {
             if (element.getAnnotation(Click.class) != null) {
                 final Click aClick = element.getAnnotation(Click.class);
-                addElementsMap(element, aClick.value(), aClick.resName(), "Clicked", clickElements);
+                addElementsMap(element, aClick.value(), aClick.resName(), aClick.resPackage(), "Clicked", clickElements);
             }
             if (element.getAnnotation(LongClick.class) != null) {
                 final LongClick aLongClick = element.getAnnotation(LongClick.class);
-                addElementsMap(element, aLongClick.value(), aLongClick.resName(), "LongClicked", longClickElements);
+                addElementsMap(element, aLongClick.value(), aLongClick.resName(), aLongClick.resPackage(), "LongClicked", longClickElements);
             }
             if (element.getAnnotation(Touch.class) != null) {
                 final Touch aTouch = element.getAnnotation(Touch.class);
-                addElementsMap(element, aTouch.value(), aTouch.resName(), "Touched", touchElements);
+                addElementsMap(element, aTouch.value(), aTouch.resName(), aTouch.resPackage(), "Touched", touchElements);
             }
             if (element.getAnnotation(TouchDown.class) != null) {
                 final TouchDown aTouchDown = element.getAnnotation(TouchDown.class);
-                addElementsMap(element, aTouchDown.value(), aTouchDown.resName(), "TouchDowned", touchDownElements);
+                addElementsMap(element, aTouchDown.value(), aTouchDown.resName(), aTouchDown.resPackage(), "TouchDowned", touchDownElements);
             }
             if (element.getAnnotation(TouchMove.class) != null) {
                 final TouchMove aTouchMove = element.getAnnotation(TouchMove.class);
-                addElementsMap(element, aTouchMove.value(), aTouchMove.resName(), "TouchMoved", touchMovenElements);
+                addElementsMap(element, aTouchMove.value(), aTouchMove.resName(), aTouchMove.resPackage(), "TouchMoved", touchMovenElements);
             }
             if (element.getAnnotation(TouchUp.class) != null) {
                 final TouchUp aTouchUp = element.getAnnotation(TouchUp.class);
-                addElementsMap(element, aTouchUp.value(), aTouchUp.resName(), "TouchUped", touchUpElements);
+                addElementsMap(element, aTouchUp.value(), aTouchUp.resName(), aTouchUp.resPackage(), "TouchUped", touchUpElements);
             }
             if (element.getAnnotation(ItemClick.class) != null) {
                 final ItemClick aItemClick = element.getAnnotation(ItemClick.class);
-                addElementsMap(element, aItemClick.value(), aItemClick.resName(), "ItemClicked", itemClickElements);
+                addElementsMap(element, aItemClick.value(), aItemClick.resName(), aItemClick.resPackage(), "ItemClicked", itemClickElements);
             }
             if (element.getAnnotation(ItemLongClick.class) != null) {
                 final ItemLongClick aItemLongClick = element.getAnnotation(ItemLongClick.class);
-                addElementsMap(element, aItemLongClick.value(), aItemLongClick.resName(), "ItemLongClicked", itemLongClickElements);
+                addElementsMap(element, aItemLongClick.value(), aItemLongClick.resName(), aItemLongClick.resPackage(), "ItemLongClicked", itemLongClickElements);
             }
             if (element.getAnnotation(ItemSelect.class) != null) {
                 final ItemSelect aItemSelect = element.getAnnotation(ItemSelect.class);
-                addElementsMap(element, aItemSelect.value(), aItemSelect.resName(), "ItemSelected", itemSelectElements);
+                addElementsMap(element, aItemSelect.value(), aItemSelect.resName(), aItemSelect.resPackage(), "ItemSelected", itemSelectElements);
             }
             if (element.getAnnotation(CheckedChange.class) != null) {
                 final CheckedChange aCheckedChange = element.getAnnotation(CheckedChange.class);
-                addElementsMap(element, aCheckedChange.value(), aCheckedChange.resName(), "CheckedChanged", checkedChangeElements);
+                addElementsMap(element, aCheckedChange.value(), aCheckedChange.resName(), aCheckedChange.resPackage(), "CheckedChanged", checkedChangeElements);
             }
             if (element.getAnnotation(TextChange.class) != null) {
                 final TextChange aTextChange = element.getAnnotation(TextChange.class);
-                addElementsMap(element, aTextChange.value(), aTextChange.resName(), "TextChanged", textChangeElements);
+                addElementsMap(element, aTextChange.value(), aTextChange.resName(), aTextChange.resPackage(), "TextChanged", textChangeElements);
             }
             if (element.getAnnotation(BeforeTextChange.class) != null) {
                 final BeforeTextChange aBeforeTextChange = element.getAnnotation(BeforeTextChange.class);
-                addElementsMap(element, aBeforeTextChange.value(), aBeforeTextChange.resName(), "BeforeTextChanged", beforeTextChangeElements);
+                addElementsMap(element, aBeforeTextChange.value(), aBeforeTextChange.resName(), aBeforeTextChange.resPackage(), "BeforeTextChanged", beforeTextChangeElements);
             }
             if (element.getAnnotation(AfterTextChange.class) != null) {
                 final AfterTextChange aAfterTextChange = element.getAnnotation(AfterTextChange.class);
-                addElementsMap(element, aAfterTextChange.value(), aAfterTextChange.resName(), "AfterTextChanged", afterTextChangeElements);
+                addElementsMap(element, aAfterTextChange.value(), aAfterTextChange.resName(), aAfterTextChange.resPackage(), "AfterTextChanged", afterTextChangeElements);
             }
             if (element.getAnnotation(FocusChange.class) != null) {
                 final FocusChange aFocusChange = element.getAnnotation(FocusChange.class);
-                addElementsMap(element, aFocusChange.value(), aFocusChange.resName(), "FocusChanged", focusChangElements);
+                addElementsMap(element, aFocusChange.value(), aFocusChange.resName(), aFocusChange.resPackage(), "FocusChanged", focusChangElements);
             }
         }
 
-        private void addElementsMap(Element element, String[] values, String[] resNames, String end, HashMap<String, ElementBundle> elements) {
+        private void addElementsMap(Element element, String[] values, String[] resNames, String resPackage, String end, HashMap<String, ElementBundle> elements) {
             if (values.length != 0) {
                 for (String resName : values) {
                     final String viewName = "n_" + resName;
-                    final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id(resName, element.getSimpleName(), end, context_from, defPackage));
+                    final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id(resName, resPackage, element.getSimpleName(), end, context_from, defPackage));
                     elements.put(viewName, bundle);
                 }
             } else if (resNames.length != 0) {
                 for (String resName : resNames) {
                     final String viewName = "n_" + resName;
-                    final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id(resName, element.getSimpleName(), end, context_from, defPackage));
+                    final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id(resName, resPackage, element.getSimpleName(), end, context_from, defPackage));
                     elements.put(viewName, bundle);
                 }
             } else {
                 final String viewName = "n_" + element.getSimpleName().toString();
-                final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id("", element.getSimpleName(), end, context_from, defPackage));
+                final ElementBundle bundle = new ElementBundle(element, AndroidResHelp.id("", resPackage, element.getSimpleName(), end, context_from, defPackage));
                 elements.put(viewName, bundle);
             }
         }

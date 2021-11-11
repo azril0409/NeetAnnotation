@@ -12,6 +12,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface ResColor {
     String value() default "";
-
     String resName() default "";
+    String resPackage() default "";
 }

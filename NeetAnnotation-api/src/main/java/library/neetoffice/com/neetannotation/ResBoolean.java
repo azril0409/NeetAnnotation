@@ -12,6 +12,6 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 public @interface ResBoolean {
     String value() default "";
-
     String resName() default "";
+    String resPackage() default "";
 }

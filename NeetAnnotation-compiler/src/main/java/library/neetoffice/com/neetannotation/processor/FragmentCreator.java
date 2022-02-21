@@ -45,9 +45,9 @@ public class FragmentCreator extends BaseCreator {
     static final String VIEW = "view";
     static final String MENU = "menu";
     static final String ITEM = "item";
-    static final String REQUEST_CODE = "requestCode";
     static final String RESULT_CODE = "resultCode";
     static final String DATA = "data";
+    static final String BINDING = "binding";
 
     final ResourcesHelp resourcesHelp;
     final ListenerHelp listenerHelp;
@@ -88,7 +88,7 @@ public class FragmentCreator extends BaseCreator {
         final ExtraHelp.Builder extraBuilder = extraHelp.builder(GET_BUNDEL_METHOD, SAVE_INSTANCE_STATE);
         final SubscribeHelp.Builder subscribeBuilder = subscribeHelp.builder();
         final MenuHelp.Builder menuBuilder = menuHelp.builder(CONTEXT_FROM, DEF_PACKAGE);
-        final ActivityResultHelp.Builder activityResultBuilder = activityResultHelp.builder(REQUEST_CODE, RESULT_CODE, DATA);
+        final ActivityResultHelp.Builder activityResultBuilder = activityResultHelp.builder(DATA);
         final HandleHelp.Builder handleHelpBuilder = handleHelp.builder(className);
         //======================================================
 
@@ -102,7 +102,6 @@ public class FragmentCreator extends BaseCreator {
         final MethodSpec.Builder onCreateViewMethodBuilder = createOnCreateViewMethodBuilder(tb, fragmentElement);
         final MethodSpec.Builder onViewCreatedMethodBuilder = createOnViewCreatedMethodBuilder();
         final MethodSpec.Builder onSaveInstanceStateMethodBuilder = createOnSaveInstanceStateMethodBuilder();
-        final MethodSpec.Builder onActivityResultMethodBuilder = createOnActivityResult();
         final MethodSpec.Builder onCreateOptionsMenuBuilder = createOnCreateOptionsMenuMethodBuilder();
         final MethodSpec.Builder onOptionsItemSelectedBuilder = createOnOptionsItemSelectedMethodBuilder();
         final MethodSpec.Builder onStartMethodBuilder = getLifecycleMethod("onStart");
@@ -133,7 +132,7 @@ public class FragmentCreator extends BaseCreator {
                 listenerBuilder.parseElement(element);
                 subscribeBuilder.parseElement(element);
                 menuBuilder.parseElement(element);
-                activityResultBuilder.parseElement(element);
+                activityResultBuilder.parseElement(fragmentElement, element);
                 handleHelpBuilder.parseElement(element);
                 if (element.getAnnotation(OnCreate.class) != null) {
                     onCreateCode.add(parseLifecycleMethod(element));
@@ -170,6 +169,7 @@ public class FragmentCreator extends BaseCreator {
         onActivityCreateMethodBuilder.addCode(subscribeBuilder.createAddViewModelOfCode(ACTIVITY));
         onActivityCreateMethodBuilder.addCode(subscribeBuilder.createCodeSubscribeInOnCreate(className, ACTIVITY));
         onActivityCreateMethodBuilder.addCode(subscribeBuilder.createAddLifecycle(ACTIVITY));
+        onActivityCreateMethodBuilder.addCode(activityResultBuilder.onCreateLauncher(fragmentElement));
         if (haveDagger) {
             onActivityCreateMethodBuilder.addCode(createDaggerInjectCode(fragmentElement));
         }
@@ -177,8 +177,6 @@ public class FragmentCreator extends BaseCreator {
         onActivityCreateMethodBuilder.addCode(onCreateCode.build());
         //
         onSaveInstanceStateMethodBuilder.addCode(extraBuilder.createSaveInstanceState(OUT_STATE));
-        //
-        onActivityResultMethodBuilder.addCode(activityResultBuilder.createOnActivityResultCode());
         //
         onCreateOptionsMenuBuilder.addCode(menuBuilder.createMenuInflaterCode(fragmentElement, MENU, INFLATER));
         onCreateOptionsMenuBuilder.addCode(menuBuilder.createFindMenuItemCode(MENU));
@@ -195,17 +193,21 @@ public class FragmentCreator extends BaseCreator {
         onStopMethodBuilder.addCode(onStopCode.build());
         //
         onDestroyMethodBuilder.addCode(subscribeBuilder.createDispose());
+        onDestroyMethodBuilder.addCode(activityResultBuilder.createDispose());
         onDestroyMethodBuilder.addCode(onDestroyCode.build());
         //
-        //tb.addField(FieldSpec.builder(ParameterizedTypeName.get(ClassName.get(HashSet.class), AndroidClass.AndroidViewModel),"viewmodes",Modifier.PRIVATE,Modifier.FINAL).initializer("new $T()",ParameterizedTypeName.get(ClassName.get(HashSet.class), AndroidClass.AndroidViewModel)).build());
         tb.addType(extraBuilder.createArgument(packageName, className));
-        tb.addType(activityResultBuilder.createActivityIntentBuilder(packageName, className));
+        //
+        activityResultBuilder.createActivityResultLauncherField(tb, fragmentElement);
+        tb.addType(activityResultBuilder.createActivityResult(packageName, className));
+        tb.addType(activityResultBuilder.createLauncher(packageName, className));
+        //
+
         tb.addMethod(onCreateMethodBuilder.build());
         tb.addMethod(onActivityCreateMethodBuilder.build());
         tb.addMethod(onCreateViewMethodBuilder.build());
         tb.addMethod(onViewCreatedMethodBuilder.build());
         tb.addMethod(onSaveInstanceStateMethodBuilder.build());
-        tb.addMethod(onActivityResultMethodBuilder.build());
         tb.addMethod(onCreateOptionsMenuBuilder.build());
         tb.addMethod(onOptionsItemSelectedBuilder.build());
         tb.addMethod(onStartMethodBuilder.build());
@@ -245,35 +247,19 @@ public class FragmentCreator extends BaseCreator {
                 .addParameter(AndroidClass.Bundle, SAVE_INSTANCE_STATE)
                 .addAnnotation(Override.class)
                 .returns(AndroidClass.View);
-
+        final ClassName viewBinding = ViewBindingHelp.getViewBindingClass(fragmentElement, NFragment.class);
+        if (viewBinding != null) {
+            return mb.addStatement("final $T $N = $T.inflate($N, $N, false)", viewBinding, BINDING, viewBinding, INFLATER, CONTAINER)
+                    .addStatement("return $N.getRoot()", BINDING);
+        }
         final AnnotationMirror aNFragmentMirror = AnnotationHelp.findAnnotationMirror(fragmentElement, NFragment.class);
-        Object viewBindingObject = AnnotationHelp.findAnnotationValue(aNFragmentMirror, "value");
-        if (viewBindingObject == null) {
-            viewBindingObject = AnnotationHelp.findAnnotationValue(aNFragmentMirror, "viewBinding");
-        }
-        if (viewBindingObject != null) {
-            final String viewBindingString = viewBindingObject.toString();
-            final String[] split = viewBindingString.split("\\.");
-            if (split.length > 1) {
-                final String className = split[split.length - 1];
-                final String packageName = viewBindingString.substring(0, viewBindingString.length() - className.length() - 1);
-                if ("databinding".equals(split[split.length - 2]) && className.endsWith("Binding")) {
-                    final ClassName viewBinding = ClassName.get(packageName, className);
-                    typeSpecBuilder.addField(FieldSpec.builder(viewBinding, "binding")
-                            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                            .build());
-                    return mb.addStatement("binding = $T.inflate($N, $N, false)", viewBinding, INFLATER, CONTAINER)
-                            .addStatement("return binding.getRoot()");
-                }
-            }
-        }
         final String resName = (String) AnnotationHelp.findAnnotationValue(aNFragmentMirror, "resName");
         if (resName == null) {
             return mb.addStatement("return super.onCreateView($N, $N, $N)", INFLATER, CONTAINER, SAVE_INSTANCE_STATE);
         }
         final String resPackage = (String) AnnotationHelp.findAnnotationValue(aNFragmentMirror, "resPackage");
         return mb.addCode("return $N.inflate(", INFLATER)
-                .addCode(AndroidResHelp.layout(resName,resPackage, fragmentElement.getSimpleName(), CONTEXT_FROM, DEF_PACKAGE))
+                .addCode(AndroidResHelp.layout(resName, resPackage, fragmentElement.getSimpleName(), CONTEXT_FROM, DEF_PACKAGE))
                 .addStatement(", $N, false)", CONTAINER);
     }
 
@@ -294,17 +280,6 @@ public class FragmentCreator extends BaseCreator {
                 .addAnnotation(Override.class)
                 .returns(void.class)
                 .addStatement("super.onSaveInstanceState($N)", OUT_STATE);
-    }
-
-    private MethodSpec.Builder createOnActivityResult() {
-        return MethodSpec.methodBuilder("onActivityResult")
-                .addModifiers(Modifier.PUBLIC)
-                .addParameter(int.class, REQUEST_CODE)
-                .addParameter(int.class, RESULT_CODE)
-                .addParameter(AndroidClass.Intent, DATA)
-                .addAnnotation(Override.class)
-                .returns(void.class)
-                .addStatement("super.onActivityResult($N, $N, $N)", REQUEST_CODE, RESULT_CODE, DATA);
     }
 
     private MethodSpec.Builder createOnCreateOptionsMenuMethodBuilder() {

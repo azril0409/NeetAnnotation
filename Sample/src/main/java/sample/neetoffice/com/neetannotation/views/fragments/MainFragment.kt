@@ -31,9 +31,10 @@ open class MainFragment : Fragment() {
 
     }
 
-    @ActivityResult(20)
-    fun onActivityResult(test: String) {
+    @ActivityResult()
+    fun onActivityResult(@ActivityResult.Extra test: String) {
     }
+
     @OnStart
     @OnCreate
     fun start() {
@@ -52,5 +53,6 @@ open class MainFragment : Fragment() {
     }
 
     @OnDestroy
-    fun destroy(){}
+    fun destroy() {
+    }
 }

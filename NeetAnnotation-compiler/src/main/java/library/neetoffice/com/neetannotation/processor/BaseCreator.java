@@ -162,11 +162,11 @@ public abstract class BaseCreator {
         return isInstanceOf(element, AndroidClass.Service);
     }
 
-    private boolean isInstanceOf(TypeElement element, ClassName subClass) {
+    private boolean isInstanceOf(TypeElement element, TypeName subClass) {
         return isInstanceOf(element.asType(), subClass.toString());
     }
 
-    public boolean isInstanceOf(TypeMirror elementClass, ClassName subClass) {
+    public boolean isInstanceOf(TypeMirror elementClass, TypeName subClass) {
         return isInstanceOf(elementClass, subClass.toString());
     }
 
@@ -230,5 +230,15 @@ public abstract class BaseCreator {
     }
 
     void release() {
+
     }
+
+    void printWarning(CharSequence message) {
+        this.processingEnv.getMessager().printMessage(Diagnostic.Kind.WARNING, message);
+    }
+
+    void printError(CharSequence message) {
+        this.processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, message);
+    }
+
 }

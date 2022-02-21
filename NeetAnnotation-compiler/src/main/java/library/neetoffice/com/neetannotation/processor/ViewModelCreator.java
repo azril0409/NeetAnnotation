@@ -82,8 +82,6 @@ public class ViewModelCreator extends BaseCreator {
                 .addSuperinterface(AndroidClass.DefaultLifecycleObserver)
                 .addModifiers(Modifier.PUBLIC, Modifier.FINAL);
 
-        //final FieldSpec.Builder viewModelStoreOwner = FieldSpec.builder(ClassName.get(mainProcessor.contextPackageName, ViewModelStoreOwnerCreator.CLASS_NAME), VIEW_MODEL_STORE_OWNER, Modifier.PRIVATE, Modifier.STATIC);
-        //tb.addField(viewModelStoreOwner.build());
 
         final CodeBlock.Builder init = CodeBlock.builder();
         final CodeBlock.Builder afterAnnotationCode = CodeBlock.builder();

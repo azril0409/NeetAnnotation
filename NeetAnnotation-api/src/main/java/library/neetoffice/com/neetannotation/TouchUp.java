@@ -12,11 +12,23 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface TouchUp {
     /**
-     * The R.layout.* field which refer to the layout.
+     * Same resName
      *
-     * @return the id of the R.id
+     * @return Resource name.
      */
     String[] value() default {};
+
+    /**
+     * Resource name
+     *
+     * @return Resource name.
+     */
     String[] resName() default {};
+
+    /**
+     * Resource package.
+     *
+     * @return Resource package.
+     */
     String resPackage() default "";
 }

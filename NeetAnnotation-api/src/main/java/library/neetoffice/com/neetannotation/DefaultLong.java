@@ -7,7 +7,7 @@ import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
 /**
- * Created by Deo-chainmeans on 2017/5/20.
+ * The default value of the preference
  */
 @Retention(SOURCE)
 @Target(FIELD)

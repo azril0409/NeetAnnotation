@@ -1,4 +1,5 @@
 package library.neetoffice.com.neetannotation;
 
-public class NoBinder {
+/***/
+public final class NoBinder {
 }

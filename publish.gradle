@@ -49,6 +49,7 @@ afterEvaluate {
                 artifactId libraryName
                 version libraryVersion
 
+                artifact jar
                 artifact sourcesJar
                 artifact javadocJar
 

@@ -1,14 +1,8 @@
 package library.neetoffice.com.neetannotation.processor;
 
-import java.util.List;
-
 import javax.inject.Inject;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
-
-import library.neetoffice.com.neetannotation.NActivity;
-import library.neetoffice.com.neetannotation.NDagger;
 
 public class DaggerHelp {
 

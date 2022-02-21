@@ -6,12 +6,29 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by Deo on 2016/4/1.
+ * Methods annotated with @{@link CheckedChange} will be called on checked change event
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface CheckedChange {
+    /**
+     * Same resName
+     *
+     * @return Resource name.
+     */
     String[] value() default {};
+
+    /**
+     * Same resName
+     *
+     * @return Resource name.
+     */
     String[] resName() default {};
+
+    /**
+     * Resource package.
+     *
+     * @return Resource package.
+     */
     String resPackage() default "";
 }

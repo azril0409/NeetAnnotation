@@ -6,12 +6,24 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by Deo on 2016/4/6.
+ * Methods annotated with @{@link FocusChange} will be called on focus change event
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface FocusChange {
+    /**
+     * Same resName
+     * @return Resource name.
+     * */
     String[] value() default {};
+    /**
+     * Resource name
+     * @return Resource name.
+     * */
     String[] resName() default {};
+    /**
+     * Resource package.
+     * @return Resource package.
+     * */
     String resPackage() default "";
 }

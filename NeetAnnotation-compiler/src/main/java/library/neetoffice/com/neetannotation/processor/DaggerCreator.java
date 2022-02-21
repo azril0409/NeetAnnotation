@@ -22,7 +22,6 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import library.neetoffice.com.neetannotation.InjectInitialEntity;
-import library.neetoffice.com.neetannotation.NDagger;
 import library.neetoffice.com.neetannotation.Published;
 
 public class DaggerCreator extends BaseCreator {

@@ -8,6 +8,9 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
+/**
+ * Annotation method to subscribe interactor ({@link Interactor},{@link ListInteractor},{@link SetInteractor}).
+ * */
 @Target({METHOD, FIELD})
 @Retention(SOURCE)
 public @interface Subscribe {

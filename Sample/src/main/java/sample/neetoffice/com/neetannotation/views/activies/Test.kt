@@ -5,15 +5,16 @@ import library.neetoffice.com.neetannotation.*
 import sample.neetoffice.com.neetannotation.models.Record
 
 @NActivity
-@NDagger
 open class Test : AppCompatActivity() {
     @Extra
     lateinit var a: Record
 
+    @Extra
+    lateinit var b: Array<Record>
+
     @ItemClick
     @ItemLongClick
     @ItemSelect
-    fun itemClick(s:String){
-
+    fun itemClick(s: String) {
     }
 }

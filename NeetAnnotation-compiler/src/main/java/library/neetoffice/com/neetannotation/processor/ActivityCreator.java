@@ -2,7 +2,6 @@ package library.neetoffice.com.neetannotation.processor;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
-import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.TypeSpec;
 
@@ -17,12 +16,10 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
-import javax.tools.Diagnostic;
 
 import library.neetoffice.com.neetannotation.AfterInject;
 import library.neetoffice.com.neetannotation.FragmentBy;
 import library.neetoffice.com.neetannotation.NActivity;
-import library.neetoffice.com.neetannotation.NoBinder;
 import library.neetoffice.com.neetannotation.OnCreate;
 import library.neetoffice.com.neetannotation.OnDestroy;
 import library.neetoffice.com.neetannotation.OnPause;
@@ -32,17 +29,17 @@ import library.neetoffice.com.neetannotation.OnStop;
 import library.neetoffice.com.neetannotation.ViewById;
 import library.neetoffice.com.neetannotation.ViewModelOf;
 
+/***/
 public class ActivityCreator extends BaseCreator {
     static final String CONTEXT_FROM = "this";
     static final String DEF_PACKAGE = "getApplicationContext().getPackageName()";
     static final String SAVE_INSTANCE_STATE = "savedInstanceState";
     static final String OUT_STATE = "outState";
-    static final String GET_BUNDEL_METHOD = "getIntent().getExtras()";
+    static final String GET_BUNDLE_METHOD = "getIntent().getExtras()";
     static final String ITEM = "item";
     static final String MENU = "menu";
-    static final String REQUEST_CODE = "requestCode";
-    static final String RESULT_CODE = "resultCode";
     static final String DATA = "data";
+    static final String BINDING = "binding";
     final ResourcesHelp resourcesHelp;
     final ListenerHelp listenerHelp;
     final ExtraHelp extraHelp;
@@ -52,6 +49,10 @@ public class ActivityCreator extends BaseCreator {
     final HandleHelp handleHelp;
     private final MainProcessor mainProcessor;
 
+    /**
+     * @param processor MainProcessor
+     * @param processingEnv ProcessingEnvironment
+     * */
     public ActivityCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
         mainProcessor = processor;
@@ -79,10 +80,10 @@ public class ActivityCreator extends BaseCreator {
         activityElements.add(activityElement);
         //======================================================
         final ListenerHelp.Builder listenerBuilder = listenerHelp.builder(className, CONTEXT_FROM, CONTEXT_FROM, DEF_PACKAGE);
-        final ExtraHelp.Builder extraBuilder = extraHelp.builder(GET_BUNDEL_METHOD, SAVE_INSTANCE_STATE);
+        final ExtraHelp.Builder extraBuilder = extraHelp.builder(GET_BUNDLE_METHOD, SAVE_INSTANCE_STATE);
         final SubscribeHelp.Builder subscribeBuilder = subscribeHelp.builder();
         final MenuHelp.Builder menuBuilder = menuHelp.builder(CONTEXT_FROM, DEF_PACKAGE);
-        final ActivityResultHelp.Builder activityResultBuilder = activityResultHelp.builder(REQUEST_CODE, RESULT_CODE, DATA);
+        final ActivityResultHelp.Builder activityResultBuilder = activityResultHelp.builder(DATA);
         final HandleHelp.Builder handleHelpBuilder = handleHelp.builder(className);
         //======================================================
 
@@ -93,7 +94,6 @@ public class ActivityCreator extends BaseCreator {
 
         final MethodSpec.Builder onCreateMethodBuilder = createOnCreateMethodBuilder();
         final MethodSpec.Builder onSaveInstanceStateMethodBuilder = createOnSaveInstanceStateMethodBuilder();
-        final MethodSpec.Builder onActivityResultMethodBuilder = createOnActivityResult();
         final MethodSpec.Builder onCreateOptionsMenuBuilder = createOnCreateOptionsMenuMethodBuilder();
         final MethodSpec.Builder onOptionsItemSelectedBuilder = createOnOptionsItemSelectedMethodBuilder();
         final MethodSpec.Builder onStartMethodBuilder = getLifecycleMethod("onStart");
@@ -124,7 +124,7 @@ public class ActivityCreator extends BaseCreator {
                 listenerBuilder.parseElement(element);
                 subscribeBuilder.parseElement(element);
                 menuBuilder.parseElement(element);
-                activityResultBuilder.parseElement(element);
+                activityResultBuilder.parseElement(activityElement, element);
                 handleHelpBuilder.parseElement(element);
                 if (element.getAnnotation(ViewModelOf.class) != null) {
                     subscribeBuilder.parseElement(element);
@@ -163,6 +163,7 @@ public class ActivityCreator extends BaseCreator {
         onCreateMethodBuilder.addCode(subscribeBuilder.createAddViewModelOfCode(CONTEXT_FROM));
         onCreateMethodBuilder.addCode(subscribeBuilder.createCodeSubscribeInOnCreate(className, CONTEXT_FROM));
         onCreateMethodBuilder.addCode(subscribeBuilder.createAddLifecycle(CONTEXT_FROM));
+        onCreateMethodBuilder.addCode(activityResultBuilder.onCreateLauncher(activityElement));
         if (haveDagger) {
             onCreateMethodBuilder.addCode(createDaggerInjectCode(activityElement));
         }
@@ -171,7 +172,6 @@ public class ActivityCreator extends BaseCreator {
         //
         onSaveInstanceStateMethodBuilder.addCode(extraBuilder.createSaveInstanceState(OUT_STATE));
         //
-        onActivityResultMethodBuilder.addCode(activityResultBuilder.createOnActivityResultCode());
         //
         onCreateOptionsMenuBuilder.addCode(menuBuilder.createMenuInflaterCode(activityElement, MENU, "getMenuInflater()"));
         onCreateOptionsMenuBuilder.addCode(menuBuilder.createFindMenuItemCode(MENU));
@@ -189,13 +189,17 @@ public class ActivityCreator extends BaseCreator {
         onStopMethodBuilder.addCode(onStopCode.build());
         //OnDestroy
         onDestroyMethodBuilder.addCode(subscribeBuilder.createDispose());
+        onDestroyMethodBuilder.addCode(activityResultBuilder.createDispose());
         onDestroyMethodBuilder.addCode(onDestroyCode.build());
         //
         tb.addType(extraBuilder.createActivityIntentBuilder(packageName, className));
-        tb.addType(activityResultBuilder.createActivityIntentBuilder(packageName, className));
+        //
+        activityResultBuilder.createActivityResultLauncherField(tb, activityElement);
+        tb.addType(activityResultBuilder.createActivityResult(packageName, className));
+        tb.addType(activityResultBuilder.createLauncher(packageName, className));
+        //
         tb.addMethod(onCreateMethodBuilder.build());
         tb.addMethod(onSaveInstanceStateMethodBuilder.build());
-        tb.addMethod(onActivityResultMethodBuilder.build());
         tb.addMethod(onCreateOptionsMenuBuilder.build());
         tb.addMethod(onOptionsItemSelectedBuilder.build());
         tb.addMethod(onStartMethodBuilder.build());
@@ -203,7 +207,6 @@ public class ActivityCreator extends BaseCreator {
         tb.addMethod(onPauseMethodBuilder.build());
         tb.addMethod(onStopMethodBuilder.build());
         tb.addMethod(onDestroyMethodBuilder.build());
-
         for (MethodSpec methodSpec : handleHelpBuilder.createMotheds()) {
             tb.addMethod(methodSpec);
         }
@@ -226,17 +229,6 @@ public class ActivityCreator extends BaseCreator {
                 .addAnnotation(Override.class)
                 .returns(void.class)
                 .addStatement("super.onSaveInstanceState($N)", OUT_STATE);
-    }
-
-    private MethodSpec.Builder createOnActivityResult() {
-        return MethodSpec.methodBuilder("onActivityResult")
-                .addModifiers(Modifier.PROTECTED)
-                .addParameter(int.class, REQUEST_CODE)
-                .addParameter(int.class, RESULT_CODE)
-                .addParameter(AndroidClass.Intent, DATA)
-                .addAnnotation(Override.class)
-                .returns(void.class)
-                .addStatement("super.onActivityResult($N, $N, $N)", REQUEST_CODE, RESULT_CODE, DATA);
     }
 
     private MethodSpec.Builder createOnCreateOptionsMenuMethodBuilder() {
@@ -270,31 +262,14 @@ public class ActivityCreator extends BaseCreator {
     }
 
     private CodeBlock createSetContentViewCode(TypeSpec.Builder typeSpecBuilder, TypeElement activityElement) {
+        final ClassName viewBinding = ViewBindingHelp.getViewBindingClass(activityElement, NActivity.class);
+        if (viewBinding != null) {
+            return CodeBlock.builder()
+                    .addStatement("final $T $N = $T.inflate(getLayoutInflater())", viewBinding, BINDING, viewBinding)
+                    .addStatement("setContentView($N.getRoot())", BINDING)
+                    .build();
+        }
         final AnnotationMirror aNActivityMirror = AnnotationHelp.findAnnotationMirror(activityElement, NActivity.class);
-        Object viewBindingObject = AnnotationHelp.findAnnotationValue(aNActivityMirror, "value");
-        if (viewBindingObject == null) {
-            viewBindingObject = AnnotationHelp.findAnnotationValue(aNActivityMirror, "viewBinding");
-        }
-        if (viewBindingObject != null) {
-
-
-            final String viewBindingString = viewBindingObject.toString();
-            final String[] split = viewBindingString.split("\\.");
-            if (split.length > 1) {
-                final String className = split[split.length - 1];
-                final String packageName = viewBindingString.substring(0, viewBindingString.length() - className.length() - 1);
-                if ("databinding".equals(split[split.length - 2]) && className.endsWith("Binding")) {
-                    final ClassName viewBinding = ClassName.get(packageName, className);
-                    typeSpecBuilder.addField(FieldSpec.builder(viewBinding, "binding")
-                            .addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-                            .build());
-                    return CodeBlock.builder()
-                            .addStatement("binding = $T.inflate(getLayoutInflater())", viewBinding)
-                            .addStatement("setContentView(binding.getRoot())")
-                            .build();
-                }
-            }
-        }
         final String resName = (String) AnnotationHelp.findAnnotationValue(aNActivityMirror, "resName");
         if (resName == null) {
             return CodeBlock.builder().build();

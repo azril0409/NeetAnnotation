@@ -2,13 +2,7 @@ package library.neetoffice.com.neetannotation.processor;
 
 import com.squareup.javapoet.CodeBlock;
 
-import javax.lang.model.element.AnnotationMirror;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.Name;
-
-import kotlin.Suppress;
-import library.neetoffice.com.neetannotation.NDagger;
-import library.neetoffice.com.neetannotation.ViewById;
 
 public class AndroidResHelp {
     private static CodeBlock createCodeBlock(String resName, String resPackage, String elementName, String context_from, String defType, String defPackage) {
@@ -16,7 +10,7 @@ public class AndroidResHelp {
         if (resPackage == null || resPackage.isEmpty()) {
             a = defPackage;
         } else {
-            a = resPackage;
+            a = "\"" + resPackage + "\"";
         }
         if (!resName.isEmpty()) {
             return CodeBlock.builder().add("$N.getResources().getIdentifier($S, $S, $N)", context_from, resName, defType, a).build();

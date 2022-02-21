@@ -6,8 +6,16 @@ import java.lang.annotation.Target;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
+/**
+ * The default value of the preference
+ */
 @Retention(SOURCE)
 @Target(FIELD)
 public @interface DefaultByte {
+    /**
+     * The default value of the preference.
+     *
+     * @return the default value
+     */
     byte value();
 }

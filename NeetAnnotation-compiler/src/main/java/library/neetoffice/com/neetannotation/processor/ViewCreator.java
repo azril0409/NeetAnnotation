@@ -28,6 +28,7 @@ public class ViewCreator extends BaseCreator {
     private static final String THIS = "this";
     private static final String DEF_PACKAGE = "context.getApplicationContext().getPackageName()";
     private static final String INIT_METHOD = "_init";
+    private static final String BINDING = "binding";
 
     final ResourcesHelp resourcesHelp;
     final ListenerHelp listenerHelp;
@@ -193,26 +194,14 @@ public class ViewCreator extends BaseCreator {
     }
 
     private CodeBlock inflateLayout(TypeElement viewElement) {
+        final ClassName viewBinding = ViewBindingHelp.getViewBindingClass(viewElement, NView.class);
+        if (viewBinding != null) {
+            return CodeBlock.builder()
+                    .addStatement("final $T factory = $T.from($N)", AndroidClass.LayoutInflater, AndroidClass.LayoutInflater, CONTEXT)
+                    .addStatement("final $T $N = $T.inflate(factory, this, true)", viewBinding, BINDING, viewBinding)
+                    .build();
+        }
         final AnnotationMirror aNViewMirror = AnnotationHelp.findAnnotationMirror(viewElement, NView.class);
-        Object viewBindingObject = AnnotationHelp.findAnnotationValue(aNViewMirror, "value");
-        if (viewBindingObject == null) {
-            viewBindingObject = AnnotationHelp.findAnnotationValue(aNViewMirror, "viewBinding");
-        }
-        if (viewBindingObject != null) {
-            final String viewBindingString = viewBindingObject.toString();
-            final String[] split = viewBindingString.split("\\.");
-            if (split.length > 1) {
-                final String className = split[split.length - 1];
-                final String packageName = viewBindingString.substring(0, viewBindingString.length() - className.length() - 1);
-                if ("databinding".equals(split[split.length - 2]) && className.endsWith("Binding")) {
-                    final ClassName viewBinding = ClassName.get(packageName, className);
-                    return CodeBlock.builder()
-                            .addStatement("final $T factory = $T.from($N)", AndroidClass.LayoutInflater, AndroidClass.LayoutInflater, CONTEXT)
-                            .addStatement("final $T binding = $T.inflate(factory, this, true)", viewBinding, viewBinding)
-                            .build();
-                }
-            }
-        }
         final String resName = (String) AnnotationHelp.findAnnotationValue(aNViewMirror, "resName");
         if (resName == null) {
             return CodeBlock.builder().build();

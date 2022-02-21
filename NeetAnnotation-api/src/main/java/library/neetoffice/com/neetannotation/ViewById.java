@@ -6,18 +6,29 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by Deo on 2016/3/17.
+ * Inject view by resource name.
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.FIELD)
 public @interface ViewById {
-
     /**
-     * The R.layout.* field which refer to the layout.
+     * Same then resName
      *
-     * @return the id of the R.id
+     * @return Resource name.
      */
     String value() default "";
+
+    /**
+     * Resource name
+     *
+     * @return Resource name.
+     */
     String resName() default "";
+
+    /**
+     * Resource package.
+     *
+     * @return Resource package.
+     */
     String resPackage() default "";
 }

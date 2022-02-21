@@ -1,21 +1,26 @@
 package library.neetoffice.com.neetannotation.processor;
 
+import com.squareup.javapoet.ArrayTypeName;
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
 import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
 import com.squareup.javapoet.ParameterSpec;
+import com.squareup.javapoet.ParameterizedTypeName;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import java.io.Serializable;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 import javax.tools.Diagnostic;
@@ -37,6 +42,8 @@ public class ExtraHelp {
     static final String BUNDLE = "bundle";
     static final String CONTEXT = "context";
     static final String INTENT = "intent";
+    static final String FRAGMENT = "fragment";
+    static final String ARGUMENT_BUILDER = "ArgumentBuilder";
     private final BaseCreator creator;
 
     public ExtraHelp(BaseCreator creator) {
@@ -83,7 +90,7 @@ public class ExtraHelp {
         }
 
         private boolean isArray(TypeMirror typeMirror) {
-            return typeMirror.toString().substring(typeMirror.toString().length() - 2, typeMirror.toString().length()).equals("[]");
+            return typeMirror.toString().startsWith("[]", typeMirror.toString().length() - 2);
         }
 
         private boolean isCollection(TypeMirror typeMirror) {
@@ -91,7 +98,7 @@ public class ExtraHelp {
         }
 
         private boolean isParcelable(TypeMirror typeMirror) {
-            return creator.isInstanceOf(typeMirror, (AndroidClass.Parcelable));
+            return creator.isInstanceOf(typeMirror, AndroidClass.Parcelable);
         }
 
         private boolean isSerializable(TypeMirror typeMirror) {
@@ -101,32 +108,28 @@ public class ExtraHelp {
         CodeBlock createPutExtraCode(Element extraElement, String bundleName, String key, String varName) {
             final CodeBlock.Builder code = CodeBlock.builder();
             final TypeMirror extraType = extraElement.asType();
-            final String extraTypeString = extraType.toString();
-            if (isArray(extraType)) {
-                final String parameterTypeString = extraTypeString.substring(0, extraTypeString.length() - 2);
-                if ("byte".equals(parameterTypeString)) {
-                    code.addStatement("$N.putByteArray($S,$N)", bundleName, key, varName);
-                } else if ("char".equals(parameterTypeString)) {
-                    code.addStatement("$N.putCharArray($S,$N)", bundleName, key, varName);
-                } else if ("short".equals(parameterTypeString)) {
-                    code.addStatement("$N.putShortArray($S,$N)", bundleName, key, varName);
-                } else if ("int".equals(parameterTypeString)) {
-                    code.addStatement("$N.putIntArray($S,$N)", bundleName, key, varName);
-                } else if ("long".equals(parameterTypeString)) {
-                    code.addStatement("$N.putLongArray($S,$N)", bundleName, key, varName);
-                } else if ("float".equals(parameterTypeString)) {
-                    code.addStatement("$N.putFloatArray($S,$N)", bundleName, key, varName);
-                } else if ("double".equals(parameterTypeString)) {
-                    code.addStatement("$N.putDoubleArray($S,$N)", bundleName, key, varName);
-                } else if ("boolean".equals(parameterTypeString)) {
-                    code.addStatement("$N.putBooleanArray($S,$N)", bundleName, key, varName);
-                } else if (ClassName.get(CharSequence.class).toString().equals(parameterTypeString)) {
-                    code.addStatement("$N.putCharSequenceArray($S,$N)", bundleName, key, varName);
-                } else if (ClassName.get(String.class).toString().equals(parameterTypeString)) {
-                    code.addStatement("$N.putStringArray($S,$N)", bundleName, key, varName);
-                } else {
-                    code.addStatement("$N.putParcelableArray($S,$N)", bundleName, key, varName);
-                }
+            if (PrimitiveTypeUtil.isByteArray(extraType)) {
+                code.addStatement("$N.putByteArray($S,$N)", bundleName, key, varName);
+            } else if (PrimitiveTypeUtil.isCharArray(extraType)) {
+                code.addStatement("$N.putCharArray($S,$N)", bundleName, key, varName);
+            } else if (PrimitiveTypeUtil.isShortArray(extraType)) {
+                code.addStatement("$N.putShortArray($S,$N)", bundleName, key, varName);
+            } else if (PrimitiveTypeUtil.isIntArray(extraType)) {
+                code.addStatement("$N.putIntArray($S,$N)", bundleName, key, varName);
+            } else if (PrimitiveTypeUtil.isLongArray(extraType)) {
+                code.addStatement("$N.putLongArray($S,$N)", bundleName, key, varName);
+            } else if (PrimitiveTypeUtil.isLongArray(extraType)) {
+                code.addStatement("$N.putFloatArray($S,$N)", bundleName, key, varName);
+            } else if (PrimitiveTypeUtil.isDoubleArray(extraType)) {
+                code.addStatement("$N.putDoubleArray($S,$N)", bundleName, key, varName);
+            } else if (PrimitiveTypeUtil.isBooleanArray(extraType)) {
+                code.addStatement("$N.putBooleanArray($S,$N)", bundleName, key, varName);
+            } else if (ArrayTypeName.of(CharSequence.class).equals(ClassName.get(extraType))) {
+                code.addStatement("$N.putCharSequenceArray($S,$N)", bundleName, key, varName);
+            } else if (ArrayTypeName.of(String.class).equals(ClassName.get(extraType))) {
+                code.addStatement("$N.putStringArray($S,$N)", bundleName, key, varName);
+            } else if (isArray(extraType)) {
+                code.addStatement("$N.putParcelableArray($S,$N)", bundleName, key, varName);
             } else if (isCollection(extraElement.asType())) {
                 final DeclaredType declaredType = (DeclaredType) extraElement.asType();
                 if (ClassName.get(declaredType.getTypeArguments().get(0)).equals(ClassName.get(Integer.class))) {
@@ -136,9 +139,10 @@ public class ExtraHelp {
                 } else if (ClassName.get(declaredType.getTypeArguments().get(0)).equals(ClassName.get(String.class))) {
                     code.addStatement("$N.putStringArrayList($S,new $T<$T>($N))", bundleName, key, ArrayList.class, String.class, varName);
                 } else {
-                    code.addStatement("$N.putParcelableArrayList($S,new $T<$T>($N))", bundleName, key, ArrayList.class, declaredType.getTypeArguments().get(0), varName);
+                    final String type = declaredType.getTypeArguments().get(0).toString().replace("? extends ", "");
+                    code.addStatement("$N.putParcelableArrayList($S,new $T<$T>($N))", bundleName, key, ArrayList.class, ClassName.bestGuess(type), varName);
                 }
-            } else if (ClassName.get(String.class).toString().equals(extraTypeString)) {
+            } else if (ClassName.get(extraType).equals(ClassName.get(String.class))) {
                 code.addStatement("$N.putString($S,$N)", bundleName, key, varName);
             } else if (isParcelable(extraElement.asType())) {
                 code.addStatement("$N.putParcelable($S,$N)", bundleName, key, varName);
@@ -149,23 +153,23 @@ public class ExtraHelp {
             } else if (creator.isInstanceOf(extraElement.asType(), AndroidClass.SizeF)) {
                 code.addStatement("$N.putSizeF($S,$N)", bundleName, key, varName);
             } else {
-                if ("byte".equals(extraTypeString)) {
+                if (PrimitiveTypeUtil.isByte(extraType)) {
                     code.addStatement("$N.putByte($S,$N)", bundleName, key, varName);
-                } else if ("char".equals(extraTypeString)) {
+                } else if (PrimitiveTypeUtil.isChar(extraType)) {
                     code.addStatement("$N.putChar($S,$N)", bundleName, key, varName);
-                } else if ("short".equals(extraTypeString)) {
+                } else if (PrimitiveTypeUtil.isShort(extraType)) {
                     code.addStatement("$N.putShort($S,$N)", bundleName, key, varName);
-                } else if ("int".equals(extraTypeString)) {
+                } else if (PrimitiveTypeUtil.isInt(extraType)) {
                     code.addStatement("$N.putInt($S,$N)", bundleName, key, varName);
-                } else if ("long".equals(extraTypeString)) {
+                } else if (PrimitiveTypeUtil.isLong(extraType)) {
                     code.addStatement("$N.putLong($S,$N)", bundleName, key, varName);
-                } else if ("float".equals(extraTypeString)) {
+                } else if (PrimitiveTypeUtil.isFloat(extraType)) {
                     code.addStatement("$N.putFloat($S,$N)", bundleName, key, varName);
-                } else if ("double".equals(extraTypeString)) {
+                } else if (PrimitiveTypeUtil.isDouble(extraType)) {
                     code.addStatement("$N.putDouble($S,$N)", bundleName, key, varName);
-                } else if ("boolean".equals(extraTypeString)) {
+                } else if (PrimitiveTypeUtil.isBoolean(extraType)) {
                     code.addStatement("$N.putBoolean($S,$N)", bundleName, key, varName);
-                } else if (ClassName.get(CharSequence.class).toString().equals(extraTypeString)) {
+                } else if (ClassName.get(CharSequence.class).equals(ClassName.get(extraType))) {
                     code.addStatement("$N.putCharSequence($S,$N)", bundleName, key, varName);
                 }
             }
@@ -183,7 +187,7 @@ public class ExtraHelp {
             }
         }
 
-        CodeBlock createSaveInstanceState(String outStateName) {
+        final CodeBlock createSaveInstanceState(String outStateName) {
             final CodeBlock.Builder code = CodeBlock.builder();
             for (Element element : saveInstanceElements) {
                 code.add(createPutExtraCode(element, outStateName, getSaveInstanceKey(element), element.getSimpleName().toString()));
@@ -191,7 +195,7 @@ public class ExtraHelp {
             return code.build();
         }
 
-        CodeBlock createGetExtra(String savedInstanceStateName) {
+        final CodeBlock createGetExtra(String savedInstanceStateName) {
             final CodeBlock.Builder code = CodeBlock.builder();
             for (Element element : extraElements) {
                 code.add(createGetExtra(getExtraKey(element), element, getBundleMethod));
@@ -209,85 +213,65 @@ public class ExtraHelp {
         private CodeBlock createGetExtra(String key, Element element, String getBundleMethod) {
             final TypeMirror variableType = element.asType();
             final CodeBlock.Builder cb = CodeBlock.builder().add("$N = ", element.getSimpleName());
-            if ("char".equals(variableType.toString())) {
+            if (PrimitiveTypeUtil.isChar(variableType)) {
                 final DefaultChar aDefaultChar = element.getAnnotation(DefaultChar.class);
                 if (aDefaultChar != null) {
-                    return cb.addStatement("$N.getChar($S,(char)$L)", getBundleMethod, key, aDefaultChar.value())
-                            .build();
+                    return cb.addStatement("$N.getChar($S,(char)$L)", getBundleMethod, key, aDefaultChar.value()).build();
                 }
-                return cb.addStatement("$N.getChar($S)", getBundleMethod, key)
-                        .build();
-            } else if ("byte".equals(variableType.toString())) {
+                return cb.addStatement("$N.getChar($S)", getBundleMethod, key).build();
+            } else if (PrimitiveTypeUtil.isByte(variableType)) {
                 final DefaultByte aDefaultByte = element.getAnnotation(DefaultByte.class);
                 if (aDefaultByte != null) {
-                    return cb.addStatement("$N.getByte($S,(byte)$L)", getBundleMethod, key, aDefaultByte.value())
-                            .build();
+                    return cb.addStatement("$N.getByte($S,(byte)$L)", getBundleMethod, key, aDefaultByte.value()).build();
                 }
-                return cb.addStatement("$N.getByte($S)", getBundleMethod, key)
-                        .build();
-            } else if ("short".equals(variableType.toString())) {
+                return cb.addStatement("$N.getByte($S)", getBundleMethod, key).build();
+            } else if (PrimitiveTypeUtil.isShort(variableType)) {
                 final DefaultShort aDefaultShort = element.getAnnotation(DefaultShort.class);
                 if (aDefaultShort != null) {
-                    return cb.addStatement("$N.getShort($S,(short)$L)", getBundleMethod, key, aDefaultShort.value())
-                            .build();
+                    return cb.addStatement("$N.getShort($S,(short)$L)", getBundleMethod, key, aDefaultShort.value()).build();
                 }
-                return cb.addStatement("$N.getShort($S)", getBundleMethod, key)
-                        .build();
-            } else if ("int".equals(variableType.toString())) {
+                return cb.addStatement("$N.getShort($S)", getBundleMethod, key).build();
+            } else if (PrimitiveTypeUtil.isInt(variableType)) {
                 final DefaultInt aDefaultInt = element.getAnnotation(DefaultInt.class);
                 if (aDefaultInt != null) {
-                    return cb.addStatement("$N.getInt($S,(int)$L)", getBundleMethod, key, aDefaultInt.value())
-                            .build();
+                    return cb.addStatement("$N.getInt($S,(int)$L)", getBundleMethod, key, aDefaultInt.value()).build();
                 }
-                return cb.addStatement("$N.getInt($S)", getBundleMethod, key)
-                        .build();
-            } else if ("long".equals(variableType.toString())) {
+                return cb.addStatement("$N.getInt($S)", getBundleMethod, key).build();
+            } else if (PrimitiveTypeUtil.isLong(variableType)) {
                 final DefaultLong aDefaultLong = element.getAnnotation(DefaultLong.class);
                 if (aDefaultLong != null) {
-                    return cb.addStatement("$N.getLong($S,(long)$L)", getBundleMethod, key, aDefaultLong.value())
-                            .build();
+                    return cb.addStatement("$N.getLong($S,(long)$L)", getBundleMethod, key, aDefaultLong.value()).build();
                 }
-                return cb.addStatement("$N.getLong($S)", getBundleMethod, key)
-                        .build();
-            } else if ("float".equals(variableType.toString())) {
+                return cb.addStatement("$N.getLong($S)", getBundleMethod, key).build();
+            } else if (PrimitiveTypeUtil.isFloat(variableType)) {
                 final DefaultFloat aDefaultFloat = element.getAnnotation(DefaultFloat.class);
                 if (aDefaultFloat != null) {
-                    return cb.addStatement("$N.getFloat($S,(float)$L)", getBundleMethod, key, aDefaultFloat.value())
-                            .build();
+                    return cb.addStatement("$N.getFloat($S,(float)$L)", getBundleMethod, key, aDefaultFloat.value()).build();
                 }
-                return cb.addStatement("$N.getFloat($S)", getBundleMethod, key)
-                        .build();
-            } else if ("double".equals(variableType.toString())) {
+                return cb.addStatement("$N.getFloat($S)", getBundleMethod, key).build();
+            } else if (PrimitiveTypeUtil.isDouble(variableType)) {
                 final DefaultDouble aDefaultDouble = element.getAnnotation(DefaultDouble.class);
                 if (aDefaultDouble != null) {
-                    return cb.addStatement("$N.getDouble($S,(double)$L)", getBundleMethod, key, aDefaultDouble.value())
-                            .build();
+                    return cb.addStatement("$N.getDouble($S,(double)$L)", getBundleMethod, key, aDefaultDouble.value()).build();
                 }
-                return cb.addStatement("$N.getDouble($S)", getBundleMethod, key)
-                        .build();
-            } else if ("boolean".equals(variableType.toString())) {
+                return cb.addStatement("$N.getDouble($S)", getBundleMethod, key).build();
+            } else if (PrimitiveTypeUtil.isBoolean(variableType)) {
                 final DefaultBoolean aDefaultBoolean = element.getAnnotation(DefaultBoolean.class);
                 if (aDefaultBoolean != null) {
-                    return cb.addStatement("$N.getBoolean($S,$L)", getBundleMethod, key, aDefaultBoolean.value())
-                            .build();
+                    return cb.addStatement("$N.getBoolean($S,$L)", getBundleMethod, key, aDefaultBoolean.value()).build();
                 }
-                return cb.addStatement("$N.getBoolean($S)", getBundleMethod, key)
-                        .build();
-            } else if ("java.lang.String".equals(variableType.toString())) {
+                return cb.addStatement("$N.getBoolean($S)", getBundleMethod, key).build();
+            } else if (creator.isInstanceOf(variableType, ClassName.get(String.class))) {
                 final DefaultString aDefaultString = element.getAnnotation(DefaultString.class);
                 if (aDefaultString != null) {
-                    return cb.addStatement("$N.getString($S,\"$L\")", getBundleMethod, key, aDefaultString.value())
-                            .build();
+                    return cb.addStatement("$N.getString($S,\"$L\")", getBundleMethod, key, aDefaultString.value()).build();
                 }
-                return cb.addStatement("$N.getString($S)", getBundleMethod, key)
-                        .build();
+                return cb.addStatement("$N.getString($S)", getBundleMethod, key).build();
             }
-            return cb.addStatement("($T)$N.get($S)", variableType, getBundleMethod, key)
-                    .build();
+            return cb.addStatement("($T)$N.get($S)", variableType, getBundleMethod, key).build();
         }
 
-        MethodSpec createSetExtraMethod(Element extraElement, TypeName returnType) {
-            //final ParameterSpec parameter = ParameterSpec.get(extraElement);
+        final MethodSpec createSetExtraMethod(Element extraElement, TypeName returnType) {
             final MethodSpec.Builder mb = MethodSpec.methodBuilder(extraElement.getSimpleName().toString())
                     .addModifiers(Modifier.PUBLIC)
                     .addParameter(ClassName.get(extraElement.asType()), extraElement.getSimpleName().toString())
@@ -297,7 +281,7 @@ public class ExtraHelp {
             return mb.build();
         }
 
-        TypeSpec createActivityIntentBuilder(String packageName, String className) {
+        final TypeSpec createActivityIntentBuilder(String packageName, String className) {
             final String intentBuilderName = "IntentBuilder";
             final TypeName typeName = ClassName.get(packageName, className, intentBuilderName);
             final TypeSpec.Builder intentBuilder = TypeSpec.classBuilder(intentBuilderName)
@@ -320,7 +304,7 @@ public class ExtraHelp {
                     .addStatement("intent.setClass($N, $N.class)", CONTEXT, className)
                     .build());
             for (Element extraElement : extraElements) {
-                intentBuilder.addMethod(createSetExtraMethod((VariableElement) extraElement, typeName));
+                intentBuilder.addMethod(createSetExtraMethod(extraElement, typeName));
             }
             intentBuilder.addMethod(MethodSpec.methodBuilder("addFlags")
                     .addModifiers(Modifier.PUBLIC)
@@ -352,6 +336,7 @@ public class ExtraHelp {
                     .returns(void.class)
                     .addStatement("$N.startActivity(build(),options)", CONTEXT)
                     .build());
+            /*
             intentBuilder.addMethod(MethodSpec.methodBuilder("startActivityForResult")
                     .addModifiers(Modifier.PUBLIC)
                     .addParameter(AndroidClass.Activity, "activity")
@@ -382,22 +367,22 @@ public class ExtraHelp {
                     .returns(void.class)
                     .addStatement("fragment.startActivityForResult(build(),requestCode,options)")
                     .build());
+            */
             return intentBuilder.build();
         }
 
-        TypeSpec createArgument(String packageName, String className) {
+        final TypeSpec createArgument(String packageName, String className) {
             final ClassName fragmentType = ClassName.get(packageName, className);
-            final TypeSpec.Builder argumentBuilder = TypeSpec.classBuilder("ArgumentBuilder")
+            final TypeSpec.Builder argumentBuilder = TypeSpec.classBuilder(ARGUMENT_BUILDER)
                     .addModifiers(Modifier.PUBLIC, Modifier.STATIC);
             argumentBuilder.addField(FieldSpec.builder(AndroidClass.Bundle, BUNDLE)
                     .addModifiers(Modifier.PRIVATE, Modifier.FINAL)
                     .initializer("new $T()", AndroidClass.Bundle)
                     .build());
             for (Element extraElement : extraElements) {
-                argumentBuilder.addMethod(createSetExtraMethod((VariableElement) extraElement,
-                        ClassName.get(packageName, className, "ArgumentBuilder")));
+                argumentBuilder.addMethod(createSetExtraMethod(extraElement,
+                        ClassName.get(packageName, className, ARGUMENT_BUILDER)));
             }
-            final String FRAGMENT = "fragment";
             argumentBuilder.addMethod(MethodSpec.methodBuilder("build")
                     .addModifiers(Modifier.PUBLIC)
                     .returns(fragmentType)

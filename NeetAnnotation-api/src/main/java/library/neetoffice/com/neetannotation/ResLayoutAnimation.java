@@ -6,12 +6,29 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Created by Deo on 2016/4/6.
+ * Inject resource layout animation by resource name.
  */
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.FIELD)
 public @interface ResLayoutAnimation {
+    /**
+     * Same then resName
+     *
+     * @return Resource name.
+     */
     String value() default "";
+
+    /**
+     * Resource name
+     *
+     * @return Resource name.
+     */
     String resName() default "";
+
+    /**
+     * Resource package.
+     *
+     * @return Resource package.
+     */
     String resPackage() default "";
 }

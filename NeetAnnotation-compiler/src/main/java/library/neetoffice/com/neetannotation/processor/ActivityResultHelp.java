@@ -42,6 +42,7 @@ import library.neetoffice.com.neetannotation.DefaultInt;
 import library.neetoffice.com.neetannotation.DefaultLong;
 import library.neetoffice.com.neetannotation.DefaultShort;
 import library.neetoffice.com.neetannotation.Extra;
+import library.neetoffice.com.neetannotation.NamedAs;
 
 /***/
 public class ActivityResultHelp {
@@ -51,7 +52,7 @@ public class ActivityResultHelp {
 
     /**
      * @param creator BaseCreator
-     * */
+     */
     public ActivityResultHelp(BaseCreator creator) {
         this.creator = creator;
         this.extraHelp = new ExtraHelp(creator);
@@ -60,7 +61,7 @@ public class ActivityResultHelp {
     /**
      * @param intentDataName String
      * @return ActivityResultHelp.Builder
-     * */
+     */
     public Builder builder(String intentDataName) {
         return new Builder(creator, extraHelp.builder("", ""), intentDataName);
     }
@@ -73,10 +74,10 @@ public class ActivityResultHelp {
         private final HashMap<String, ArrayList<Element>> elements = new HashMap<>();
 
         /**
-         * @param creator BaseCreator
-         * @param extraHelp ExtraHelp
+         * @param creator        BaseCreator
+         * @param extraHelp      ExtraHelp
          * @param intentDataName String
-         * */
+         */
         public Builder(BaseCreator creator, ExtraHelp.Builder extraHelp, String intentDataName) {
             this.creator = creator;
             this.extraHelp = extraHelp;
@@ -86,17 +87,27 @@ public class ActivityResultHelp {
         void parseElement(Element typeElement, Element element) {
             final ActivityResult aActivityResult = element.getAnnotation(ActivityResult.class);
             if (aActivityResult != null) {
-                final String key = element.getSimpleName().toString();
-                final ArrayList<Element> list = elements.getOrDefault(key, new ArrayList<>());
-                if (!list.isEmpty()) {
-                    final Element e = list.get(0);
-                    final ActivityResult a = e.getAnnotation(ActivityResult.class);
-                    if (a.value() != aActivityResult.value()) {
-                        creator.processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "ActivityResult's value contract from " + typeElement.toString() + "." + element.getSimpleName() + " must be same.");
-                    }
+                final String[] keys;
+                NamedAs namedAs = element.getAnnotation(NamedAs.class);
+                if (namedAs != null) {
+                    keys = namedAs.value();
+                } else {
+                    keys = new String[1];
+                    final String key = element.getSimpleName().toString();
+                    keys[0] = key;
                 }
-                list.add(element);
-                elements.put(key, list);
+                for (String key : keys) {
+                    final ArrayList<Element> list = elements.getOrDefault(key, new ArrayList<>());
+                    if (!list.isEmpty()) {
+                        final Element e = list.get(0);
+                        final ActivityResult a = e.getAnnotation(ActivityResult.class);
+                        if (a.value() != aActivityResult.value()) {
+                            creator.processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, "ActivityResult's value contract from " + typeElement.toString() + "." + element.getSimpleName() + " must be same.");
+                        }
+                    }
+                    list.add(element);
+                    elements.put(key, list);
+                }
             }
         }
 
@@ -759,12 +770,13 @@ public class ActivityResultHelp {
             for (String name : elements.keySet()) {
                 final ArrayList<Element> extraElements = elements.get(name);
                 final Element element = findOKActivityResultElement(extraElements);
-                builder.addMethod(createLauncherMethod(element));
+                builder.addMethod(createLauncherMethod(element, false));
+                builder.addMethod(createLauncherMethod(element, true));
             }
             return builder.build();
         }
 
-        private MethodSpec createLauncherMethod(Element element) {
+        private MethodSpec createLauncherMethod(Element element, boolean enableOptions) {
             final ActivityResult aActivityResult = element.getAnnotation(ActivityResult.class);
             final ActivityResult.Contract contract = aActivityResult.value();
             TypeName inputTypeName;
@@ -802,9 +814,19 @@ public class ActivityResultHelp {
             builder.addModifiers(Modifier.FINAL, Modifier.PUBLIC);
             if (!inputTypeName.equals(ClassName.get(Void.class))) {
                 builder.addParameter(inputTypeName, "input");
-                builder.addStatement("activity.$N.launch(input)", elementName);
+                if (enableOptions) {
+                    builder.addParameter(AndroidClass.ActivityOptionsCompat, "options");
+                    builder.addStatement("activity.$N.launch(input,options)", elementName);
+                } else {
+                    builder.addStatement("activity.$N.launch(input)", elementName);
+                }
             } else {
-                builder.addStatement("activity.$N.launch(null)", elementName);
+                if (enableOptions) {
+                    builder.addParameter(AndroidClass.ActivityOptionsCompat, "options");
+                    builder.addStatement("activity.$N.launch(null,options)", elementName);
+                } else {
+                    builder.addStatement("activity.$N.launch(null)", elementName);
+                }
             }
             return builder.build();
         }

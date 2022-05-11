@@ -14,13 +14,13 @@ app.gradle<br>
 apply plugin: 'kotlin-kapt'
 
 dependencies{
-  def neetannotation_version = "1.2.1"
+  def neetannotation_version = "1.3.8"
   def lifecycle_version = "2.2.0"
   def arch_version = "2.1.0"
   def dagger_version = "2.25"
   
-  implementation "com.neetoffice.annotation:Neetannotation-api:$neetannotation_version"
-  kapt "com.neetoffice.annotation:NeetAnnotation-compiler:$neetannotation_version"
+  implementation "io.github.azril0409:Neetannotation-api:$neetannotation_version"
+  kapt "io.github.azril0409:NeetAnnotation-compiler:$neetannotation_version"
   // ViewModel
   implementation "androidx.lifecycle:lifecycle-viewmodel:$lifecycle_version"
   // LiveData

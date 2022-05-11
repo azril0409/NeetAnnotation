@@ -15,6 +15,10 @@ public class AndroidClass {
      */
     public static final ClassName Activity = ClassName.get("android.app", "Activity");
     /**
+     * Class name androidx.core.app.ActivityOptionsCompat
+     */
+    public static final ClassName ActivityOptionsCompat = ClassName.get("androidx.core.app", "ActivityOptionsCompat");
+    /**
      * Class name android.view.animation.AnimationUtils
      */
     public static final ClassName AnimationUtils = ClassName.get("android.view.animation", "AnimationUtils");

@@ -5,25 +5,18 @@ import android.os.Parcelable
 import library.neetoffice.com.neetannotation.Interactor
 import library.neetoffice.com.neetannotation.ListInteractor
 import library.neetoffice.com.neetannotation.SetInteractor
-import library.neetoffice.com.neetdao.DatabaseField
-import library.neetoffice.com.neetdao.DatabaseTable
-import library.neetoffice.com.neetdao.Id
 import java.text.SimpleDateFormat
 import java.util.*
 
-@DatabaseTable
 @Interactor
 @ListInteractor
 @SetInteractor
 class Record() : Parcelable {
 
-    @Id
     var id: Int? = null
 
-    @DatabaseField
     var time: Long = 0
 
-    @DatabaseField
     var timeString: String = ""
 
     constructor(parcel: Parcel) : this() {

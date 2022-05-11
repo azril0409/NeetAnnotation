@@ -75,7 +75,8 @@ open class MainActivity : AppCompatActivity() {
 
     @ItemClick("listView")
     fun itemClicked(record: Record) {
-        Test_.IntentBuilder(this).startActivity()
+        val intent = Test_.IntentBuilder(this).build()
+        MainActivity_.Launcher(this).launchForOnResult(intent)
     }
 
     @ItemLongClick("listView")
@@ -99,20 +100,12 @@ open class MainActivity : AppCompatActivity() {
     fun onError() {
     }
 
-    @ActivityResult(ActivityResult.Contract.OpenMultipleDocuments)
-    fun onResult(uris: List<Uri>) {
+    @ActivityResult(ActivityResult.Contract.StartActivityForResult)
+    fun onResult() {
     }
 
-    @ActivityResult(
-        ActivityResult.Contract.OpenMultipleDocuments,
-        resultCode = RESULT_CANCELED
-    )
-    fun onResult(
-        @ActivityResult.Extra("aaaa") name: String
-    ) {
-    }
-
-    @ActivityResult()
-    fun onResult(bundle: Bundle) {
+    @ActivityResult(ActivityResult.Contract.StartActivityForResult, resultCode = RESULT_CANCELED)
+    @NamedAs("onResult")
+    fun onResultCanceled() {
     }
 }

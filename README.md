@@ -14,7 +14,6 @@ app.gradle<br>
 apply plugin: 'kotlin-kapt'
 
 dependencies{
-<<<<<<< HEAD
   def neetannotation_version = "1.3.8"
   def lifecycle_version = "2.2.0"
   def arch_version = "2.1.0"
@@ -22,11 +21,6 @@ dependencies{
   
   implementation "io.github.azril0409:Neetannotation-api:$neetannotation_version"
   kapt "io.github.azril0409:NeetAnnotation-compiler:$neetannotation_version"
-=======
-  implementation 'io.github.azril0409:NeetAnnotation-api:1.3.8'
-  kapt 'io.github.azril0409:NeetAnnotation-compiler:1.3.8'"
-  
->>>>>>> f403882bc0c7587c9793b06ac9bdf9cd79e8f1ea
   // ViewModel
   implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'
   implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.4.1'

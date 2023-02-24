@@ -240,5 +240,8 @@ public abstract class BaseCreator {
     void printError(CharSequence message) {
         this.processingEnv.getMessager().printMessage(Diagnostic.Kind.ERROR, message);
     }
+    void print(CharSequence message) {
+        this.processingEnv.getMessager().printMessage(Diagnostic.Kind.NOTE, message);
+    }
 
 }

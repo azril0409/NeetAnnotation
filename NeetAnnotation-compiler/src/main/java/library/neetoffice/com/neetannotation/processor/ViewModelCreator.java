@@ -108,7 +108,7 @@ public class ViewModelCreator extends BaseCreator {
                             publishedNameMap.put(key, enclosedElement.getSimpleName().toString());
                         }
                     }
-                    final String key = viewModel.getQualifiedName().toString() + "_" + enclosedElement.getSimpleName().toString();
+                    final String key = viewModelElement.getQualifiedName().toString() + "_" + enclosedElement.getSimpleName().toString();
                     publishedNameMap.put(key, enclosedElement.getSimpleName().toString());
                     final CodeBlock instanceInteractor = createInstanceCode(viewModelElement, enclosedElement, haveDagger);
                     init.add(instanceInteractor);

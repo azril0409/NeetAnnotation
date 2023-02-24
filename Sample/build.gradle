@@ -56,7 +56,7 @@ dependencies {
     implementation "androidx.lifecycle:lifecycle-service:2.4.0"
     implementation "androidx.lifecycle:lifecycle-process:2.4.0"
     implementation "androidx.lifecycle:lifecycle-reactivestreams-ktx:2.4.0"
-    testImplementation "androidx.arch.core:core-testing:2.4.0"
+    testImplementation "androidx.arch.core:core-testing:2.1.0"
     // Dagger2
     implementation "com.google.dagger:dagger:2.40"
     implementation "com.google.dagger:dagger-android-support:2.40"

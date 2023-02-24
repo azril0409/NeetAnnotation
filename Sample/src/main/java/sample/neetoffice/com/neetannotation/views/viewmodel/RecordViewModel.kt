@@ -11,10 +11,10 @@ import text.sss.support.IntegerInteractor
 import text.sss.support.ThrowableInteractor
 
 @NViewModel(isSingle = true)
-@NDagger(modules = [RecordModule::class])
 open class RecordViewModel(application: Application) : AndroidViewModel(application) {
 
     @Published
+    @InjectInitialEntity
     lateinit var onRecord: RecordInteractor
 
     @Published

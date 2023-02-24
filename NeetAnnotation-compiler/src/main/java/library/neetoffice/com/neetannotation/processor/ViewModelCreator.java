@@ -2,12 +2,9 @@ package library.neetoffice.com.neetannotation.processor;
 
 import com.squareup.javapoet.ClassName;
 import com.squareup.javapoet.CodeBlock;
-import com.squareup.javapoet.FieldSpec;
 import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.ParameterSpec;
 import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
-import com.squareup.javapoet.TypeVariableName;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -15,8 +12,6 @@ import java.util.List;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
-import javax.inject.Named;
-import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -68,8 +63,8 @@ public class ViewModelCreator extends BaseCreator {
         if (isAabstract) {
             return;
         }
-        final NViewModel aNViewModel = viewModelElement.getAnnotation(NViewModel.class);
-        final boolean haveDagger = DaggerHelp.process(viewModelElement);
+        final boolean haveDagger = DaggerHelp.process(this, viewModelElement);
+
         final String className = viewModelElement.getSimpleName() + "_";
         final List<TypeElement> viewModelElements = findSuperElements(viewModelElement, roundEnv, NViewModel.class);
         viewModelElements.add(viewModelElement);

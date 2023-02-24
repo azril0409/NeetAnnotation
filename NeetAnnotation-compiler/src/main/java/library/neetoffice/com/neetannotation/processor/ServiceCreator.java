@@ -72,7 +72,7 @@ public class ServiceCreator extends BaseCreator {
         final MethodSpec.Builder onStartCommandMethodBuilder = createOnStartCommandMethodBuilder();
         final TypeSpec.Builder intentBuilder = createIntentBuilder(className);
 
-        final boolean haveDagger = DaggerHelp.process(serviceElement);
+        final boolean haveDagger = DaggerHelp.process(this, serviceElement);
         final CodeBlock.Builder afterAnnotationCode = CodeBlock.builder();
 
         for (TypeElement superActivityElement : serviceElements) {

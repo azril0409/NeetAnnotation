@@ -156,7 +156,7 @@ public class FragmentCreator extends BaseCreator {
         }
         subscribeBuilder.addDisposableFieldInType(tb);
         //
-        final boolean haveDagger = DaggerHelp.process(fragmentElement);
+        final boolean haveDagger = DaggerHelp.process(this, fragmentElement);
         //
         onCreateMethodBuilder.addCode(menuBuilder.parseOptionsMenuInOnCreate(fragmentElement));
         onCreateMethodBuilder.addCode(extraBuilder.createGetExtra(SAVE_INSTANCE_STATE));

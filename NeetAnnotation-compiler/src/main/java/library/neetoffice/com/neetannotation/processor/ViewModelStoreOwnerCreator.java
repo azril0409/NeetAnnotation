@@ -22,6 +22,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.element.VariableElement;
 
 import library.neetoffice.com.neetannotation.AfterInject;
+import library.neetoffice.com.neetannotation.NApplication;
 
 public class ViewModelStoreOwnerCreator extends BaseCreator {
     static final String CLASS_NAME = "SimpleViewModelStoreOwner";
@@ -40,7 +41,7 @@ public class ViewModelStoreOwnerCreator extends BaseCreator {
         final String className = applicationElement.getSimpleName() + "_";
         final List<? extends Element> enclosedElements = applicationElement.getEnclosedElements();
         ArrayList<CodeBlock> onCreateElements = new ArrayList<>();
-        final boolean haveDagger = DaggerHelp.process(applicationElement);
+        final boolean haveDagger = DaggerHelp.process(this, applicationElement);
         if (haveDagger) {
             onCreateElements.add(createDaggerInjectCode(applicationElement));
         }
@@ -116,7 +117,7 @@ public class ViewModelStoreOwnerCreator extends BaseCreator {
                 .endControlFlow()
                 .endControlFlow()
                 .addStatement(")")
-                .addStatement("$N = $T.getInstance(this)", VIEW_MODEL_PROVIDER_FACTORY, AndroidClass.AndroidViewModelFactory);
+                .addStatement("$N = ($T)$T.getInstance(this)", VIEW_MODEL_PROVIDER_FACTORY, AndroidClass.Factory, AndroidClass.AndroidViewModelFactory);
         for (CodeBlock codeBlock : onCreateElements) {
             onCreate.addCode(codeBlock);
         }

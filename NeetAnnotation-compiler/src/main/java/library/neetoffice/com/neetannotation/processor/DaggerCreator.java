@@ -8,12 +8,10 @@ import com.squareup.javapoet.TypeName;
 import com.squareup.javapoet.TypeSpec;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.annotation.processing.RoundEnvironment;
-import javax.inject.Inject;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -44,8 +42,7 @@ public class DaggerCreator extends BaseCreator {
     void process(TypeElement nElement, RoundEnvironment roundEnv) {
         typenames.add(mainProcessor.contextModule);
         typenames.add(mainProcessor.systemModule);
-        boolean needCreateComponent = DaggerHelp.process(nElement);
-        if (needCreateComponent) {
+        if (DaggerHelp.process(this, nElement)) {
             createComponent(nElement, roundEnv);
         }
     }
@@ -95,10 +92,11 @@ public class DaggerCreator extends BaseCreator {
                 .addAnnotation(DaggerClass.Singleton);
         tb.addMethod(createInjectMethod(daggerElement));
 
-        for (Element element : daggerElement.getEnclosedElements()) {
-            if (element.getAnnotation(Published.class) != null &&
-                    element.getAnnotation(InjectInitialEntity.class) != null) {
-                tb.addMethod(createGetEntity(element));
+        for (Element element : roundEnv.getElementsAnnotatedWith(InjectInitialEntity.class)) {
+            if (isInstanceOf(daggerElement.asType(), TypeName.get(element.getEnclosingElement().asType()))) {
+                if (element.getAnnotation(Published.class) != null) {
+                    tb.addMethod(createGetEntity(element));
+                }
             }
         }
         writeTo(getPackageName(daggerElement), tb.build());

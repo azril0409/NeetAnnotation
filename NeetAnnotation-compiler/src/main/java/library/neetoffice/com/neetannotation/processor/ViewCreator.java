@@ -122,7 +122,7 @@ public class ViewCreator extends BaseCreator {
             }
         }
         //
-        final boolean haveDagger = DaggerHelp.process(viewElement);
+        final boolean haveDagger = DaggerHelp.process(this, viewElement);
         //
         initMethodBuilder.addCode(inflateLayout(viewElement));
         initMethodBuilder.addCode(resCode.build());

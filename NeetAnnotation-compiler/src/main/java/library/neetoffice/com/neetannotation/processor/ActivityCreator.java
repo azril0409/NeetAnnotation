@@ -50,9 +50,9 @@ public class ActivityCreator extends BaseCreator {
     private final MainProcessor mainProcessor;
 
     /**
-     * @param processor MainProcessor
+     * @param processor     MainProcessor
      * @param processingEnv ProcessingEnvironment
-     * */
+     */
     public ActivityCreator(MainProcessor processor, ProcessingEnvironment processingEnv) {
         super(processor, processingEnv);
         mainProcessor = processor;
@@ -151,7 +151,7 @@ public class ActivityCreator extends BaseCreator {
         }
         subscribeBuilder.addDisposableFieldInType(tb);
         //
-        final boolean haveDagger = DaggerHelp.process(activityElement);
+        final boolean haveDagger = DaggerHelp.process(this, activityElement);
         //OnCreate
         onCreateMethodBuilder.addCode(createSetContentViewCode(tb, activityElement));
         onCreateMethodBuilder.addCode(menuBuilder.parseOptionsMenuInOnCreate(activityElement));

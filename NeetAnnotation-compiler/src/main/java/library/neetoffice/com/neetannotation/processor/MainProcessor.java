@@ -83,6 +83,7 @@ public class MainProcessor extends AbstractProcessor {
 
     @Override
     public boolean process(Set<? extends TypeElement> set, RoundEnvironment roundEnv) {
+        DaggerHelp.init(roundEnv);
         contextInteractorCreator.createModule(contextPackageName);
         daggerCreator.createContextModule(contextPackageName);
         daggerCreator.createSystemModule(contextPackageName);
@@ -149,6 +150,7 @@ public class MainProcessor extends AbstractProcessor {
         fragmentCreator.release();
         viewCreator.release();
         serviceCreator.release();
+        DaggerHelp.release();
         return true;
     }
 }

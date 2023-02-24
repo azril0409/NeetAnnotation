@@ -19,7 +19,7 @@ dependencies{
   def arch_version = "2.1.0"
   def dagger_version = "2.25"
   
-  implementation "io.github.azril0409:Neetannotation-api:$neetannotation_version"
+  implementation "io.github.azril0409:NeetAnnotation-api:$neetannotation_version"
   kapt "io.github.azril0409:NeetAnnotation-compiler:$neetannotation_version"
   // ViewModel
   implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.4.1'

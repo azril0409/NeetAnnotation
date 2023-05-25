@@ -291,7 +291,6 @@ public class ActivityCreator extends BaseCreator {
         if (resName.isEmpty()) {
             resName = aViewById.resName();
         }
-
         return CodeBlock.builder()
                 .add("$N = findViewById(", viewByIdElement.getSimpleName())
                 .add(AndroidResHelp.id(resName, aViewById.resPackage(), viewByIdElement.getSimpleName(), CONTEXT_FROM, DEF_PACKAGE))
@@ -304,11 +303,15 @@ public class ActivityCreator extends BaseCreator {
         if (aFragmentBy == null) {
             return CodeBlock.builder().build();
         }
-        String resName = aFragmentBy.value();
-        if (resName.isEmpty()) {
-            resName = aFragmentBy.resName();
-        }
-        if (!resName.isEmpty()) {
+        if (!aFragmentBy.tag().isEmpty()) {
+            return CodeBlock.builder()
+                    .addStatement("$N = ($T)$N.getSupportFragmentManager().findFragmentByTag($S)", element.getSimpleName(), element.asType(), CONTEXT_FROM, aFragmentBy.tag())
+                    .build();
+        } else {
+            String resName = aFragmentBy.value();
+            if (resName.isEmpty()) {
+                resName = aFragmentBy.resName();
+            }
             return CodeBlock.builder()
                     .add("$N = ($T)$N", element.getSimpleName(), element.asType(), CONTEXT_FROM)
                     .add(".getSupportFragmentManager()")
@@ -316,12 +319,7 @@ public class ActivityCreator extends BaseCreator {
                     .add(AndroidResHelp.id(resName, aFragmentBy.resPackage(), element.getSimpleName(), CONTEXT_FROM, DEF_PACKAGE))
                     .addStatement(")")
                     .build();
-        } else if (!aFragmentBy.tag().isEmpty()) {
-            return CodeBlock.builder()
-                    .addStatement("$N = ($T)$N.getSupportFragmentManager().findFragmentByTag($N)", element.getSimpleName(), element.asType(), CONTEXT_FROM, aFragmentBy.tag())
-                    .build();
         }
-        return CodeBlock.builder().build();
     }
 
     private CodeBlock createAfterAnnotationCode(Element afterAnnotationElement) {

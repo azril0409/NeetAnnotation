@@ -125,41 +125,7 @@ public class SubscribeHelp {
 
         public void parseElement(Element element) {
             if (element.getAnnotation(Subscribe.class) != null) {
-                AnnotationMirror aSubscribe = null;
-                for (AnnotationMirror annotationMirror : element.getAnnotationMirrors()) {
-                    if (creator.getClassName(annotationMirror.getAnnotationType()).equals(ClassName.get(Subscribe.class))) {
-                        aSubscribe = annotationMirror;
-                        break;
-                    }
-                }
-                final String name = element.getSimpleName().toString();
-                if (aSubscribe != null) {
-                    final Object viewmode = creator.findAnnotationValue(aSubscribe, "viewmode");
-                    final String key = (String) creator.findAnnotationValue(aSubscribe, "key");
-                    if (key == null) {
-                        if (!parseSubscribe(viewmode.toString(), "", name, element)) {
-                            final NamedAs namedAs = element.getAnnotation(NamedAs.class);
-                            if (namedAs != null) {
-                                for (String n : namedAs.value()) {
-                                    if (parseSubscribe(viewmode.toString(), "", n, element)) {
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    } else {
-                        if (!parseSubscribe(viewmode.toString(), key, name, element)) {
-                            final NamedAs namedAs = element.getAnnotation(NamedAs.class);
-                            if (namedAs != null) {
-                                for (String n : namedAs.value()) {
-                                    if (parseSubscribe(viewmode.toString(), key, n, element)) {
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                parseSubscribe(element);
             }
             if (element.getAnnotation(Subscribes.class) != null) {
                 parseSubscribes(element);
@@ -169,6 +135,43 @@ public class SubscribeHelp {
                 final ViewModelOfElement viewModelOfElement = new ViewModelOfElement(element, v != null ? v.toString() : "");
                 final String key = mapKey(viewModelOfElement);
                 viewModelOfMap.put(key, viewModelOfElement);
+            }
+        }
+        private void parseSubscribe(Element element) throws RuntimeException {
+            AnnotationMirror aSubscribe = null;
+            for (AnnotationMirror annotationMirror : element.getAnnotationMirrors()) {
+                if (creator.getClassName(annotationMirror.getAnnotationType()).equals(ClassName.get(Subscribe.class))) {
+                    aSubscribe = annotationMirror;
+                    break;
+                }
+            }
+            final String name = element.getSimpleName().toString();
+            if (aSubscribe != null) {
+                final Object viewmode = creator.findAnnotationValue(aSubscribe, "viewmode");
+                final String key = (String) creator.findAnnotationValue(aSubscribe, "key");
+                if (key == null) {
+                    if (!parseSubscribe(viewmode.toString(), "", name, element)) {
+                        final NamedAs namedAs = element.getAnnotation(NamedAs.class);
+                        if (namedAs != null) {
+                            for (String n : namedAs.value()) {
+                                if (parseSubscribe(viewmode.toString(), "", n, element)) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    if (!parseSubscribe(viewmode.toString(), key, name, element)) {
+                        final NamedAs namedAs = element.getAnnotation(NamedAs.class);
+                        if (namedAs != null) {
+                            for (String n : namedAs.value()) {
+                                if (parseSubscribe(viewmode.toString(), key, n, element)) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 

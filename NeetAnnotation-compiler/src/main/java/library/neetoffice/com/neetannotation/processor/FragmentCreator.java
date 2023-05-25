@@ -335,11 +335,12 @@ public class FragmentCreator extends BaseCreator {
         if (aFragmentBy == null) {
             return CodeBlock.builder().build();
         }
-        String resName = aFragmentBy.value();
-        if (resName.isEmpty()) {
-            resName = aFragmentBy.resName();
-        }
-        if (!resName.isEmpty()) {
+        if (!aFragmentBy.tag().isEmpty()) {
+            return CodeBlock.builder()
+                    .addStatement("$N = ($T)$N.getChildFragmentManager().findFragmentByTag($S)", element.getSimpleName(), element.asType(), CONTEXT_FROM, aFragmentBy.tag())
+                    .build();
+        } else {
+            final String resName = aFragmentBy.value().isEmpty() ? aFragmentBy.resName() : aFragmentBy.value();
             return CodeBlock.builder()
                     .add("$N = ($T)$N", element.getSimpleName(), element.asType(), CONTEXT_FROM)
                     .add(".getChildFragmentManager()")
@@ -347,12 +348,7 @@ public class FragmentCreator extends BaseCreator {
                     .add(AndroidResHelp.id(resName, aFragmentBy.resPackage(), element.getSimpleName(), CONTEXT_FROM, DEF_PACKAGE))
                     .addStatement(")")
                     .build();
-        } else if (!aFragmentBy.tag().isEmpty()) {
-            return CodeBlock.builder()
-                    .addStatement("$N = ($T)$N.getChildFragmentManager().findFragmentByTag($N)", element.getSimpleName(), element.asType(), CONTEXT_FROM, aFragmentBy.tag())
-                    .build();
         }
-        return CodeBlock.builder().build();
     }
 
     private CodeBlock createAfterAnnotationCode(Element afterAnnotationElement) {

@@ -1,10 +1,6 @@
 package sample.neetoffice.com.neetannotation.views.activies
 
-import android.content.Intent
-import android.graphics.Bitmap
 import android.graphics.Color
-import android.net.Uri
-import android.os.Bundle
 import android.widget.ListView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
@@ -15,7 +11,6 @@ import sample.neetoffice.com.neetannotation.views.adapters.RecordAdapter
 import sample.neetoffice.com.neetannotation.views.viewmodel.RecordViewModel
 import java.util.*
 import javax.inject.Inject
-import kotlin.contracts.contract
 
 @NActivity(ActivityMainBinding::class)
 @OptionsMenu("mian")

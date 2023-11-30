@@ -1,4 +1,20 @@
+pluginManagement {
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+}
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+    }
+}
+
+rootProject.name = "NeetAnnotation"
 include ':NeetAnnotation-api'
 include ':NeetAnnotation-compiler'
-include ':Feature'
 include ':Sample'
+include ':KspSimple'

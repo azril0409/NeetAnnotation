@@ -1,25 +1,30 @@
 plugins {
     id 'java-library'
+    id 'org.jetbrains.kotlin.jvm'
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
 }
 
 dependencies {
     api project(':NeetAnnotation-api')
     api fileTree(include: ['*.jar'], dir: 'libs')
     api 'com.google.auto.service:auto-service:1.0'
+    api 'com.google.devtools.ksp:symbol-processing-api:1.9.20-1.0.14'
     api 'com.squareup:javapoet:1.13.0'
+    api 'com.squareup:kotlinpoet-ksp:1.15.1'
+
     // Lifecycle
-    //noinspection LifecycleAnnotationProcessorWithJava8
     api "androidx.lifecycle:lifecycle-compiler:2.4.0"
     // Dagger2
-    api "com.google.dagger:dagger:$dagger_version"
-    api "com.google.dagger:dagger-android-support:$dagger_version"
-    api "com.google.dagger:dagger-compiler:$dagger_version"
-    api "com.google.dagger:dagger-android-processor:$dagger_version"
+    implementation "com.google.dagger:dagger:2.25"
+    implementation "com.google.dagger:dagger-android-support:2.25"
+    //api "com.google.dagger:dagger-compiler:2.48"
+    //api "com.google.dagger:dagger-android-processor:2.25"
+
+    testImplementation 'junit:junit:4.13.2'
 }
 
 apply from: rootProject.file('NeetAnnotation-compiler/config.gradle')
